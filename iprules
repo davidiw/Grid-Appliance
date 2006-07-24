@@ -1,0 +1,38 @@
+#!/bin/bash
+# This script does the following:
+# (a) Flushes the existing iptables rules and 
+# (b) Defines the iptables rules for Grid-Appliance.
+# (c) Displays the current iptable
+
+# The rules and other functionalities provided are:
+# 1) Allows all UDP traffic on port 15000 for IPOP 
+# 2) Allows all UDP traffic on port 53 for DNS
+# 3) Allows ping traffic
+# 4) Allows all TCP traffic on port 22 for SSH
+# 5) Block all other outgoing traffic except the above
+
+# Flush all existing rules 
+iptables -F
+
+# Allow incoming and outgoing traffic on UDP port 15000 for IPOP
+iptables -A OUTPUT -p udp -o eth0 --sport 15000 -j ACCEPT
+iptables -A INPUT -p udp -i eth0 --dport 15000 -j ACCEPT
+
+# Allows incoming and outgoing traffic on UDP port 53 for DNS
+iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
+iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
+
+# Allows ping traffic
+iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+# Allows SSH traffic
+iptables -A OUTPUT -p tcp -o eth0 --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp -i eth0 --sport 22 -j ACCEPT
+
+# Block all outgoing trafiic except above
+iptables -A OUTPUT -o eth0 -j DROP
+
+#Displays iptables settings
+#echo "The following iptables rules are in place"
+#iptables -L 
