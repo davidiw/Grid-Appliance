@@ -5,7 +5,8 @@ rm -f /root/client/var/* \
 /var/log/* \
 /home/condor/condor/home/spool/* \
 /home/condor/.xison \
-/home/condor/.xdisabled
+/home/condor/.xdisabled \
+/home/condor/condor/etc/condor_config
 
 echo "Reset condor password to password" 
 passwd condor
