@@ -14,12 +14,10 @@ class DNSRequestHandler (DatagramRequestHandler):
   def handle(self):
     bad = 1
     if self.check_header() == 1:
-      #It has to be one word
-      if self.data[self.data[12] + 1] == 0:
-        if self.check_name_node():
-          bad = 0
-        elif self.check_name_manager() == 1:
-          bad = 0
+      if self.check_name_node():
+        bad = 0
+      elif self.check_name_manager() == 1:
+        bad = 0
 
     if bad == 0:
       if(self.ip[1] < 256 and self.ip[2] < 256 and self.ip[3] < 255 \

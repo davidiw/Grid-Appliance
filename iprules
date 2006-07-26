@@ -22,6 +22,9 @@ iptables -A INPUT -p udp -i eth0 --dport 15000 -j ACCEPT
 iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
 iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
 
+# Allows IPRouter DHCP traffic
+iptables -A OUTPUT -p udp -o eth0 --dport 8602 -j ACCEPT
+
 # Allows ping traffic
 iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
 iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT

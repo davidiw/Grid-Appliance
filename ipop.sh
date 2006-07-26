@@ -11,9 +11,9 @@
 if [[ $1 = "start" || $1 = "restart" ]]; then
   iptables -F
   if [[ $1 = start ]]; then
-    echo "Resuming a previous Grid machine..."
+    echo "Starting Grid Services..."
   else
-    echo "Restarting Grid services..."
+    echo "Restarting Grid Services..."
     pkill iprouter 
   fi
 
@@ -24,9 +24,13 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
   echo "tap configuration completed"
 
   # Create config file for IPOP and start it up
-  /bin/cp /root/client/ipop.config /root/client/var/ipop.config
+  if test -f /root/client/var/ipop.config; then
+    test
+  else
+    /bin/cp /root/client/ipop.config /root/client/var/ipop.config
+  fi
   /root/tools/iprouter /root/client/var/ipop.config &> /root/client/var/ipoplog &
-
+  /sbin/dhclient tap0
   echo "IPOP has started"
 
   # Applying iprules
