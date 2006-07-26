@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $1 = "start" ]]; then
-  cp /root/client/condor_config /home/condor/condor_config
+  cp /root/client/config/condor_config /home/condor/condor_config
   ip=`ifconfig tap0 | awk -F"inet addr:" '{print $2}' | awk -F" " '{print $1}'`
   manager=`echo $ip | awk -F. '{print $1"."$2"."$3"."}'`2
   echo "CONDOR_HOST = "$manager >> /home/condor/condor_config

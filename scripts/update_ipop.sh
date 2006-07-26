@@ -10,14 +10,14 @@ if test -f /root/client/var/iprouter_current.txt; then
 else
   web_version=-1
 fi
-local_version=`cat /root/client/iprouter_current.txt`
+local_version=`cat /root/client/etc/iprouter_current.txt`
 if (( web_version > local_version)); then
   echo "New version found!  Updating..."
   wget http://www.acis.ufl.edu/~ipop/ipop/iprouter.bz2 -O /root/client/var/iprouter.bz2
   bunzip2 /root/client/iprouter.bz2
   mv /root/client/var/iprouter /root/tools/iprouter
   chmod +x /root/tools/iprouter
-  mv /root/client/var/current.txt /root/client/iprouter_current.txt
+  mv /root/client/var/current.txt /root/client/etc/iprouter_current.txt
   if [[ $1 != "start" ]]; then
     /etc/init.d/ipop stop
     /etc/init.d/ipop start

@@ -27,14 +27,14 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
   if test -f /root/client/var/ipop.config; then
     test
   else
-    /bin/cp /root/client/ipop.config /root/client/var/ipop.config
+    /bin/cp /root/client/config/ipop.config /root/client/var/ipop.config
   fi
   /root/tools/iprouter /root/client/var/ipop.config &> /root/client/var/ipoplog &
   /sbin/dhclient tap0
   echo "IPOP has started"
 
   # Applying iprules
-  /root/client/iprules
+  /root/client/scripts/iprules
 
   # Link to the new log
   /bin/ln -s /root/client/var/ipoplog /var/log/ipop
