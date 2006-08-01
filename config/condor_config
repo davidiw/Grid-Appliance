@@ -54,10 +54,10 @@
 ##  Pathnames:
 ##--------------------------------------------------------------------
 ##  Where have you installed the bin, sbin and lib condor directories?   
-RELEASE_DIR		= /home/condor/condor
+RELEASE_DIR		= /opt/condor
 
 ##  Where is the local condor directory for each host?  
-LOCAL_DIR		= $(RELEASE_DIR)/home
+LOCAL_DIR		= $(RELEASE_DIR)/var
 #LOCAL_DIR		= $(RELEASE_DIR)/hosts/$(HOSTNAME)
 
 ##  Where is the machine-specific local config file for each host?
@@ -127,7 +127,7 @@ FILESYSTEM_DOMAIN	= $(FULL_HOSTNAME)
 ##  FLOCK_FROM defines the machines where you would like to grant
 ##  people access to your pool via flocking. (i.e. you are granting
 ##  access to these machines to join your pool).
-FLOCK_FROM = c128*
+FLOCK_FROM = C*
 ##  An example of this is:
 #FLOCK_FROM = somehost.friendly.domain, anotherhost.friendly.domain
 
@@ -135,7 +135,7 @@ FLOCK_FROM = c128*
 ##  to flock to. (i.e. you are specifying the machines that you
 ##  want your jobs to be negotiated at -- thereby specifying the
 ##  pools they will run in.)
-FLOCK_TO = 10.128.2.2, 10.128.3.2, 10.128.4.2, 10.128.5.2, 10.128.6.2, 10.128.7.2, 10.128.8.2, 10.128.9.2, 10.128.10.2
+FLOCK_TO = 10.128.2.2, 10.129.0.2, 10.129.1.2, 10.129.2.2, 10.129.3.2, 10.129.4.2, 10.129.5.2, 10.129.6.2, 10.129.7.2, 10.129.8.2, 10.129.9.2, 10.129.10.2
 ##  An example of this is:
 #FLOCK_TO = central_manager.friendly.domain, condor.cs.wisc.edu
 
@@ -318,6 +318,7 @@ HOSTALLOW_READ_STARTD     = $(HOSTALLOW_READ), $(FLOCK_FROM)
 ##  condor account, it's probably condor.  Otherwise, it's whatever
 ##  you've set in the CONDOR_IDS environment variable.  See the Admin
 ##  manual for details on this.
+CONDOR_IDS = 2.2
 LOCK		= $(LOG)
 
 ##  If you don't use a fully qualified name in your /etc/hosts file
@@ -701,6 +702,7 @@ RESERVED_DISK		= 5
 ##  entry in the socket cache uses another file descriptor.  If not
 ##  defined, this feature is disabled by default.
 UPDATE_COLLECTOR_WITH_TCP = True
+COLLECTOR_SOCKET_CACHE_SIZE = 750
 
 ## HIGHPORT and LOWPORT let you set the range of ports that Condor
 ## will use. This may be useful if you are behind a firewall. By

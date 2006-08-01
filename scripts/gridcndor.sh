@@ -13,8 +13,8 @@ elif [ $1 = "stop" ]; then
   pkill -KILL condor
 elif [ $1 = "restart" ]; then
   echo "Restarting Condor..."
-  /etc/init.d/condor stop
-  /etc/init.d/condor start
+  /etc/init.d/gridcndor.sh stop
+  /etc/init.d/gridcndor.sh start
 else
   echo "Run script with start, restart, or stop"
 fi
