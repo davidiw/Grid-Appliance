@@ -138,7 +138,7 @@ class DNSRequestHandler (DatagramRequestHandler):
      elif self.ip[i] < 100:
        temp += "0"
      temp += str(self.ip[i])
-    domainname = "condor_wow"
+    domainname = "ipop"
     #RDLENGTH
     self.data.append(0)
     self.data.append(len(temp) + len(domainname) + 3)

@@ -1,2 +1,2 @@
-rm /home/condor/.xison &> /dev/null
+rm /home/griduser/.xison &> /dev/null
 clear
