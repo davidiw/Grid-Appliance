@@ -1,0 +1,1 @@
+touch /home/condor/.xdisabled

@@ -1,0 +1,1 @@
+rm /home/griduser/.xdisabled

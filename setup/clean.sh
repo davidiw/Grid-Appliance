@@ -1,14 +1,17 @@
 #!/bin/bash
 
 rm -f /root/client/var/* \
-/home/condor/condor/home/log/* \
+/opt/condor/var/* \
+/opt/condor/var/*/* \
+/opt/condor/var/*/.* \
 /var/log/* \
-/home/condor/condor/home/spool/* \
-/home/condor/.xison \
-/home/condor/.xdisabled \
-/home/condor/condor/etc/condor_config \
-/home/condor/condor_config
+/var/log/*/* \
+/var/log/*/*/* \
+/home/griduser/.xison \
+/home/griduser/.xdisabled \
+/etc/condor/condor_config \
+/root/client/var/*
 
-echo "Reset condor password to password" 
-passwd condor
-passwd -e condor
+echo "Reset griduser password to password" 
+passwd griduser 
+passwd -e griduser 

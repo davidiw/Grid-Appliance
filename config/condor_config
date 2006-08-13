@@ -127,7 +127,7 @@ FILESYSTEM_DOMAIN	= $(FULL_HOSTNAME)
 ##  FLOCK_FROM defines the machines where you would like to grant
 ##  people access to your pool via flocking. (i.e. you are granting
 ##  access to these machines to join your pool).
-FLOCK_FROM = C*
+FLOCK_FROM = C129*
 ##  An example of this is:
 #FLOCK_FROM = somehost.friendly.domain, anotherhost.friendly.domain
 
@@ -135,7 +135,7 @@ FLOCK_FROM = C*
 ##  to flock to. (i.e. you are specifying the machines that you
 ##  want your jobs to be negotiated at -- thereby specifying the
 ##  pools they will run in.)
-FLOCK_TO = 10.128.2.2, 10.129.0.2, 10.129.1.2, 10.129.2.2, 10.129.3.2, 10.129.4.2, 10.129.5.2, 10.129.6.2, 10.129.7.2, 10.129.8.2, 10.129.9.2, 10.129.10.2
+FLOCK_TO = 10.129.0.2, 10.129.1.2, 10.129.2.2, 10.129.3.2, 10.129.4.2, 10.129.5.2, 10.129.6.2, 10.129.7.2, 10.129.8.2, 10.129.9.2, 10.129.10.2
 ##  An example of this is:
 #FLOCK_TO = central_manager.friendly.domain, condor.cs.wisc.edu
 
@@ -300,7 +300,7 @@ HOSTALLOW_READ_STARTD     = $(HOSTALLOW_READ), $(FLOCK_FROM)
 ##--------------------------------------------------------------------
 ##  Try to save this much swap space by not starting new shadows.  
 ##  Specified in megabytes.
-#RESERVED_SWAP		= 5
+RESERVED_SWAP		= 0
 
 ##  What's the maximum number of jobs you want a single submit machine
 ##  to spawn shadows for?
@@ -318,7 +318,7 @@ HOSTALLOW_READ_STARTD     = $(HOSTALLOW_READ), $(FLOCK_FROM)
 ##  condor account, it's probably condor.  Otherwise, it's whatever
 ##  you've set in the CONDOR_IDS environment variable.  See the Admin
 ##  manual for details on this.
-CONDOR_IDS = 2.2
+CONDOR_IDS = 0.0
 LOCK		= $(LOG)
 
 ##  If you don't use a fully qualified name in your /etc/hosts file

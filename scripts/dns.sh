@@ -1,3 +1,7 @@
 #!/bin/bash
+dir="/usr/local/ipop"
+System=`$dir/scripts/Env.sh`
 
-python /root/client/scripts/dns.py &
+if [[ $System != "linux" || $System != "xenU" ]]; then
+  python $dir/scripts/dns.py &
+fi
