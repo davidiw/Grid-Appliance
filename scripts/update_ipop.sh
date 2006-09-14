@@ -25,7 +25,7 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
     echo "New version found!  Updating..."
     wget http://www.acis.ufl.edu/~ipop/ipop/iprouter.bz2 -O $dir/var/iprouter.bz2
     bunzip2 $dir/var/iprouter.bz2
-    mv $dir/var/iprouter $dir/tools/iprouter
+    mv -f $dir/var/iprouter $dir/tools/iprouter
     chmod +x $dir/tools/iprouter
     mv $dir/var/iprouter_current.txt $dir/etc/iprouter_current.txt
     if [[ $1 != "start" ]]; then

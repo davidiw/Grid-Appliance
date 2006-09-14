@@ -23,5 +23,5 @@ disk = [ 'phy:sdb1,sda1,w',
 # Set root device.
 root = "/dev/sda1 ro"
 
-# Sets runlevel 4.
-extra = "3"
+# Sets runlevel 2.
+extra = "2"

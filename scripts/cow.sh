@@ -8,8 +8,10 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
   release=`echo $release | awk -F":" '{print $1}'`
   if [ $release == "yes" ]; then
     mount -text3 /dev/sdc1 /.unionfs
+    $dir/scripts/clean_cow.sh "/.unionfs"
     mkdir /.unionfs/.unionfs
     mount -text3 /dev/sdd1 /.unionfs/.unionfs
+    $dir/scripts/clean_cow.sh "/.unionfs/.unionfs"
     dirs=`ls /`
     for dir in $dirs; do
       if [[ -d "/$dir" && $dir != "proc" && $dir != "sys" && $dir != "dev" ]]; then
@@ -20,11 +22,12 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
         else
           chmod 755 /.unionfs/.unionfs/$dir &> /dev/null
         fi
-        mount -t unionfs -odefaults,dirs=/.unionfs/.unionfs/$dir:/.unionfs/$dir=r0:/$dir=ro none /$dir
+        mount -t unionfs -odefaults,dirs=/.unionfs/.unionfs/$dir=rw:/.unionfs/$dir=ro:/$dir=ro none /$dir
       fi
     done
   else
     mount -text3 /dev/sdc1 /.unionfs
+    $dir/scripts/clean_cow.sh "/.unionfs"
     dirs=`ls /`
     for dir in $dirs; do
       if [[ -d "/$dir" && $dir != "proc" && $dir != "sys" && $dir != "dev" ]]; then

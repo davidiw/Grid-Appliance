@@ -41,9 +41,9 @@ if [[ $System = "linux" || $System = "xen0" || $System = "xenU" ]]; then
         test
       else
         if [[ $System = "linux" ]]; then
-          cp $dir/config/ipop_dhcp_linux.config $dir/var/ipop.config
+          cp $dir/config/ipop_dhcp_auto.config $dir/var/ipop.config
         elif [[ $System = "xen0" ]]; then
-          cp $dir/config/ipop_dhcp_xen.config $dir/var/ipop.config
+          cp $dir/config/ipop_dhcp_manual.config $dir/var/ipop.config
         fi
       fi
 
@@ -57,12 +57,15 @@ if [[ $System = "linux" || $System = "xen0" || $System = "xenU" ]]; then
 
     #disable this if you're going to using ipop_static
     if [[ $System = "linux" && $1 = "start" ]]; then
+      for pid in `ps uax | grep "dhclient tap0" | awk -F" " '{print $2}'`; do
+      	kill $pid
+      done
       dhclient tap0
     elif [[ $System = "xenU" ]]; then
       hostname="C"
-      ip=`ifconfig eth0 | awk -F"inet addr:" '{print $'$i'}' | awk -F"  Bcast:" '{print $1}'`
+      ip=`ifconfig eth0 | awk -F"inet addr:" '{print $2}' | awk -F"  Bcast:" '{print $1}'`
       for (( i = 2; i < 5; i++ )); do
-        temp=`echo $ip | awk -F"." '{print $$i}' | awk -F"." '{print $1}'`
+        temp=`echo $ip | awk -F"." '{print $'$i'}' | awk -F"." '{print $1}'`
         if (( $temp < 10 )); then
           hostname=$hostname"00"
         elif (( $temp < 10 )); then
@@ -78,6 +81,7 @@ if [[ $System = "linux" || $System = "xen0" || $System = "xenU" ]]; then
 
     # Applying iprules
     $dir/scripts/iprules
+    $dir/scripts/enable_admin_ssh.sh
 
   elif [[ $1 = "stop" ]]; then
     if [[ $System = "linux" || $System = "xen0" ]]; then

@@ -127,7 +127,7 @@ FILESYSTEM_DOMAIN	= $(FULL_HOSTNAME)
 ##  FLOCK_FROM defines the machines where you would like to grant
 ##  people access to your pool via flocking. (i.e. you are granting
 ##  access to these machines to join your pool).
-FLOCK_FROM = C129*
+FLOCK_FROM = C*
 ##  An example of this is:
 #FLOCK_FROM = somehost.friendly.domain, anotherhost.friendly.domain
 
@@ -135,7 +135,7 @@ FLOCK_FROM = C129*
 ##  to flock to. (i.e. you are specifying the machines that you
 ##  want your jobs to be negotiated at -- thereby specifying the
 ##  pools they will run in.)
-FLOCK_TO = 10.129.0.2, 10.129.1.2, 10.129.2.2, 10.129.3.2, 10.129.4.2, 10.129.5.2, 10.129.6.2, 10.129.7.2, 10.129.8.2, 10.129.9.2, 10.129.10.2
+FLOCK_TO = 10.129.0.2
 ##  An example of this is:
 #FLOCK_TO = central_manager.friendly.domain, condor.cs.wisc.edu
 
@@ -522,9 +522,10 @@ UWCS_START	= ( (KeyboardIdle > $(StartIdleTime)) \
 # 1) the keyboard has been touched, OR
 # 2a) The cpu has been busy for more than 2 minutes, AND
 # 2b) the job has been running for more than 90 seconds
-UWCS_SUSPEND = ( $(KeyboardBusy) || \
-                 ( (CpuBusyTime > 2 * $(MINUTE)) \
-                   && $(ActivationTimer) > 90 ) )
+#UWCS_SUSPEND = ( $(KeyboardBusy) || \
+#                 ( (CpuBusyTime > 2 * $(MINUTE)) \
+#                   && $(ActivationTimer) > 90 ) )
+UWCS_SUSPEND = ( $(KeyboardBusy) )
 
 # Continue jobs if:
 # 1) the cpu is idle, AND 

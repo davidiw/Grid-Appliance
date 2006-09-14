@@ -5,5 +5,5 @@ System=`$dir/scripts/Env.sh`
 
 if [[ $System = "xen0" ]]; then
   xend start
-  xm create /usr/local/ipop/config/condor_xen
+  xm create /usr/local/ipop/config/condor_xen -c
 fi

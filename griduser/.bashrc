@@ -63,7 +63,7 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 if [[ $System = "linux" ]]; then
-  export IRCSERVER=10.254.13.1
+  export IRCSERVER=10.190.13.1
   export IRCNICK="VM"`expr substr \`echo \\\`hostname\\\`\`  5 10`
   /home/griduser/startx.sh &
 fi
