@@ -68,7 +68,7 @@ if [[ $System = "linux" || $System = "xen0" || $System = "xenU" ]]; then
         temp=`echo $ip | awk -F"." '{print $'$i'}' | awk -F"." '{print $1}'`
         if (( $temp < 10 )); then
           hostname=$hostname"00"
-        elif (( $temp < 10 )); then
+        elif (( $temp < 100 )); then
           hostname=$hostname"0"
         fi
         hostname=$hostname$temp

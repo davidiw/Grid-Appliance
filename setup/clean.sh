@@ -13,7 +13,8 @@ rm -f /root/client/var/* \
 /etc/condor/condor_config \
 $dir/var/* \
 /root/.wapi/* \
-/tmp/.*
+/tmp/.* \
+/usr/local/ipop/var/*
 
 echo "Reset griduser password to password" 
 passwd griduser 

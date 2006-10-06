@@ -14,7 +14,7 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
   iptables -F
 
   echo "Checking for latest version of iprouter"
-  wget http://www.acis.ufl.edu/~ipop/ipop/iprouter_current.txt -O $dir/var/iprouter_current.txt
+  wget http://128.227.56.252/~ipop/ipop/iprouter_current.txt -O $dir/var/iprouter_current.txt
   if test -f $dir/var/iprouter_current.txt; then
     web_version=`cat $dir/var/iprouter_current.txt`
   else
@@ -23,7 +23,7 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
   local_version=`cat $dir/etc/iprouter_current.txt`
   if (( web_version > local_version)); then
     echo "New version found!  Updating..."
-    wget http://www.acis.ufl.edu/~ipop/ipop/iprouter.bz2 -O $dir/var/iprouter.bz2
+    wget http://128.227.56.252/~ipop/ipop/iprouter.bz2 -O $dir/var/iprouter.bz2
     bunzip2 $dir/var/iprouter.bz2
     mv -f $dir/var/iprouter $dir/tools/iprouter
     chmod +x $dir/tools/iprouter
@@ -37,4 +37,5 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
     rm $dir/var/iprouter_current.txt
   fi
   echo "iprouter update complete"
+  $dir/scripts/iprules
 fi
