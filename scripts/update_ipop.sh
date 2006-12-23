@@ -14,27 +14,27 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
   iptables -F
 
   echo "Checking for latest version of iprouter"
-  wget http://128.227.56.252/~ipop/ipop/iprouter_current.txt -O $dir/var/iprouter_current.txt
-  if test -f $dir/var/iprouter_current.txt; then
-    web_version=`cat $dir/var/iprouter_current.txt`
+  wget http://128.227.56.252/~ipop/debian/grid_appliance/current.txt -O $dir/var/current.txt
+  if test -f $dir/var/current.txt; then
+    web_version=`cat $dir/var/current.txt`
   else
     web_version=-1
   fi
-  local_version=`cat $dir/etc/iprouter_current.txt`
+  local_version=`cat $dir/etc/current.txt`
   if (( web_version > local_version)); then
     echo "New version found!  Updating..."
-    wget http://128.227.56.252/~ipop/ipop/iprouter.bz2 -O $dir/var/iprouter.bz2
-    bunzip2 $dir/var/iprouter.bz2
-    mv -f $dir/var/iprouter $dir/tools/iprouter
-    chmod +x $dir/tools/iprouter
-    mv $dir/var/iprouter_current.txt $dir/etc/iprouter_current.txt
+    wget http://128.227.56.252/~ipop/debian/grid_appliance/ipop.deb -O $dir/var/ipop.deb
+    dpkg --install $dir/var/ipop.deb
+    rm -f $dir/var/ipop.deb
+    mv $dir/var/current.txt $dir/etc/current.txt
     if [[ $1 != "start" ]]; then
       $dir/scripts/ipop.sh stop
+      sleep 5
       $dir/scripts/ipop.sh start
     fi
   else
     echo "Current version is up to date!"
-    rm $dir/var/iprouter_current.txt
+    rm $dir/var/current.txt
   fi
   echo "iprouter update complete"
   $dir/scripts/iprules

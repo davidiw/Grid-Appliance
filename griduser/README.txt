@@ -75,7 +75,7 @@ Step 1: Copy and unzip the file grid_appliance.zip to your hard disk.
 Step 2: Open and power on the Grid-Appliance with the above installed VMware
         product by double-clicking the VMware configuration file
 Step 3: Start the virtual Machine (VM)
-Step 4: Log in as user condor 
+Step 4: Log in as user griduser 
         The initial password is: password 
         You will be prompted immediately to change this password.
 
@@ -83,20 +83,47 @@ Since everything is integrated into the boot sequence, the VM will boot up,
 contact a server which assigns its initial configuration, get an IP address
 and will join the Grid-Appliance virtual network.
 
-After you log in to the appliance, an X-Windows workspace will appear, and
-a connection to an IRC (Internet Relay Chat) server running within the virtual
-network of Grid appliances will appear. In this chat window you will be able,
-if you so desire, to interact with other users and developers that are also
-Grid appliance users to ask questions, post hints, etc. Instructions on how to
-join chat rooms are shown in the server's "message of the day" in this window.
-The IRC client is called "sirc"; for more information on its use, type man
-sirc on a separate terminal window, or /help within the chat window.
+### Important information regarding remote access to VMs ###
+
+1.The Grid appliance allows you to submit jobs to other VMs, and your VM can
+run jobs submitted by remote users - only through Condor. Security is 
+provided by isolating the VM from its host, and the virtual network traffic 
+from the physical network traffic.
+
+2. Because this VM appliance is still under active development and testing, it
+is temporarily configured to enable administrative login by its main 
+developers at the University of Florida through public-key ssh authentication. 
+This administrative interface is used to allow us to update the software
+remotely as needed.
+
+This access is enabled by default; if you would rather disable this feature, 
+proceed as follows (as root):
+
+pkill sshd
+edit /etc/init.d/ipop.sh; 
+  - locate the line where /root/enable_admin_ssh.sh is executed
+  - delete this line
+
+
+BROWSING AND COPYING FILES 
+--------------------------
+The appliance comes with a pre-configured Samba file system server.
+To access the griduser's home directory in the appliance:
+
+Windows host: 
+From Windows Explorer, open the \\gridappliance\griduser folder
+
+Linux host:
+You need smbfs installed. Create a mount point (say, /mnt/appliance) and:
+mount -t smbfs //gridappliance/griduser /mnt/appliance -o username=youruser,uid=youruser,gid=yourgroup
+(substitute youruser and yourgroup with appropriate user/group IDs of your host)
+
 
 EXAMPLES
 ---------
 
 Some examples of how to run applications in the Condor environment are available 
-at /home/condor/examples. Please refer to the Condor manual available the Condor
+at /home/griduser/examples. Please refer to the Condor manual available the Condor
 website http://www.cs.wisc.edu/condor/ for detailed documentation on the
 different types of Condor "universes" available for job submission (vanilla and
 standard are supported by the appliance) and how to prepare job submission
@@ -171,9 +198,9 @@ SOME USEFUL COMMANDS
 
 Some useful command references:
 
-1) sudo sh (issued from the condor account) allows a user to become "root" 
-   on the appliance. Requires typing the same password created for the condor 
-   user upon the first login.
+1) sudo sh (issued from the griduser account) allows a user to become "root" 
+   on the appliance. Requires typing the same password created for griduser 
+   upon the first login.
 
 2) disablex.sh, enablex.sh: disable (enable) automatic startup of the the X11 
    windowing system upon login (enabled by default).
@@ -195,7 +222,7 @@ Some useful command references:
     list, especially on large pools)
 
 7) To submit an example job: "condor_submit env-sub". 
-   A sample env-sub file is available at /home/condor/examples
+   A sample env-sub file is available at /home/griduser/examples
 
 8) To analyze the status of the submitted job run "condor_q -analyze"
 
@@ -221,6 +248,8 @@ appliance, we would like to receive your feedback, suggestions, problem
 reports, success stories in running jobs from one or more appliances, etc,
 and we will make our best effort to address them.
 Instructions on how to join a user's mailing list can be found in:
+
 http://wow.acis.ufl.edu
+
 Alternatively, you may send email to ipop at acis.ufl.edu 
 Attaching the /var/log/ipop file will be helpful. 

@@ -25,26 +25,20 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
   # Allows incoming and outgoing traffic on UDP port 53 for DNS
   iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
   iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
-  iptables -A OUTPUT -p udp -o eth0 --sport 53 -j ACCEPT
-  iptables -A INPUT -p udp -i eth0 --dport 53 -j ACCEPT
   iptables -A OUTPUT -p tcp -o eth0 --dport 53 -j ACCEPT
   iptables -A INPUT -p tcp -i eth0 --sport 53 -j ACCEPT
-  iptables -A OUTPUT -p tcp -o eth0 --sport 53 -j ACCEPT
-  iptables -A INPUT -p tcp -i eth0 --dport 53 -j ACCEPT
 
   # Allows IPRouter DHCP traffic
-  iptables -A OUTPUT -p tcp -o eth0 --dport 8602 -j ACCEPT
-  iptables -A INPUT -p tcp -i eth0 --sport 8602 -j ACCEPT
+  iptables -A OUTPUT -p tcp -o eth0 --dport 9202 -j ACCEPT
+  iptables -A INPUT -p tcp -i eth0 --sport 9202 -j ACCEPT
+
+  # Allows access to DHCP
+  iptables -A OUTPUT -o eth0 -p udp --sport 68 --dport 67 -j ACCEPT
+  iptables -A INPUT -i eth0 -p udp --sport 67 --dport 68 -j ACCEPT
 
   # Allows ping traffic
   iptables -A OUTPUT -p icmp -j ACCEPT
   iptables -A INPUT -p icmp -j ACCEPT
-
-  # Allows SSH traffic
-  iptables -A OUTPUT -p tcp -o eth0 --dport 22 -j ACCEPT
-  iptables -A INPUT -p tcp -i eth0 --sport 22 -j ACCEPT
-  iptables -A OUTPUT -p tcp -o eth0 --sport 22 -j ACCEPT
-  iptables -A INPUT -p tcp -i eth0 --dport 22 -j ACCEPT
 
   # Block all outgoing trafiic except above
   iptables -A OUTPUT -o eth0 -j DROP
@@ -62,4 +56,8 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
   iptables -A INPUT -p tcp -i $dev --sport 22 -j DROP
   iptables -A OUTPUT -p tcp -o $dev --sport 22 -j DROP
   iptables -A INPUT -p tcp -i $dev --dport 22 -j DROP
+fi
+
+if test -f /home/griduser/local_iprules; then
+  /home/griduser/local_iprules
 fi

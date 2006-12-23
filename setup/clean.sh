@@ -1,7 +1,7 @@
 #!/bin/bash
 dir="/usr/local/ipop"
 
-rm -f /root/client/var/* \
+rm -f /usr/local/ipop/var/* \
 /opt/condor/var/* \
 /opt/condor/var/*/* \
 /opt/condor/var/*/.* \
@@ -11,10 +11,10 @@ rm -f /root/client/var/* \
 /home/griduser/.xison \
 /home/griduser/.xdisabled \
 /etc/condor/condor_config \
-$dir/var/* \
 /root/.wapi/* \
 /tmp/.* \
-/usr/local/ipop/var/*
+/tmp/* \
+/var/cache/apt/archives/*deb 
 
 echo "Reset griduser password to password" 
 passwd griduser 

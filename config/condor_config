@@ -135,7 +135,7 @@ FLOCK_FROM = C*
 ##  to flock to. (i.e. you are specifying the machines that you
 ##  want your jobs to be negotiated at -- thereby specifying the
 ##  pools they will run in.)
-FLOCK_TO = 10.129.0.2
+#FLOCK_TO = 10.128.0.1
 ##  An example of this is:
 #FLOCK_TO = central_manager.friendly.domain, condor.cs.wisc.edu
 
@@ -702,7 +702,7 @@ RESERVED_DISK		= 5
 ##  COLLECTOR_SOCKET_CACHE_SIZE setting at your collector, and each
 ##  entry in the socket cache uses another file descriptor.  If not
 ##  defined, this feature is disabled by default.
-UPDATE_COLLECTOR_WITH_TCP = True
+UPDATE_COLLECTOR_WITH_TCP = False
 COLLECTOR_SOCKET_CACHE_SIZE = 750
 
 ## HIGHPORT and LOWPORT let you set the range of ports that Condor
@@ -1114,7 +1114,7 @@ PERIODIC_EXPR_INTERVAL = 60
 ##  What users do you want to grant super user access to this job
 ##  queue?  (These users will be able to remove other user's jobs). 
 ##  By default, this only includes root.
-QUEUE_SUPER_USERS	= root, condor
+QUEUE_SUPER_USERS	= root
 
 
 ##--------------------------------------------------------------------

@@ -55,6 +55,8 @@ xterm*|rxvt*)
 esac
 
 PATH=$PATH:/opt/condor/bin
+# Some alias' for our friends!
+alias smbfix='sudo /etc/init.d/samba restart' 
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profiles

@@ -48,7 +48,7 @@ if [[ $System = "linux" || $System = "xen0" || $System = "xenU" ]]; then
       fi
 
       cd $dir/tools
-      $dir/tools/iprouter $dir/var/ipop.config &> $dir/var/ipoplog &
+      $dir/tools/iprouter $dir/var/ipop.config $dir/config/log.config | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
       cd -
 
       rm -f /var/log/ipop
@@ -56,7 +56,7 @@ if [[ $System = "linux" || $System = "xen0" || $System = "xenU" ]]; then
     fi
 
     #disable this if you're going to using ipop_static
-    if [[ $System = "linux" && $1 = "start" ]]; then
+    if [[ $System = "linux" && ( $1 = "start" || $1 = "restart" ) ]]; then
       for pid in `ps uax | grep "dhclient tap0" | awk -F" " '{print $2}'`; do
       	kill $pid
       done
@@ -78,10 +78,13 @@ if [[ $System = "linux" || $System = "xen0" || $System = "xenU" ]]; then
     fi
 
     echo "IPOP has started"
-
+    # Geo locator
+    iptables -F
+    latitude=`wget www.ip-adress.com -q -O - | grep latitude -A 1 | grep td | awk -F">" '{print $3}' | awk -F"<" '{print $1}'`
+    longitude=`wget www.ip-adress.com -q -O - | grep longitude -A 1 | grep td | awk -F">" '{print $3}' | awk -F"<" '{print $1}'`
+    echo $latitude", "$longitude > /home/griduser/.geo
     # Applying iprules
     $dir/scripts/iprules
-    $dir/scripts/enable_admin_ssh.sh
 
   elif [[ $1 = "stop" ]]; then
     if [[ $System = "linux" || $System = "xen0" ]]; then

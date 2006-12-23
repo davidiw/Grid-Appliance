@@ -1,1 +1,1 @@
-touch /home/condor/.xdisabled
+touch /home/griduser/.xdisabled

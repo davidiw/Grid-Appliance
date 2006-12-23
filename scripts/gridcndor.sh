@@ -12,9 +12,12 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
     fi
     ip=`ifconfig $dev | awk -F"inet addr:" '{print $2}' | awk -F" " '{print $1}'`
 #    manager=`echo $ip | awk -F. '{print $1"."$2"."$3"."}'`2
-    manager="10.129.0.2"
+    manager="10.128.0.1"
     echo "CONDOR_HOST = "$manager >> /etc/condor/condor_config
     echo "NETWORK_INTERFACE = "$ip >> /etc/condor/condor_config
+    GEO_LOC=`cat /home/griduser/.geo`
+    echo "GEO_LOC = \"$GEO_LOC\"" >> /etc/condor/condor_config
+    echo "STARTD_EXPRS = STARTD_EXPRS, GEO_LOC" >> /etc/condor/condor_config
     echo "Starting Condor..."
     /opt/condor/sbin/condor_master
   elif [ $1 = "stop" ]; then
