@@ -1,5 +1,0 @@
-These scripts go in all Grid machines, including linux, linux xen dom0, and linux xen domU.  By default, the linux option is default, xen dom0 and xen domU are activated by having the words xen0 or xenU (respectively) in the kernels name.  In otherwords, if `uname -r` returns xen0 or xenU the respective script actions are run, otherwise linux script actions will run.
-
-This has been done so that machines aren't Xen or VMWare specific, they are VM neutral and should be able to run in either without any reconfiguration.
-
-A note on the Xen machines, they will not by default run X, the user can reconfigure them to use X over ssh or vnc.

@@ -60,10 +60,14 @@ class DNSRequestHandler (DatagramRequestHandler):
     test_char = chr(self.data[13])
     if ((test_char == 'c') or (test_char == 'C')) and self.data[12] == 10:
       if self.data[14:23].tostring().isdigit():
-        self.ip = [10, int(self.data[14:17].tostring()), \
-          int(self.data[17:20].tostring()), \
-          int(self.data[20:23].tostring())]
-        return True
+#Even with this here, every now and then we somehow get something that is not a digit!
+        try:
+          self.ip = [10, int(self.data[14:17].tostring()), \
+            int(self.data[17:20].tostring()), \
+            int(self.data[20:23].tostring())]
+          return True
+        except:
+          return False
     return False
 
   def check_name_arpa(self):

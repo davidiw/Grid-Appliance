@@ -26,16 +26,10 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
     wget http://128.227.56.252/~ipop/debian/grid_appliance/ipop.deb -O $dir/var/ipop.deb
     dpkg --install $dir/var/ipop.deb
     rm -f $dir/var/ipop.deb
-    mv $dir/var/current.txt $dir/etc/current.txt
-    if [[ $1 != "start" ]]; then
-      $dir/scripts/ipop.sh stop
-      sleep 5
-      $dir/scripts/ipop.sh start
-    fi
   else
     echo "Current version is up to date!"
-    rm $dir/var/current.txt
   fi
+  rm $dir/var/current.txt
   echo "iprouter update complete"
   $dir/scripts/iprules
 fi

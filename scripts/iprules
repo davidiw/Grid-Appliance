@@ -18,10 +18,6 @@ System=`$dir/scripts/Env.sh`
 iptables -F
 
 if [[ $System = "linux" || $System = "xen0" ]]; then
-  # Allow incoming and outgoing traffic on UDP port 15000 for IPOP
-  iptables -A OUTPUT -p udp -o eth0 --sport 15000:15099 -j ACCEPT
-  iptables -A INPUT -p udp -i eth0 --dport 15000:15099 -j ACCEPT
-
   # Allows incoming and outgoing traffic on UDP port 53 for DNS
   iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
   iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
@@ -29,8 +25,8 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
   iptables -A INPUT -p tcp -i eth0 --sport 53 -j ACCEPT
 
   # Allows IPRouter DHCP traffic
-  iptables -A OUTPUT -p tcp -o eth0 --dport 9202 -j ACCEPT
-  iptables -A INPUT -p tcp -i eth0 --sport 9202 -j ACCEPT
+  iptables -A OUTPUT -p tcp -o eth0 --dport 9203 -j ACCEPT
+  iptables -A INPUT -p tcp -i eth0 --sport 9203 -j ACCEPT
 
   # Allows access to DHCP
   iptables -A OUTPUT -o eth0 -p udp --sport 68 --dport 67 -j ACCEPT
@@ -43,6 +39,14 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
   # Block all outgoing trafiic except above
   iptables -A OUTPUT -o eth0 -j DROP
   iptables -A INPUT -i eth0 -j DROP
+
+  port=`netstat -aup | grep iprouter | awk -F":" '{print $2}' | awk -F" " '{print $1}'`
+  while [[ $port == '' ]]; do
+    sleep 2
+    port=`netstat -aup | grep iprouter | awk -F":" '{print $2}' | awk -F" " '{print $1}'`
+  done
+  iptables -I OUTPUT -p udp -o eth0 --sport $port -j ACCEPT
+  iptables -I INPUT -p udp -i eth0 --dport $port -j ACCEPT 
 fi
 
 if [[ $System = "linux" || $System = "xenU" ]]; then
@@ -56,6 +60,9 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
   iptables -A INPUT -p tcp -i $dev --sport 22 -j DROP
   iptables -A OUTPUT -p tcp -o $dev --sport 22 -j DROP
   iptables -A INPUT -p tcp -i $dev --dport 22 -j DROP
+
+  # Block nobody from sending over tap0
+  iptables -A OUTPUT -m owner --uid-owner 65534 -j DROP
 fi
 
 if test -f /home/griduser/local_iprules; then

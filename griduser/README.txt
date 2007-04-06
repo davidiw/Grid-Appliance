@@ -96,15 +96,6 @@ developers at the University of Florida through public-key ssh authentication.
 This administrative interface is used to allow us to update the software
 remotely as needed.
 
-This access is enabled by default; if you would rather disable this feature, 
-proceed as follows (as root):
-
-pkill sshd
-edit /etc/init.d/ipop.sh; 
-  - locate the line where /root/enable_admin_ssh.sh is executed
-  - delete this line
-
-
 BROWSING AND COPYING FILES 
 --------------------------
 The appliance comes with a pre-configured Samba file system server.
@@ -112,6 +103,7 @@ To access the griduser's home directory in the appliance:
 
 Windows host: 
 From Windows Explorer, open the \\gridappliance\griduser folder
+If that does not work, you may have an issue with incompatible workgroup names.  This issue is due to Microsofts poor implementation of CIFS and can only be fixed by making the grid appliances workgroup equivalent to yours.  This can be done by editing the file /etc/samba/smb.conf, making the workgroup equal to your's, and running /etc/init.d/samba restart.  The above must be done while in super user mode, which can be accessed via sudo bash.
 
 Linux host:
 You need smbfs installed. Create a mount point (say, /mnt/appliance) and:

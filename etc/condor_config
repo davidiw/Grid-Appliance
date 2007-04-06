@@ -558,7 +558,8 @@ UWCS_KILL = $(ActivityTimer) > $(MaxVacateTime)
 
 ##  We use a simple Periodic checkpointing mechanism, but then
 ##  again we have a very fast network.
-UWCS_PERIODIC_CHECKPOINT	= $(LastCkpt) > (3 * $(HOUR))
+UWCS_PERIODIC_CHECKPOINT = $(LastCkpt) > (18 * $(HOUR) + \
+RANDOM_INTEGER(0,360,30) * $(MINUTE) )
 
 ##  You might want to checkpoint a little less often.  A good
 ##  example of this is below.  For jobs smaller than 60 megabytes, we
@@ -725,7 +726,7 @@ COLLECTOR_SOCKET_CACHE_SIZE = 750
 ##  condor_master
 ##--------------------------------------------------------------------
 ##  Daemons you want the master to keep running for you:
-DAEMON_LIST			= MASTER, STARTD, SCHEDD
+#   Attached to end
 
 ##  Which daemons use the Condor DaemonCore library (i.e., not the
 ##  checkpoint server or custom user daemons)?

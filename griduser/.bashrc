@@ -57,7 +57,8 @@ esac
 PATH=$PATH:/opt/condor/bin
 # Some alias' for our friends!
 alias smbfix='sudo /etc/init.d/samba restart' 
-
+alias enablex='rm /home/griduser/.xdisabled'
+alias disablex='touch /home/griduser/.xdisabled'
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profiles
 # sources /etc/bash.bashrc).
@@ -65,7 +66,5 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 if [[ $System = "linux" ]]; then
-  export IRCSERVER=10.190.13.1
-  export IRCNICK="VM"`expr substr \`echo \\\`hostname\\\`\`  5 10`
   /home/griduser/startx.sh &
 fi
