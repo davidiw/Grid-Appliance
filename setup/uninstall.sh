@@ -11,5 +11,4 @@ rm $iit_dir/SetEnv.sh /etc/rcS.d/S10SetEnv \
   $init_dir/update_ipop.sh $rc_dir/S91update_ipop \
   $init_dir/ipop.sh $rc_dir/S92ipop \
   $init_dir/gridcndor.sh $rc_dir/S93gridcndor \
-  $init_dir/xison.sh $rc_dir/S99xison \
-
+  $init_dir/xison.sh $rc_dir/S99xison
