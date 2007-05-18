@@ -14,7 +14,12 @@ rm -f /usr/local/ipop/var/* \
 /root/.wapi/* \
 /tmp/.* \
 /tmp/* \
-/var/cache/apt/archives/*deb 
+/var/cache/apt/archives/*deb \
+/var/run/* \
+/var/run/*/* \
+/var/lib/apt/* \
+/var/lib/apt/*/*
+
 
 echo "Reset griduser password to password" 
 passwd griduser 

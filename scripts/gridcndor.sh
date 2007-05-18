@@ -30,18 +30,25 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
       echo $latitude", "$longitude > /home/griduser/.geo
       $dir/scripts/iprules
       cp $dir/etc/condor_config /etc/condor/condor_config
-      manager="10.128.0.1"
+      manager=`cat /mnt/fd/manager_ip`
       echo "CONDOR_HOST = "$manager >> /etc/condor/condor_config
+#  We bind to all interfaces for condor interface to work
       echo "NETWORK_INTERFACE = "$ip >> /etc/condor/condor_config
       GEO_LOC=`cat /home/griduser/.geo`
       echo "GEO_LOC = \"$GEO_LOC\"" >> /etc/condor/condor_config
       echo "STARTD_EXPRS = STARTD_EXPRS, GEO_LOC" >> /etc/condor/condor_config
+      $dir/scripts/sscndor.sh
 
-      if test -f /usr/local/ipop/etc/manager; then
+      if test ! -f $dir/etc/condor_type; then
+        echo "standard" >> $dir/etc/condor_type
+      fi
+
+      type=`cat $dir/etc/condor_type`
+      if [ $type = "manager" ]; then
         echo "DAEMON_LIST                     = MASTER, COLLECTOR, NEGOTIATOR" >> /etc/condor/condor_config
-      elif test -f /usr/local/ipop/etc/watcher; then
+      elif [ $type = "submit" ]; then
         echo "DAEMON_LIST                     = MASTER, SCHEDD" >> /etc/condor/condor_config
-      else
+      else # [ $type = "standard" || undefined ]
         echo "DAEMON_LIST                     = MASTER, STARTD, SCHEDD" >> /etc/condor/condor_config
       fi
 
@@ -57,6 +64,7 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
       done
       hostname $hostname
 
+      rm -f /opt/condor/var/log/* /opt/condor/var/log/*
 # This is run to limit the amount of memory condor jobs can use - up to the  contents
 # of physical memory, that means a swap disk is necessary!
       ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`

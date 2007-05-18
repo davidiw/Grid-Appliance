@@ -1,10 +1,13 @@
-/opt/condor/bin/condor_status -p 10.128.0.1 | awk /^C/ | awk -F. '{print $1}' > /tmp/cndor
-/opt/condor/bin/condor_status -p 10.180.0.1 | awk /^C/ | awk -F. '{print $1}' >> /tmp/cndor
-/opt/condor/bin/condor_status -p 10.190.0.1 | awk /^C/ | awk -F. '{print $1}' >> /tmp/cndor
-echo "C128000001" >> /tmp/cndor
-echo "C180000001" >> /tmp/cndor
-echo "C190000001" >> /tmp/cndor
-echo "C128001001" >> /tmp/cndor
+#!/bin/bash
+
+if ! `$dir/scripts/check_fd.sh`; then
+  exit
+fi
+
+manager_ip=`cat /mnt/fd/manager_ip`
+/opt/condor/bin/condor_status | awk /^C/ | awk -F. '{print $1}' > /tmp/cndor
+
+echo $manager_ip >> /tmp/cndor
 echo "Starting new session" >> /usr/local/ipop/var/ping.log
 date >> /usr/local/ipop/var/ping.log
 for node in `cat /tmp/cndor`; do

@@ -25,28 +25,50 @@ if [[ $System = "linux" || $System = "xen0" ]]; then
   iptables -A INPUT -p tcp -i eth0 --sport 53 -j ACCEPT
 
   # Allows IPRouter DHCP traffic
-  iptables -A OUTPUT -p tcp -o eth0 --dport 9203 -j ACCEPT
-  iptables -A INPUT -p tcp -i eth0 --sport 9203 -j ACCEPT
+  #iptables -A OUTPUT -p tcp -o eth0 --dport 9203 -j ACCEPT
+  #iptables -A INPUT -p tcp -i eth0 --sport 9203 -j ACCEPT
 
   # Allows access to DHCP
   iptables -A OUTPUT -o eth0 -p udp --sport 68 --dport 67 -j ACCEPT
   iptables -A INPUT -i eth0 -p udp --sport 67 --dport 68 -j ACCEPT
 
   # Allows ping traffic
-  iptables -A OUTPUT -p icmp -j ACCEPT
-  iptables -A INPUT -p icmp -j ACCEPT
+  #iptables -A OUTPUT -p icmp -j ACCEPT
+  #iptables -A INPUT -p icmp -j ACCEPT
+
+  pid=`$dir/scripts/get_pid.sh IPRouter`
+  if [[ $pid = "" ]]; then
+    iptables -F
+    exit
+  fi
+
+  port=`$dir/scripts/get_port.sh $pid`
+  while [[ $port = '' ]]; do
+    sleep 5
+    echo "Waiting on IPOP"
+    pid=`$dir/scripts/get_pid.sh IPRouter`
+    if [[ $pid = "" ]]; then
+      iptables -F
+      exit
+    fi
+    port=`$dir/scripts/get_port.sh $pid`
+  done
+  iptables -I OUTPUT -p udp -o eth0 --sport $port -j ACCEPT
+  iptables -I INPUT -p udp -i eth0 --dport $port -j ACCEPT
+
+  pid=`$dir/scripts/get_pid.sh DhtIf`
+  port=''
+  if [[ $pid != '' ]]; then
+    port=`$dir/scripts/get_port.sh $pid`
+  fi
+  if [[ $port != '' ]]; then
+    iptables -I OUTPUT -p udp -o eth0 --sport $port -j ACCEPT
+    iptables -I INPUT -p udp -i eth0 --dport $port -j ACCEPT
+  fi
 
   # Block all outgoing trafiic except above
   iptables -A OUTPUT -o eth0 -j DROP
   iptables -A INPUT -i eth0 -j DROP
-
-  port=`netstat -aup | grep iprouter | awk -F":" '{print $2}' | awk -F" " '{print $1}'`
-  while [[ $port == '' ]]; do
-    sleep 2
-    port=`netstat -aup | grep iprouter | awk -F":" '{print $2}' | awk -F" " '{print $1}'`
-  done
-  iptables -I OUTPUT -p udp -o eth0 --sport $port -j ACCEPT
-  iptables -I INPUT -p udp -i eth0 --dport $port -j ACCEPT 
 fi
 
 if [[ $System = "linux" || $System = "xenU" ]]; then

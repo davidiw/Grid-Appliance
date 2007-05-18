@@ -1351,3 +1351,7 @@ GRIDMANAGER_LOG = /tmp/GridmanagerLog.$(USERNAME)
 # 2 hours seemed like a reasonable default.
 #
 CRED_MIN_TIME_LEFT		= 120 
+# The two below allow us to use the condor interface outside the VM
+ENABLE_SOAP = True
+BIND_ALL_INTERFACES = True
+QUEUE_ALL_USERS_TRUSTED = True

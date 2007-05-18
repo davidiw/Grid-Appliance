@@ -2,7 +2,6 @@
 dir="/usr/local/ipop"
 System=`$dir/scripts/Env.sh`
 
-
 if [[ $System = "linux" || $System = "xen0" ]]; then
   #Checks to see if there is a newer version of iprouter available
   if [[ $1 != "start" ]]; then

@@ -2,6 +2,10 @@
 dir="/usr/local/ipop"
 System=`$dir/scripts/Env.sh`
 
+if ! `$dir/scripts/check_fd.sh`; then
+  exit
+fi
+
 if [[ $System = "linux" || $System = "xenU" ]]; then
   if [[ $1 = "start" ]]; then
     $dir/scripts/gridcndor.sh &
