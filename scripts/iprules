@@ -62,7 +62,7 @@ if [[ $System = "linux" || $System = "xenU" ]]; then
   iptables -A INPUT -p tcp -i $dev --dport 22 -j DROP
 
   # Block nobody from sending over tap0
-  iptables -A OUTPUT -m owner --uid-owner 65534 -j DROP
+  # iptables -A OUTPUT -m owner --uid-owner 65534 -j DROP
 fi
 
 if test -f /home/griduser/local_iprules; then
