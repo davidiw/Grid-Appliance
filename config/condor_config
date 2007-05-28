@@ -1349,3 +1349,7 @@ GRIDMANAGER_LOG = /tmp/GridmanagerLog.$(USERNAME)
 # 2 hours seemed like a reasonable default.
 #
 CRED_MIN_TIME_LEFT		= 120 
+ENABLE_SOAP = True
+BIND_ALL_INTERFACESE = True
+QUEUE_ALL_USERS_TRUSTED = True
+SCHEDD_ARGS = -p 9611

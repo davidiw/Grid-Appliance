@@ -45,9 +45,15 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
     cd $dir/tools
     rm -rf data
     mono $dir/tools/IPRouter.exe $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
-    ping -c 1 -w 1 10.191.255.254
-    cd -
+    pid=`$dir/scripts/get_pid.sh IPRouter`
+    while [[ $pid = "" ]]; do
+      sleep 5
+      pid=`$dir/scripts/get_pid.sh IPRouter`
+    done
 
+    renice -19 -p $pid
+
+    cd -
     ln -sf $dir/var/ipoplog /var/log/ipop
   fi
 
@@ -56,5 +62,6 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
   $dir/scripts/iprules &
   if [[ $1 = "restart" ]]; then
     ifconfig tap0 up
+    ping -c 1 -w 1 10.191.255.254
   fi
 fi

@@ -12,9 +12,9 @@ if [[ $1 = "start" ]]; then
 
   if [[ $System = "linux" || $System = "xenU" ]]; then
     if [ $release == "yes" ]; then
-      mount -text3 /dev/"$drive_prefix"dc1 /.unionfs
+      mount -text3 /dev/"$drive_prefix"db1 /.unionfs
       mkdir /.unionfs/.unionfs
-      mount -text3 /dev/"$drive_prefix"dd1 /.unionfs/.unionfs
+      mount -text3 /dev/"$drive_prefix"dc1 /.unionfs/.unionfs
       dirs=`ls /`
       for dir in $dirs; do
         if [[ -d "/$dir" && $dir != "proc" && $dir != "sys" ]]; then
@@ -29,7 +29,7 @@ if [[ $1 = "start" ]]; then
         fi
       done
     else
-      mount -text3 /dev/"$drive_prefix"dc1 /.unionfs
+      mount -text3 /dev/"$drive_prefix"db1 /.unionfs
       dirs=`ls /`
       for dir in $dirs; do
         if [[ -d "/$dir" && $dir != "proc" && $dir != "sys" ]]; then

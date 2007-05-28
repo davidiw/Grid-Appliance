@@ -33,7 +33,7 @@ while [[ $ns_correct = "no" ]]; do
     echo "value=<IPOPNamespace><value>"$ipop_ns"</value><netmask>255.192.0.0</netmask><pool><lower>10.128.0.0</lower><upper>10.191.255.255</upper></pool><reserved><value><DHCPReservedIP><ip>0.0.0.1</ip><mask>0.0.0.255</mask></DHCPReservedIP></value></reserved><leasetime>604800</leasetime><LogSize>20480</LogSize></IPOPNamespace>" >> $dir/var/dhtdata.conf
     echo "Waiting on creation process"
     cd $dir/tools
-    result=`mono $dir/tools/DhtIf.exe $dir/var/dhtif.conf $dir/var/dhtdata.conf one_run 2> /dev/null`
+    result=`mono $dir/tools/SimpleNode.exe -c $dir/var/dhtif.conf -df one_run $dir/var/dhtdata.conf 2> /dev/null`
     cd -
     if [[ $result = "Pass" ]]; then
       ns_correct=$correct
