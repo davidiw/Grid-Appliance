@@ -1,10 +1,10 @@
 #!/bin/bash
 
-if ! `$dir/scripts/check_fd.sh`; then
+if ! `$dir/scripts/utils.sh check_fd`; then
   exit
 fi
 
-manager_ip=`cat /mnt/fd/manager_ip`
+manager_ip=`cat $dir/etc/manager_ip`
 /opt/condor/bin/condor_status | awk /^C/ | awk -F. '{print $1}' > /tmp/cndor
 
 echo $manager_ip >> /tmp/cndor

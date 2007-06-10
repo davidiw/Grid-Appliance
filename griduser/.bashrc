@@ -5,8 +5,6 @@
 # If not running interactively, don't do anything:
 [ -z "$PS1" ] && return
 
-System=`/usr/local/ipop/scripts/Env.sh`
-
 # don't put duplicate lines in the history. See bash(1) for more options
 #export HISTCONTROL=ignoredups
 
@@ -65,6 +63,4 @@ alias disablex='touch /home/griduser/.xdisabled'
 if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
-if [[ $System = "linux" ]]; then
-  /home/griduser/startx.sh &
-fi
+/home/griduser/startx.sh &
