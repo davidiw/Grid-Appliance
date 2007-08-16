@@ -6,8 +6,14 @@ if ! `$dir/scripts/utils.sh check_fd`; then
   exit
 fi
 
+if [ "$2" ]; then
+  echo="logger -t ipop"
+else
+  echo="echo"
+fi
+
 if [[ $1 = "stop" || $1 = "restart" ]]; then
-  echo "Stopping Grid Services..."
+  $echo "Stopping Grid Services..."
   pid=`$dir/scripts/utils.sh get_pid IPRouter`
   kill -SIGINT $pid
   sleep 5
@@ -22,7 +28,7 @@ if [[ $1 = "stop" || $1 = "restart" ]]; then
 fi
 
 if [[ $1 = "start" || $1 = "restart" ]]; then
-  echo "Starting Grid Services..."
+  $echo "Starting Grid Services..."
   cd $dir/tools/
   mono $dir/tools/SimpleNode.exe -s -df /mnt/fd/dhcpdata.conf &> /dev/null &
   cd -
@@ -30,12 +36,16 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
   if [[ $1 = "start" ]]; then
     # set up tap device
     $dir/tools/tunctl -u root -t tap0 &> /dev/null
-    echo "tap configuration completed"
+    $echo "tap configuration completed"
   fi
 
   # Create config file for IPOP and start it up
   if ! test -f $dir/var/ipop.config; then
-    mono $dir/tools/MakeIPRouterConfig.exe $dir/etc/ipop.config $dir/var/ipop.config `cat /mnt/fd/ipop_ns`
+    config="$dir/var/ipop.config"
+    if test -f /mnt/fd/ipop.config; then
+      config="/mnt/fd/ipop.config"
+    fi
+    mono $dir/tools/MakeIPRouterConfig.exe $dir/etc/ipop.config $config `cat /mnt/fd/ipop_ns`
   fi
 
   cd $dir/tools
@@ -52,7 +62,7 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
   cd -
   ln -sf $dir/var/ipoplog /var/log/ipop
 
-  echo "IPOP has started"
+  $echo "IPOP has started"
   $dir/scripts/iprules &
   if [[ $1 = "restart" ]]; then
     ifconfig tap0 up

@@ -15,7 +15,7 @@ dir="/usr/local/ipop"
 
 # Flush all existing rules 
 iptables -F
-
+exit
 # Allows incoming and outgoing traffic on UDP port 53 for DNS
 iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
 iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT

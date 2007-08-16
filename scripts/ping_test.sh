@@ -1,11 +1,11 @@
 #!/bin/bash
-
+dir="/usr/local/ipop"
 if ! `$dir/scripts/utils.sh check_fd`; then
   exit
 fi
 
-manager_ip=`cat $dir/etc/manager_ip`
-/opt/condor/bin/condor_status | awk /^C/ | awk -F. '{print $1}' > /tmp/cndor
+manager_ip=`cat $dir/etc/condor_manager`
+/opt/condor/bin/condor_status | awk /^C/ | awk -F. '{print $1}' | awk -F" " '{print $1}' > /tmp/cndor
 
 echo $manager_ip >> /tmp/cndor
 echo "Starting new session" >> /usr/local/ipop/var/ping.log
