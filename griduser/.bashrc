@@ -63,4 +63,3 @@ alias disablex='touch /home/griduser/.xdisabled'
 if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
-/home/griduser/startx.sh &

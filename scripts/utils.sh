@@ -8,7 +8,11 @@ check_fd()
 
 check_release()
 {
-  cat /proc/1/environ | tr "\0" ":" | awk -F"release=" '{print $2}' | awk -F":" '{print $1}'
+  if [[ `cat /proc/1/environ | grep "release=yes"` != '' ]]; then
+    echo "yes"
+  else
+    echo "no"
+  fi
 }
 
 geo_loc()
@@ -22,7 +26,7 @@ geo_loc()
 
 get_ip()
 {
-  ifconfig $1 | awk -F"inet addr:" '{print $2}' | awk -F" " '{print $1}'
+  /sbin/ifconfig $1 | awk -F"inet addr:" '{print $2}' | awk -F" " '{print $1}'
 }
 
 get_pid()

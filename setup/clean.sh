@@ -20,7 +20,3 @@ rm -f /usr/local/ipop/var/* \
 /var/lib/apt/* \
 /var/lib/apt/*/*
 
-
-echo "Reset griduser password to password" 
-passwd griduser 
-passwd -e griduser 

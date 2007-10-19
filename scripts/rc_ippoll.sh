@@ -6,11 +6,10 @@ if ! `$dir/scripts/utils.sh check_fd`; then
 fi
 
 if [[ $1 = "start" ]]; then
-  $dir/scripts/gridcndor.sh &
+  $dir/scripts/ippoll.sh &
 elif [[ $1 = "stop" ]]; then
-  pkill -KILL gridcndor.sh
-  pkill -KILL condor
+  pkill -KILL ippoll.sh
 elif [[ $1 = "restart" ]]; then 
-  /etc/init.d/rc_cndor.sh stop
-  /etc/init.d/rc_cndor.sh start
+  /etc/init.d/rc_ippoll.sh stop
+  /etc/init.d/rc_ippoll.sh start
 fi

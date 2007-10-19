@@ -1,10 +1,12 @@
 #!/bin/bash
+#broken for now
+exit
 dir="/usr/local/ipop"
 if ! `$dir/scripts/utils.sh check_fd`; then
   exit
 fi
 
-manager_ip=`cat $dir/etc/condor_manager`
+manager_ip=`cat /mnt/fd/condor_manager`
 /opt/condor/bin/condor_status | awk /^C/ | awk -F. '{print $1}' | awk -F" " '{print $1}' > /tmp/cndor
 
 echo $manager_ip >> /tmp/cndor

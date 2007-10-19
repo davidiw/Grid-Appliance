@@ -3,6 +3,8 @@
 #Expect major changes to this script as the system evolves!
 
 dir="/usr/local/ipop"
+exit
+#broken for now...
 release=`$dir/scripts/utils.sh check_release`
 
 if `$dir/scripts/utils.sh check_fd`; then
@@ -26,14 +28,14 @@ while [[ $ns_correct = "no" ]]; do
     read -e correct
   done
   if [[ $correct = "yes" ]]; then
-    config="$dir/var/ipop.config"
+    config="$dir/etc/ipop.config"
     if test -f /mnt/fd/ipop.config; then
       config="/mnt/fd/ipop.config"
     fi
     cp -af $config $dir/var/dhtif.conf
     echo "key=dhcp:ipop_namespace:"$ipop_ns > $dir/var/dhcpdata.conf
     echo "ttl=302400" >> $dir/var/dhcpdata.conf
-    echo "value=<IPOPNamespace><value>"$ipop_ns"</value><netmask>255.192.0.0</netmask><pool><lower>10.128.0.0</lower><upper>10.191.255.255</upper></pool><reserved><value><DHCPReservedIP><ip>0.0.0.1</ip><mask>0.0.0.255</mask></DHCPReservedIP></value></reserved><leasetime>7200</leasetime><LogSize>20480</LogSize></IPOPNamespace>" >> $dir/var/dhcpdata.conf
+    echo "value=<IPOPNamespace><value>"$ipop_ns"</value><netmask>255.192.0.0</netmask><pool><lower>10.128.0.0</lower><upper>10.191.255.255</upper></pool><reserved><value><DHCPReservedIP><ip>0.0.0.1</ip><mask>0.0.0.255</mask></DHCPReservedIP></value></reserved><leasetime>7200</leasetime><LogSize>"$RANDOM"</LogSize></IPOPNamespace>" >> $dir/var/dhcpdata.conf
     echo "Waiting on creation process"
     cd $dir/tools
     result=`mono $dir/tools/SimpleNode.exe -c $dir/var/dhtif.conf -df one_run $dir/var/dhcpdata.conf 2> /dev/null`

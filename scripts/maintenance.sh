@@ -1,4 +1,6 @@
 #!/bin/bash
+#broken for now
+exit
 dir="/usr/local/ipop"
 
 backoff=1
@@ -20,7 +22,6 @@ init()
   done
   sleep $[$basetime*$backoff]
   backoff=$[2*$backoff]
-  echo $backoff
   if [[ $backoff > $backoffmax ]]; then
     backoff=$backoffmax;
   fi
@@ -29,7 +30,7 @@ init()
 test_manager()
 {
   restart=false
-  manager_ip=`cat $dir/etc/condor_manager`
+  manager_ip=`cat $dir/var/condor_manager`
   if [[ `$dir/scripts/utils.sh get_pid IPRouter` = '' ]]; then
     restart=true
   elif [[ 0 = `$dir/scripts/utils.sh ping_test $manager_ip 24` ]]; then
@@ -37,8 +38,8 @@ test_manager()
   fi
 
   if [[ $restart == "true" ]]; then
-    logger -t maintenance "Unable to contact manager, restarting ipop..."
-    $dir/scripts/ipop.sh restart quiet
+    logger -t maintenance "Unable to contact manager, restarting Condor..."
+    $dir/scripts/gridcndor.sh restart
     init
     test_manager
   fi

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 dir="/usr/local/ipop"
 
 if ! `$dir/scripts/utils.sh check_fd`; then
@@ -40,12 +39,19 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
   fi
 
   # Create config file for IPOP and start it up
-  if ! test -f $dir/var/ipop.config; then
-    config="$dir/var/ipop.config"
-    if test -f /mnt/fd/ipop.config; then
-      config="/mnt/fd/ipop.config"
+  if test -f $dir/var/ipop_ns; then
+    if [[ `cat $dir/var/ipop_ns` = /mnt/fd/ipop_ns ]]; then
+      new_config=0
+    else
+      new_config=1
     fi
-    mono $dir/tools/MakeIPRouterConfig.exe $dir/etc/ipop.config $config `cat /mnt/fd/ipop_ns`
+  else
+    new_config=1
+  fi
+
+  if [[ $new_config = 1 ]]; then
+    cp /mnt/fd/ipop_ns $dir/var/ipop_ns
+    mono $dir/tools/MakeIPRouterConfig.exe $dir/etc/ipop.config /mnt/fd/ipop.config `cat /mnt/fd/ipop_ns`
   fi
 
   cd $dir/tools
