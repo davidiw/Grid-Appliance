@@ -1,5 +1,6 @@
 #!/bin/bash
-
+dir="/usr/local/ipop"
+ip=`$dir/scripts/utils.sh get_ip tap0`
 hostname="C"
 for (( i = 2; i < 5; i++ )); do
   temp=`echo $ip | awk -F"." '{print $'$i'}' | awk -F"." '{print $1}'`

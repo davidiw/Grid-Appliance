@@ -11,13 +11,13 @@ else
   echo="echo"
 fi
 
-if [[ $1 = "stop" || $1 = "restart" ]]; then
+if [[ $1 == "stop" || $1 == "restart" ]]; then
   $echo "Stopping Grid Services..."
   pid=`$dir/scripts/utils.sh get_pid IPRouter`
   kill -SIGINT $pid
   sleep 5
   kill -KILL $pid
-  if [[ $1 = "stop" ]]; then
+  if [[ $1 == "stop" ]]; then
     ifdown tap0
     $dir/tools/tunctl -d tap0
   fi
@@ -26,13 +26,13 @@ if [[ $1 = "stop" || $1 = "restart" ]]; then
   kill -KILL $pid
 fi
 
-if [[ $1 = "start" || $1 = "restart" ]]; then
+if [[ $1 == "start" || $1 == "restart" ]]; then
   $echo "Starting Grid Services..."
   cd $dir/tools/
   mono $dir/tools/SimpleNode.exe -s -df /mnt/fd/dhcpdata.conf &> /dev/null &
   cd -
 
-  if [[ $1 = "start" ]]; then
+  if [[ $1 == "start" ]]; then
     # set up tap device
     $dir/tools/tunctl -u root -t tap0 &> /dev/null
     $echo "tap configuration completed"
@@ -40,7 +40,7 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
 
   # Create config file for IPOP and start it up
   if test -f $dir/var/ipop_ns; then
-    if [[ `cat $dir/var/ipop_ns` = /mnt/fd/ipop_ns ]]; then
+    if [[ `cat $dir/var/ipop_ns` != /mnt/fd/ipop_ns ]]; then
       new_config=0
     else
       new_config=1
@@ -49,9 +49,10 @@ if [[ $1 = "start" || $1 = "restart" ]]; then
     new_config=1
   fi
 
-  if [[ $new_config = 1 ]]; then
+  if [[ $new_config == 1 ]]; then
+    $echo "Generating new IPOP configuration"
     cp /mnt/fd/ipop_ns $dir/var/ipop_ns
-    mono $dir/tools/MakeIPRouterConfig.exe $dir/etc/ipop.config /mnt/fd/ipop.config `cat /mnt/fd/ipop_ns`
+    mono $dir/tools/MakeIPRouterConfig.exe /mnt/fd/ipop.config $dir/var/ipop.config `cat /mnt/fd/ipop_ns`
   fi
 
   cd $dir/tools

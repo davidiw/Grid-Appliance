@@ -24,8 +24,8 @@ class DNSRequestHandler (DatagramRequestHandler):
         bad = 0
 
     if bad == 0:
-      if(self.ip[0] == 10 and self.ip[1] > 127 and self.ip[1] < 256 and \
-        self.ip[2] < 256 and self.ip[3] < 255 and self.ip [3] > 0):
+      if(self.ip[0] == 242): #10 and self.ip[1] > 127 and self.ip[1] < 256 and \
+        #self.ip[2] < 256 and self.ip[3] < 255 and self.ip [3] > 0):
         if self.qtype == 12:
           self.add_answer_ptr()
         else:
@@ -62,7 +62,7 @@ class DNSRequestHandler (DatagramRequestHandler):
       if self.data[14:23].tostring().isdigit():
 #Even with this here, every now and then we somehow get something that is not a digit!
         try:
-          self.ip = [10, int(self.data[14:17].tostring()), \
+          self.ip = [242, int(self.data[14:17].tostring()), \
             int(self.data[17:20].tostring()), \
             int(self.data[20:23].tostring())]
           return True

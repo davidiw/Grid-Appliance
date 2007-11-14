@@ -8,7 +8,7 @@ check_fd()
 
 check_release()
 {
-  if [[ `cat /proc/1/environ | grep "release=yes"` != '' ]]; then
+  if [[ `cat /proc/1/environ | grep "release=yes"` != "" ]]; then
     echo "yes"
   else
     echo "no"

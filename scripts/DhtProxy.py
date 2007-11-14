@@ -4,8 +4,8 @@ from datetime import timedelta, datetime
 
 # input parameters
 port=103182 #sys.argv[1]
-dhtip=64221 #sys.argv[2]
-dhtport="127.0.0.1" #sys.argv[3]
+dhtport="64221" #sys.argv[2]
+dhtip="127.0.0.1" #sys.argv[3]
 # contains a tuple of next update, key, value, ttl
 values = []
 # dictionary of the keys for fast access
@@ -34,11 +34,16 @@ def input_handler():
 class output_handler:
   def __call__(self):
     data_change.wait()
+    data_change.clear()
 
     while True:
       if len(values) == 0:
         data_change.wait()
+        data_change.clear()
         continue
+      t = timedelta_to_seconds(values[0][0][0] - datetime.now()) + 1
+      data_change.wait(t)
+      data_change.clear()
       values_lock.acquire(1)
       lcount = 0
       for lvalues in values:
@@ -79,6 +84,8 @@ def append_on_values(new_link):
 
 # sorts the values first by individual key ttls, then by the shortest overall
 def sort_values():
+  if len(values) == 0:
+    return False
   val = values[0][0][0]
   for lvalues in values:
     lvalues.sort(cmp=lambda x, y: cmp(x[0], y[0]))
@@ -88,6 +95,9 @@ def sort_values():
 class DhtProxy:
   #attempt action once, if success return true and add it to the dictionary
   def register(self, action, key, value, ttl):
+    key = str(key)
+    value = str(value)
+    ttl = int(ttl)
     if action == "put":
       res = dhtserver.Put(key, value, ttl)
     elif action == "create":
@@ -100,7 +110,7 @@ class DhtProxy:
       append_on_values((datetime.now() + timedelta(seconds = ttl / 2) , key, value, ttl))
       nchange = sort_values()
       values_lock.release()
-      if not nchange:
+      if not nchange or len(values) == 1:
         data_change.set()
     return res
 
@@ -111,13 +121,20 @@ class DhtProxy:
     values_lock.acquire(1)
     if key in values_p:
       for index in range(len(values_p[key])):
-        if values_p[key][index][3] == key:
-          del values_p[key][index]
+        if values_p[key][index][2] == value:
+          if len(values_p[key]) == 1:
+            for idx in range(len(values)):
+              if values[idx][0][1] == key: 
+                del values[idx]
+                del values_p[key]
+                break
+          else:
+            del values_p[key][index]
           found = True
           break
     nchange = sort_values()
     values_lock.release()
-    if nchange:
+    if not nchange:
       data_change.set()
     return found
 

@@ -4,21 +4,26 @@ dir="/usr/local/ipop"
 if [[ $1 = "start" ]]; then
   ipop_ns=`cat /mnt/fd/ipop_ns`
   cp $dir/etc/condor_config /etc/condor/condor_config
-  # Get a random servers IP address
-  server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
-  flock=`$dir/scripts/DhtHelper.py get flock $ipop_ns`
   #  We bind to all interfaces for condor interface to work
-  ip=`$dir/scripts/util.sh get_ip tap0`
+  ip=`$dir/scripts/utils.sh get_ip tap0`
   echo "NETWORK_INTERFACE = "$ip >> /etc/condor/condor_config
   $dir/scripts/sscndor.sh
 
   type=`cat /mnt/fd/type`
   if [ $type = "Server" ]; then
-    DAEMONS="MASTER, COLLECTOR, NEGOTIATOR"
     $dir/scripts/DhtHelper.py unregister $ipop_ns:condor:server $oldip 1200
     $dir/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 1200
-    # Override the server with us, otherwise it won't work!!!
     server=$ip
+  else
+    server=""
+    while [[ $server == "" ]]; do
+      server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
+    done
+  fi
+  flock=`$dir/scripts/DhtHelper.py get flock $ipop_ns`
+
+  if [ $type = "Server" ]; then
+    DAEMONS="MASTER, COLLECTOR, NEGOTIATOR"
   elif [ $type = "Submit" ]; then
     DAEMONS="MASTER, SCHEDD"
   elif [ $type = "Worker" ]; then

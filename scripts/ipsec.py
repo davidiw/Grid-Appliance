@@ -3,18 +3,24 @@ from os import system
 import sys, time, xmlrpclib
 
 ip=sys.argv[1]
-oldip=sys.argv[2]
-system("cp /mnt/fd/cacert.pem /etc/racoon/.")
+try:
+  oldip=sys.argv[2]
+except:
+  oldip="poo"
 
 if ip != oldip:
   rdir="/etc/racoon/certs"
+  # Prepare ca key
+  system("cp -f /mnt/fd/cacert.pem " + rdir + "/.")
+  system("ln -sf " + rdir + "/cacert.pem " + rdir + "/`openssl x509 -noout -hash -in " + rdir + "/cacert.pem`.0")
 
   # Generate key
-  system("openssl req -new -config /mnt/fd/openssl_user.conf -out " + rdir + "/newreq.pem")
-  system("openssl rsa -passin pass:mypass -in " + dir + "/newkey.pem -out " + rdir + "/host-key.pem")
+  system("openssl req -new -config /mnt/fd/user_config -keyout " + rdir + "/newkey.pem -out " + rdir + "/newreq.pem")
+  system("openssl rsa -passin pass:mypass -in " + rdir + "/newkey.pem -out " + rdir + "/host-key.pem")
+  system("rm -f ./newkey.pem")
 
   #read request
-  f = open(dir + "/newreq.pem", "rb")
+  f = open(rdir + "/newreq.pem", "rb")
   key = f.read()
   f.close()
 
@@ -43,7 +49,7 @@ if ip != oldip:
     time.sleep(300)
 
   #write cert
-  f = open(rdir + "/etc/racoon/host-cert.pem", "wb+")
+  f = open(rdir + "/host-cert.pem", "wb+")
   f.write(cert)
   f.close()
 

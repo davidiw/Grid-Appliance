@@ -1,6 +1,5 @@
 #!/bin/bash
 #watch for new IPs and restart programs / scripts if necessary
-
 dir="/usr/local/ipop"
 
 ip=''
@@ -21,8 +20,9 @@ while true; do
   if [[ $ip == $oldip ]]; then 
     sleep 600
   else
-    $dir/scripts/gridcndor.sh restart
+    echo $ip > $dir/var/oldip
     $dir/scripts/hostname.sh
+    $dir/scripts/gridcndor.sh restart
     if test -f /mnt/fd/ipsec_server; then
       $dir/scripts/ipsec.py $ip $oldip
     fi

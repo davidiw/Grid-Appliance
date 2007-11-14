@@ -6,7 +6,6 @@ release=`$dir/scripts/utils.sh check_release`
 fs="aufs"
 
 if [ $fs == "aufs" ]; then
-  insmod /lib/modules/`uname -r`/misc/aufs.ko
   if [ $release == "yes" ]; then
     tmp="/.unionfs/.unionfs/.tmp"
   else

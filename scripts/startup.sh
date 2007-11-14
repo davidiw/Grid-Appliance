@@ -28,6 +28,7 @@ fi
 /usr/sbin/sshd -f /root/.ssh/sshd_config
 
 python $dir/scripts/dns.py &
+$dir/scripts/ippoll.sh &> /var/log/ippoll.log &
 
 if [[ $VMM = "vmware" ]]; then
   ln -sf $dir/etc/xorg.conf.vmware /etc/X11/xorg.conf
@@ -35,9 +36,11 @@ else
   ln -sf $dir/etc/xorg.conf.vesa /etc/X11/xorg.conf
 fi
 
-rm /home/griduser/.xison &> /dev/null
-cd /home/griduser
-su griduser /home/griduser/startx.sh &
-cd -
+if [[ `cat /mnt/fd/type` == "Client" ]]; then
+  rm /home/griduser/.xison &> /dev/null
+  cd /home/griduser
+  su griduser /home/griduser/startx.sh &
+  cd -
+fi
 
 clear
