@@ -28,9 +28,6 @@ fi
 
 if [[ $1 == "start" || $1 == "restart" ]]; then
   $echo "Starting Grid Services..."
-  cd $dir/tools/
-  mono $dir/tools/SimpleNode.exe -s -df /mnt/fd/dhcpdata.conf &> /dev/null &
-  cd -
 
   if [[ $1 == "start" ]]; then
     # set up tap device
@@ -57,7 +54,7 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
 
   cd $dir/tools
   rm -rf data
-  mono $dir/tools/IPRouter.exe $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
+  mono IPRouter.exe $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
   pid=`$dir/scripts/utils.sh get_pid IPRouter`
   while [[ $pid = "" ]]; do
     sleep 5

@@ -15,6 +15,7 @@ swapon $file
 
 $dir/scripts/maintenance.sh start &
 $dir/scripts/DhtProxy.py &
+$dir/scripts/DhtHelper register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
 
 #IP Server
 if [[ $1 = "start" ]]; then

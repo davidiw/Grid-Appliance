@@ -37,11 +37,16 @@ def get(key):
       for entry in res:
         rv += entry["valueString"] + ", "
       rv = rv[:-2]
+  else:
+    try:
+      rv = dhtserver.Get(key)[0]
+    except:
+      rv = ""
   print rv
 
 def register(key, value, ttl):
   proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
-  proxy.register("put", key, value, ttl)
+  proxy.register("put", key, value, ttl, True)
 
 
 def unregister(key, value):

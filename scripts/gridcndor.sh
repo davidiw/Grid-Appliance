@@ -1,10 +1,11 @@
 #!/bin/bash
 dir="/usr/local/ipop"
 
-if [[ $1 = "start" ]]; then
+configure_condor()
+{
   ipop_ns=`cat /mnt/fd/ipop_ns`
   cp $dir/etc/condor_config /etc/condor/condor_config
-  #  We bind to all interfaces for condor interface to work
+#  We bind to all interfaces for condor interface to work
   ip=`$dir/scripts/utils.sh get_ip tap0`
   echo "NETWORK_INTERFACE = "$ip >> /etc/condor/condor_config
   $dir/scripts/sscndor.sh
@@ -15,8 +16,9 @@ if [[ $1 = "start" ]]; then
     $dir/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 1200
     server=$ip
   else
-    server=""
-    while [[ $server == "" ]]; do
+    server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
+    while [ -z "$server" ]; do
+      sleep 15
       server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
     done
   fi
@@ -35,15 +37,25 @@ if [[ $1 = "start" ]]; then
   echo "DAEMON_LIST = "$DAEMONS >> /etc/condor/condor_config
   echo "CONDOR_HOST = "$server >> /etc/condor/condor_config
   echo $server > $dir/var/condor_manager
+  if [ -n "$flock" ]; then
+    echo "FLOCK_TO = "$flock
+  fi
+}
+
+if [[ $1 = "start" ]]; then
+  configure_condor
 
   rm -f /opt/condor/var/log/* /opt/condor/var/log/*
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
   # of physical memory, that means a swap disk is necessary!
   ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
   /opt/condor/sbin/condor_master
-elif [[ $1 = "restart" ]]; then
+elif [ $1 = "restart" ]; then
   $dir/scripts/gridcndor.sh stop
   $dir/scripts/gridcndor.sh start
-elif [[ $1 = "stop" ]]; then
+elif [ $1 = "stop" ]; then
   pkill -KILL condor
+elif [ $1 = "reconfig" ]; then
+  configure_condor
+  /opt/condor/sbin/condor_reconfig
 fi

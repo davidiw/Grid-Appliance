@@ -93,15 +93,17 @@ def sort_values():
   return val == values[0][0][0]
 
 class DhtProxy:
-  #attempt action once, if success return true and add it to the dictionary
-  def register(self, action, key, value, ttl):
+  #Register if action succeeds or i register_if_fail is true
+  def register(self, action, key, value, ttl, register_if_fail):
     key = str(key)
     value = str(value)
     ttl = int(ttl)
+    register_if_fail = bool(register_if_fail)
+
     if action == "put":
-      res = dhtserver.Put(key, value, ttl)
+      res = dhtserver.Put(key, value, ttl) or register_if_fail
     elif action == "create":
-      res = dhtserver.Create(key, value, ttl)
+      res = dhtserver.Create(key, value, ttl) or register_if_fail
     else:
       res = False
 
@@ -113,6 +115,10 @@ class DhtProxy:
       if not nchange or len(values) == 1:
         data_change.set()
     return res
+
+  #attempt action once, if success return true and add it to the dictionary
+  def register(self, action, key, value, ttl):
+    return register(action, key, value, ttl, False)
 
   #remove from the registered values
   def unregister(self, key, value):
