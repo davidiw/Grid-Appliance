@@ -38,7 +38,7 @@ configure_condor()
   echo "CONDOR_HOST = "$server >> /etc/condor/condor_config
   echo $server > $dir/var/condor_manager
   if [ -n "$flock" ]; then
-    echo "FLOCK_TO = "$flock
+    echo "FLOCK_TO = "$flock > /etc/condor/condor_config
   fi
 }
 

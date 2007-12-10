@@ -1,5 +1,11 @@
+# A simple dns server... if using resolvconf make sure to enable more than 127.0.0.1 servers!
+# Also if you're going to use `host` app use -T option to contact tcp servers as they only 
+# check the first response :(
+
 from SocketServer import UDPServer, ThreadingUDPServer, DatagramRequestHandler
 import array, string, socket
+
+first_byte = 242
 
 class DNSServer(ThreadingUDPServer):
   def __init__(self):
@@ -16,24 +22,24 @@ class DNSRequestHandler (DatagramRequestHandler):
     self.qtype = (int(self.data[current+1]) << 8) + int(self.data[current+2])
 
   def handle(self):
-    bad = 1
+    good = True
     if self.check_header() == 1:
       if self.check_name_node():
-        bad = 0
+        pass
       elif self.check_name_arpa():
-        bad = 0
-
-    if bad == 0:
-      if(self.ip[0] == 242): #10 and self.ip[1] > 127 and self.ip[1] < 256 and \
-        #self.ip[2] < 256 and self.ip[3] < 255 and self.ip [3] > 0):
-        if self.qtype == 12:
-          self.add_answer_ptr()
-        else:
-          self.add_answer_host()
+        pass
       else:
-        bad = 1
+        good = False
 
-    if bad == 1:
+    if good and self.check_ip():
+      if self.qtype == 12:
+        self.add_answer_ptr()
+      else:
+        self.add_answer_host()
+    else:
+      good = False 
+
+    if not good:
     #reject request since we don't handle these types
       self.data[3] = self.data[3] | 5
 
@@ -55,19 +61,15 @@ class DNSRequestHandler (DatagramRequestHandler):
       return True
     return False
 
+#starts with a c or a C and is 9 more characters
   def check_name_node(self):
-    #starts with a c or a C and is 9 more characters
     test_char = chr(self.data[13])
-    if ((test_char == 'c') or (test_char == 'C')) and self.data[12] == 10:
-      if self.data[14:23].tostring().isdigit():
-#Even with this here, every now and then we somehow get something that is not a digit!
-        try:
-          self.ip = [242, int(self.data[14:17].tostring()), \
-            int(self.data[17:20].tostring()), \
-            int(self.data[20:23].tostring())]
-          return True
-        except:
-          return False
+    if (self.data[12] == 10) and ((test_char == 'c') or (test_char == 'C')) \
+      and self.data[14:23].tostring().isdigit():
+      self.ip = [first_byte, int(self.data[14:17].tostring()), \
+        int(self.data[17:20].tostring()), \
+        int(self.data[20:23].tostring())]
+      return True
     return False
 
   def check_name_arpa(self):
@@ -83,13 +85,25 @@ class DNSRequestHandler (DatagramRequestHandler):
 
     if len(parsed_data) > 5:
       for i in range(4):
-        if(parsed_data[i].isdigit == False):
+        if(parsed_data[i].isdigit() == False):
           break;
         else:
           self.ip[(i-3)*-1] = int(parsed_data[i])
         if (i == 3):
           return True
     return False
+
+  def check_ip(self):
+    rv = True
+    if self.ip[0] != first_byte:
+      rv = False
+    elif self.ip[1] < 0 and self.ip[1] > 255:
+      rv = False
+    elif self.ip[2] < 0 and self.ip[2] > 255:
+      rv = False
+    elif self.ip[3] <= 0 and self.ip[3] > 254:
+      rv = False
+    return rv
 
   def add_answer_host(self):
     #We now have an answer
