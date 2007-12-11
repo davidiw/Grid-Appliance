@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # A simple dns server... if using resolvconf make sure to enable more than 127.0.0.1 servers!
 # Also if you're going to use `host` app use -T option to contact tcp servers as they only 
 # check the first response :(
@@ -73,7 +74,7 @@ class DNSRequestHandler (DatagramRequestHandler):
     return False
 
   def check_name_arpa(self):
-    bad = 1
+    good = False
     current = 12
     parsed_data = []
     while self.data[current] != 0:
@@ -84,14 +85,13 @@ class DNSRequestHandler (DatagramRequestHandler):
       current += self.data[current] + 1
 
     if len(parsed_data) > 5:
+      good = True
       for i in range(4):
-        if(parsed_data[i].isdigit() == False):
-          break;
-        else:
+        if parsed_data[i].isdigit():
           self.ip[(i-3)*-1] = int(parsed_data[i])
-        if (i == 3):
-          return True
-    return False
+        else:
+          good = False
+    return good
 
   def check_ip(self):
     rv = True
