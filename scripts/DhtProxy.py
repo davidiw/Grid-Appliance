@@ -19,6 +19,7 @@ values_lock = threading.Lock()
 
 def main():
   output_thread = threading.Thread(target=output_handler())
+  output_thread.setDaemon(True)
   output_thread.start()
   input_handler()
 
@@ -94,7 +95,7 @@ def sort_values():
 
 class DhtProxy:
   #Register if action succeeds or i register_if_fail is true
-  def register(self, action, key, value, ttl, register_if_fail):
+  def rif_register(self, action, key, value, ttl, register_if_fail):
     key = str(key)
     value = str(value)
     ttl = int(ttl)
@@ -118,7 +119,7 @@ class DhtProxy:
 
   #attempt action once, if success return true and add it to the dictionary
   def register(self, action, key, value, ttl):
-    return register(action, key, value, ttl, False)
+    return rif_register(self, action, key, value, ttl, False)
 
   #remove from the registered values
   def unregister(self, key, value):

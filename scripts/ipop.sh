@@ -60,8 +60,9 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
     sleep 5
     pid=`$dir/scripts/utils.sh get_pid IPRouter`
   done
-
   renice -19 -p $pid
+
+  dhclient3 -pf /var/run/dhclient.tap0.pid -lf /var/lib/dhcp3/dhclient.tap0.leases tap0
 
   cd -
   ln -sf $dir/var/ipoplog /var/log/ipop

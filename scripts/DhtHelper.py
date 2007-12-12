@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, xmlrpclib, random
+import sys, xmlrpclib, random, time, socket
 
 dhtip="127.0.0.1" #sys.argv[2]
 dhtport="64221" #sys.argv[3]
@@ -46,12 +46,18 @@ def get(key):
 
 def register(key, value, ttl):
   proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
-  proxy.register("put", key, value, ttl, True)
-
+  proxy.rif_register("put", key, value, ttl, True)
 
 def unregister(key, value):
   proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
   proxy.unregister(key, value)
 
 if __name__ == "__main__":
-  main()
+  for i in range(3):
+    try:
+      main()
+      break
+    except socket.error, detail:
+      time.sleep(2)
+      if i == 2:
+        print detail

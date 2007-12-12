@@ -15,15 +15,7 @@ swapon $file
 
 $dir/scripts/maintenance.sh start &
 $dir/scripts/DhtProxy.py &
-$dir/scripts/DhtHelper register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
-
-#IP Server
-if [[ $1 = "start" ]]; then
-  route add -net 224.0.0.0 netmask 240.0.0.0 dev eth1
-  cd $dir/tools/
-  mono $dir/tools/server.exe &> /dev/null &
-  cd -
-fi
+$dir/scripts/DhtHelper.py register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
 
 #Admin SSH
 /usr/sbin/sshd -f /root/.ssh/sshd_config
