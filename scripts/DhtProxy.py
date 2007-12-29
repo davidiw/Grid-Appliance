@@ -6,9 +6,9 @@ from datetime import timedelta, datetime
 port=103182 #sys.argv[1]
 dhtport="64221" #sys.argv[2]
 dhtip="127.0.0.1" #sys.argv[3]
-# contains a tuple of next update, key, value, ttl
+# an array containing values_p in earliest deadline first
 values = []
-# dictionary of the keys for fast access
+# dictionary ordered by keys containing arrays of tuples containing next update, key, value, ttl
 values_p = {}
 # interrupts the output handler to let him know if a new key has shortest ttl
 data_change = threading.Event()
@@ -55,7 +55,6 @@ class output_handler:
           if link[0] > datetime.now():
             break
           else:
-            link = lvalues[0]
             dhtserver.Put(link[1], link[2], link[3])
             lvalues[index] = (timedelta(seconds=link[3] / 2) + datetime.now(), link[1], link[2], link[3])
       sort_values()
@@ -75,7 +74,7 @@ def append_on_values(new_link):
     values_p[key] = []
     values.append(values_p[key])
   else:
-    for index in range(len(values_p)):
+    for index in range(len(values_p[key])):
       if new_link[2] == values_p[key][index][2]:
         values_p[key][index] = new_link
         found = True
@@ -89,7 +88,9 @@ def sort_values():
     return False
   val = values[0][0][0]
   for lvalues in values:
+    # comparison can't be 0 or it will overwrite
     lvalues.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+    # comparison can't be 0 or it will overwrite
   values.sort(cmp=lambda x, y: cmp(x[0][0], y[0][0]))
   return val == values[0][0][0]
 
@@ -119,7 +120,7 @@ class DhtProxy:
 
   #attempt action once, if success return true and add it to the dictionary
   def register(self, action, key, value, ttl):
-    return rif_register(self, action, key, value, ttl, False)
+    return self.rif_register(action, key, value, ttl, False)
 
   #remove from the registered values
   def unregister(self, key, value):
@@ -145,8 +146,14 @@ class DhtProxy:
       data_change.set()
     return found
 
-  def dump(sel):
-    return values
+  def dump(self):
+    dump_res = []
+    for key in values_p.iterkeys():
+      dump_res.append([])
+      i = len(dump_res) - 1
+      for tup in values_p[key]:
+        dump_res[i].append(((tup[0] - datetime.now()).seconds, tup[1], tup[2], tup[3]))
+    return dump_res
 
 if __name__ == "__main__":
   main()

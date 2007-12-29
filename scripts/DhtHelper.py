@@ -21,6 +21,8 @@ def main():
     key = sys.argv[2]
     value = sys.argv[3]
     unregister(key, value)
+  elif method == "dump":
+    dump()
 
 def get(key):
   dhtserver = xmlrpclib.Server("http://" + dhtip + ":" + dhtport + "/xd.rem")
@@ -39,7 +41,7 @@ def get(key):
       rv = rv[:-2]
   else:
     try:
-      rv = dhtserver.Get(key)[0]
+      rv = dhtserver.Get(key)[0]["valueString"] 
     except:
       rv = ""
   print rv
@@ -51,6 +53,10 @@ def register(key, value, ttl):
 def unregister(key, value):
   proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
   proxy.unregister(key, value)
+
+def dump():
+  proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
+  print proxy.dump()
 
 if __name__ == "__main__":
   for i in range(3):
