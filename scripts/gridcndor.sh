@@ -37,8 +37,19 @@ configure_condor()
   echo "DAEMON_LIST = "$DAEMONS >> /etc/condor/condor_config
   echo "CONDOR_HOST = "$server >> /etc/condor/condor_config
   echo $server > $dir/var/condor_manager
-  if [ -n "$flock" ]; then
+  echo "FLOCK_TO = "$flock >> /etc/condor/condor_config
+  echo $flock > /etc/condor/flock
+}
+
+update_flock()
+{
+  ipop_ns=`cat /mnt/fd/ipop_ns`
+  flock=`cat /etc/condor/flock`
+  new_flock=`$dir/scripts/DhtHelper.py get flock $ipop_ns`
+  if [[ $flock != $new_flock ]]; then
     echo "FLOCK_TO = "$flock >> /etc/condor/condor_config
+    echo $flock > /etc/condor/flock
+    /opt/condor/sbin/condor_reconfig
   fi
 }
 

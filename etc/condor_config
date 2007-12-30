@@ -47,9 +47,6 @@
 ######################################################################
 ######################################################################
 
-##  What machine is your central manager?
-#   CONDOR_HOST = 10.128.1.2 
-
 ##--------------------------------------------------------------------
 ##  Pathnames:
 ##--------------------------------------------------------------------
@@ -96,7 +93,6 @@ FILESYSTEM_DOMAIN	= $(FULL_HOSTNAME)
 #FILESYSTEM_DOMAIN	= $(FULL_HOSTNAME)
 
 ## Configure condor to use tap0 instead of loopback
-#NETWORK_INTERFACE =
 
 ######################################################################
 ######################################################################
@@ -135,9 +131,6 @@ FLOCK_FROM = C*
 ##  to flock to. (i.e. you are specifying the machines that you
 ##  want your jobs to be negotiated at -- thereby specifying the
 ##  pools they will run in.)
-#FLOCK_TO = 10.128.0.1
-##  An example of this is:
-#FLOCK_TO = central_manager.friendly.domain, condor.cs.wisc.edu
 
 ##  FLOCK_COLLECTOR_HOSTS should almost always be the same as
 ##  FLOCK_NEGOTIATOR_HOSTS (as shown below).  The only reason it would be

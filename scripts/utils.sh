@@ -26,21 +26,20 @@ geo_loc()
 
 get_ip()
 {
-  /sbin/ifconfig $1 | awk -F"inet addr:" '{print $2}' | awk -F" " '{print $1}'
+  res=`/sbin/ifconfig $1 | awk -F"inet addr:" '{print $2}' | awk -F" " '{print $1}' | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
+  echo -n $res
 }
 
 get_pid()
 {
-  value=`ps uax | grep $1 | grep -v grep | grep -v get_pid | awk -F" " {'print $2'}` 2> /dev/null
-  value=`echo $value | awk -F" " {'print $1'}`
-  echo -n $value
+  res=`ps uax | grep $1 | grep -v grep | grep -v get_pid | awk -F" " {'print $2'} | grep -oE "[0-9]+"`
+  echo -n $res
 }
 
 get_port()
 {
-  value=`netstat -aup | grep $1 | awk -F":" '{print $2}' | awk -F" " '{print $1}'`
-  value=`echo $value | awk -F" " {'print $1'}`
-  echo -n $value
+  res=`netstat -aup | grep $1 | awk -F":" '{print $2}' | grep -oE "[0-9]+"`
+  echo -n $res
 }
 
 ping_test()
@@ -62,4 +61,4 @@ vmm()
 funct=$1
 param0=$2
 param1=$3
-$funct $param0 $param1
+$funct $param0 $param1 2> /dev/null
