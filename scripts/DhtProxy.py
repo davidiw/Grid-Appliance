@@ -43,6 +43,8 @@ class output_handler:
         data_change.clear()
         continue
       t = timedelta_to_seconds(values[0][0][0] - datetime.now()) + 1
+      if(values[0][0][0] < datetime.now()):
+        t = 0
       data_change.wait(t)
       data_change.clear()
       values_lock.acquire(1)
@@ -56,7 +58,7 @@ class output_handler:
             break
           else:
             dhtserver.Put(link[1], link[2], link[3])
-            lvalues[index] = (timedelta(seconds=link[3] / 2) + datetime.now(), link[1], link[2], link[3])
+            lvalues[index] = (datetime.now() + timedelta(seconds=link[3] / 2), link[1], link[2], link[3])
       sort_values()
       values_lock.release()
 
