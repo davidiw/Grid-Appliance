@@ -14,8 +14,6 @@ mkswap $file
 swapon $file
 
 $dir/scripts/maintenance.sh start &
-$dir/scripts/DhtProxy.py &
-$dir/scripts/DhtHelper.py register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
 
 #Admin SSH
 /usr/sbin/sshd -f /root/.ssh/sshd_config

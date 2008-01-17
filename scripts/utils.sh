@@ -45,7 +45,7 @@ get_port()
 ping_test()
 {
   ping_count=1
-  ping_wait=2
+  ping_wait=5
   if [ -n "$2" ]; then
     ping_count=$2
     ping_wait=`expr $ping_count \* 5`

@@ -9,6 +9,8 @@ else
   oldip='empty'
 fi
 
+firstrun=1
+
 
 while true; do
   ip=`$dir/scripts/utils.sh get_ip tap0`
@@ -17,7 +19,7 @@ while true; do
     ip=`$dir/scripts/utils.sh get_ip tap0`
   done
 
-  if [[ $ip == $oldip ]]; then 
+  if [[ $ip == $oldip && ! $firstrun ]]; then 
     sleep 600
   else
     echo $ip > $dir/var/oldip
@@ -27,6 +29,7 @@ while true; do
       $dir/scripts/ipsec.py $ip $oldip
     fi
   fi
+  firstrun=
   oldip=$ip
   ip=''
 done

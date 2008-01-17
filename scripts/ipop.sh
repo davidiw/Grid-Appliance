@@ -62,6 +62,11 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
   done
   renice -19 -p $pid
 
+  if [[ -z `$dir/scripts/utils.sh get_pid DhtProxy` ]]; then
+    $dir/scripts/DhtProxy.py &
+    $dir/scripts/DhtHelper.py register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
+  fi
+
   dhclient3 -pf /var/run/dhclient.tap0.pid -lf /var/lib/dhcp3/dhclient.tap0.leases tap0
 
   cd -
