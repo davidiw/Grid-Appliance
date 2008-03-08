@@ -41,10 +41,10 @@ if [ -z "$($dir/scripts/DhtHelper.py get dhcp:ipop_namespace:$(cat /mnt/fd/ipop_
   echo "Dht operations failed."
 fi
 
-if $dir/tests/CheckSelf.py; then
-  echo "IPRouter not responding."
+if [ `$dir/tests/CheckSelf.py` = "False" ]; then
+  echo "IPOP not responding."
 fi
 
-if $dir/tests/CheckConnection.py; then
-  echo "IPRouter not connected."
+if [ `$dir/tests/CheckConnection.py` = "False" ]; then
+  echo "IPOP not connected."
 fi

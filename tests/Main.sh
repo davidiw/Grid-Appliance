@@ -8,3 +8,9 @@ echo "Condor test results..." >> $dir/tests/out
 $dir/tests/Condor.sh >> $dir/tests/out
 echo "Dht test results..." >> $dir/tests/out
 $dir/tests/DhtTest.sh >> $dir/tests/out
+echo "Information..." >> $dir/tests/out
+$dir/tests/Information.py >> $dir/tests/out
+echo "ps uax" >> $dir/tests/out
+ps uax >> $dir/tests/out
+echo "ifconfig -a" >> $dir/tests/out
+ifconfig -a >> $dir/tests/out

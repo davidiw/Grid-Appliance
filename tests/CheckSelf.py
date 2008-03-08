@@ -4,9 +4,9 @@ import xmlrpclib, sys
 ip = "127.0.0.1"
 port = "10000"
 server = xmlrpclib.Server("http://" + ip + ":" + port + "/xm.rem")
-res = False
+res = True
 try:
-  res |= "self" in server.localproxy("sys:link.GetNeighbors")[0]
+  res &= "self" in server.localproxy("sys:link.GetNeighbors")
 except:
-  pass
+  res = False
 sys.exit(res)

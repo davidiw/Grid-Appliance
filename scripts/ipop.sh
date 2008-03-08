@@ -13,17 +13,17 @@ fi
 
 if [[ $1 == "stop" || $1 == "restart" ]]; then
   $echo "Stopping Grid Services..."
-  pid=`$dir/scripts/utils.sh get_pid IPRouter`
-  kill -SIGINT $pid
-  sleep 5
-  kill -KILL $pid
+  pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
+  if [ $pid ]; then
+    kill -SIGINT $pid
+    sleep 5
+    kill -KILL $pid
+  fi
+
   if [[ $1 == "stop" ]]; then
     ifdown tap0
     $dir/tools/tunctl -d tap0
   fi
-
-  pid=`$dir/scripts/utils.sh get_pid dhcpdata.conf`
-  kill -KILL $pid
 fi
 
 if [[ $1 == "start" || $1 == "restart" ]]; then
@@ -37,7 +37,7 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
 
   # Create config file for IPOP and start it up
   if test -f $dir/var/ipop_ns; then
-    if [[ `cat $dir/var/ipop_ns` != /mnt/fd/ipop_ns ]]; then
+    if [[ `cat $dir/var/ipop_ns` == `cat /mnt/fd/ipop_ns` ]]; then
       new_config=0
     else
       new_config=1
@@ -49,20 +49,23 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
   if [[ $new_config == 1 ]]; then
     $echo "Generating new IPOP configuration"
     cp /mnt/fd/ipop_ns $dir/var/ipop_ns
-    mono $dir/tools/MakeIPRouterConfig.exe /mnt/fd/ipop.config $dir/var/ipop.config `cat /mnt/fd/ipop_ns`
+    ipop_ns=`cat $dir/var/ipop_ns`
+    sed s/NAMESPACE/$ipop_ns/ $dir/etc/ipop.config > $dir/var/ipop.config
+    cp /mnt/fd/node.config $dir/var/node.config
   fi
 
   cd $dir/tools
   rm -rf data
-  mono IPRouter.exe $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
-  pid=`$dir/scripts/utils.sh get_pid IPRouter`
-  while [[ $pid = "" ]]; do
+  hostname localhost
+  mono CondorIpopNode.exe $dir/var/node.config $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
+  pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
+  while [ ! $pid ]; do
     sleep 5
-    pid=`$dir/scripts/utils.sh get_pid IPRouter`
+    pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
   done
   renice -19 -p $pid
 
-  if [[ -z `$dir/scripts/utils.sh get_pid DhtProxy` ]]; then
+  if [ ! `$dir/scripts/utils.sh get_pid DhtProxy` ]; then
     $dir/scripts/DhtProxy.py &
     $dir/scripts/DhtHelper.py register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
   fi
@@ -76,6 +79,5 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
   $dir/scripts/iprules &
   if [[ $1 = "restart" ]]; then
     ifconfig tap0 up
-    $dir/scripts/utils.sh ping_test 10.191.255.254 &> /dev/null
   fi
 fi

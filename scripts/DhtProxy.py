@@ -25,7 +25,7 @@ def main():
 
 # Enables the listener
 def input_handler():
-  server = SimpleXMLRPCServer.SimpleXMLRPCServer(("localhost", int(port)))
+  server = SimpleXMLRPCServer.SimpleXMLRPCServer(("localhost", port))
   server.register_introspection_functions()
   server.register_instance(DhtProxy())
   server.serve_forever()
@@ -57,8 +57,15 @@ class output_handler:
           if link[0] > datetime.now():
             break
           else:
-            dhtserver.Put(link[1], link[2], link[3])
-            lvalues[index] = (datetime.now() + timedelta(seconds=link[3] / 2), link[1], link[2], link[3])
+            try:
+              res = dhtserver.Put(link[1], link[2], link[3])
+            except:
+              res = false
+            if res:
+              retry = datetime.now() + timedelta(seconds=link[3] / 2)
+            else:
+              retry = 30
+            lvalues[index] = (retry, link[1], link[2], link[3])
       sort_values()
       values_lock.release()
 
@@ -104,16 +111,24 @@ class DhtProxy:
     ttl = int(ttl)
     register_if_fail = bool(register_if_fail)
 
-    if action == "put":
-      res = dhtserver.Put(key, value, ttl) or register_if_fail
-    elif action == "create":
-      res = dhtserver.Create(key, value, ttl) or register_if_fail
-    else:
-      res = False
+    res = False
+    try:
+      if action == "put":
+        res = dhtserver.Put(key, value, ttl)
+      elif action == "create":
+        res = dhtserver.Create(key, value, ttl)
+      else:
+        return False
+    except:
+      pass
 
-    if res:
+    if res or register_if_fail:
       values_lock.acquire(1)
-      append_on_values((datetime.now() + timedelta(seconds = ttl / 2) , key, value, ttl))
+      if res:
+        retry = datetime.now() + timedelta(seconds = ttl / 2)
+      else:
+        retry = datetime.now() + timedelta(seconds = 30)
+      append_on_values((retry , key, value, ttl))
       nchange = sort_values()
       values_lock.release()
       if not nchange or len(values) == 1:

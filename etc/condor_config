@@ -123,7 +123,7 @@ FILESYSTEM_DOMAIN	= $(FULL_HOSTNAME)
 ##  FLOCK_FROM defines the machines where you would like to grant
 ##  people access to your pool via flocking. (i.e. you are granting
 ##  access to these machines to join your pool).
-FLOCK_FROM = C*
+FLOCK_FROM = *
 ##  An example of this is:
 #FLOCK_FROM = somehost.friendly.domain, anotherhost.friendly.domain
 
@@ -1349,3 +1349,4 @@ ENABLE_SOAP = True
 BIND_ALL_INTERFACES = True
 QUEUE_ALL_USERS_TRUSTED = True
 SCHEDD_ARGS = -p 9501
+NEGOTIATOR_INTERVAL = 90

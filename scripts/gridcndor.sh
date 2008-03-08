@@ -3,6 +3,7 @@ dir="/usr/local/ipop"
 
 configure_condor()
 {
+  old_ip=$2
   ipop_ns=`cat /mnt/fd/ipop_ns`
   cp $dir/etc/condor_config /etc/condor/condor_config
 #  We bind to all interfaces for condor interface to work
@@ -12,12 +13,14 @@ configure_condor()
 
   type=`cat /mnt/fd/type`
   if [ $type = "Server" ]; then
-    $dir/scripts/DhtHelper.py unregister $ipop_ns:condor:server $oldip 1200
-    $dir/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 1200
+    if [ $oldip ]; then
+      $dir/scripts/DhtHelper.py unregister $ipop_ns:condor:server $oldip 
+    fi
+    $dir/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 600
     server=$ip
   else
     server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
-    while [ -z "$server" ]; do
+    while [ ! $server ]; do
       sleep 15
       server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
     done
@@ -53,8 +56,8 @@ update_flock()
   fi
 }
 
-if [[ $1 = "start" ]]; then
-  configure_condor
+if [ $1 = "start" ]; then
+  configure_condor $2
 
   rm -f /opt/condor/var/log/* /opt/condor/var/log/*
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
@@ -63,7 +66,7 @@ if [[ $1 = "start" ]]; then
   /opt/condor/sbin/condor_master
 elif [ $1 = "restart" ]; then
   $dir/scripts/gridcndor.sh stop
-  $dir/scripts/gridcndor.sh start
+  $dir/scripts/gridcndor.sh start $2
 elif [ $1 = "stop" ]; then
   pkill -KILL condor
 elif [ $1 = "reconfig" ]; then

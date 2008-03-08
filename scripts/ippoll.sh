@@ -24,7 +24,7 @@ while true; do
   else
     echo $ip > $dir/var/oldip
     $dir/scripts/hostname.sh
-    $dir/scripts/gridcndor.sh restart
+    $dir/scripts/gridcndor.sh restart $oldip
     if test -f /mnt/fd/ipsec_server; then
       $dir/scripts/ipsec.py $ip $oldip
     fi

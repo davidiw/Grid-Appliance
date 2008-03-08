@@ -18,7 +18,8 @@ fi
 iptables -F
 
 echo "Checking for latest version of iprouter"
-wget http://128.227.56.252/~ipop/debian/ga2/current.txt -O $dir/var/current.txt &> /dev/null
+url=`cat /mnt/fd/update_url`
+wget $url/current.txt -O $dir/var/current.txt &> /dev/null
 if test -f $dir/var/current.txt; then
   web_version=`cat $dir/var/current.txt`
 else
@@ -27,7 +28,7 @@ fi
 local_version=`cat $dir/etc/current.txt`
 if (( web_version > local_version )); then
   $echo "New version found!  Updating..."
-  wget http://128.227.56.252/~ipop/debian/ga2/ipop.deb -O $dir/var/ipop.deb
+  wget $url/ipop.deb -O $dir/var/ipop.deb
   dpkg --install $dir/var/ipop.deb
   rm -f $dir/var/ipop.deb
 else

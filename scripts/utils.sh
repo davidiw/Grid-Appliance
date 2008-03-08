@@ -15,18 +15,9 @@ check_release()
   fi
 }
 
-geo_loc()
-{
-  iptables -F
-  latitude=`wget www.ip-adress.com -q -O - | grep latitude -A 1 | grep td | awk -F">" '{print $3}' | awk -F"<" '{print $1}'`
-  longitude=`wget www.ip-adress.com -q -O - | grep longitude -A 1 | grep td | awk -F">" '{print $3}' | awk -F"<" '{print $1}'`
-  echo $latitude", "$longitude > /home/griduser/.geo
-  $dir/scripts/iprules
-}
-
 get_ip()
 {
-  res=`/sbin/ifconfig $1 | awk -F"inet addr:" '{print $2}' | awk -F" " '{print $1}' | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
+  res=`/sbin/ifconfig $1 | awk -F"inet addr:" {'print $2'} | awk -F" " {'print $1'} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
   echo -n $res
 }
 
@@ -38,7 +29,7 @@ get_pid()
 
 get_port()
 {
-  res=`netstat -aup | grep $1 | awk -F":" '{print $2}' | grep -oE "[0-9]+"`
+  res=`netstat -aup | grep $1 | awk -F":" {'print $2'} | grep -oE "[0-9]+"`
   echo -n $res
 }
 
@@ -50,12 +41,12 @@ ping_test()
     ping_count=$2
     ping_wait=`expr $ping_count \* 5`
   fi
-  ping -c $ping_count -w $ping_wait -i 5 $1 | grep received | awk -F", " '{print $2'} | awk -F" " '{print $1}'
+  ping -c $ping_count -w $ping_wait -i 5 $1 | grep received | awk -F", " {'print $2'} | awk -F" " {'print $1'}
 }
 
 vmm()
 {
-  echo `cat /proc/1/environ | tr "\0" ":" | awk -F"vmm=" '{print $2}' | awk -F":" '{print $1}'`
+  echo `cat /proc/1/environ | tr "\0" ":" | awk -F"vmm=" {'print $2'} | awk -F":" {'print $1'}`
 }
 
 funct=$1
