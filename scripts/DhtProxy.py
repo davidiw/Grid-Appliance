@@ -64,7 +64,7 @@ class output_handler:
             if res:
               retry = datetime.now() + timedelta(seconds=link[3] / 2)
             else:
-              retry = 30
+              retry = datetime.now() + timedelta(seconds=30)
             lvalues[index] = (retry, link[1], link[2], link[3])
       sort_values()
       values_lock.release()
