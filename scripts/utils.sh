@@ -36,12 +36,15 @@ get_port()
 ping_test()
 {
   ping_count=1
-  ping_wait=5
   if [ -n "$2" ]; then
     ping_count=$2
-    ping_wait=`expr $ping_count \* 5`
   fi
-  ping -c $ping_count -w $ping_wait -i 5 $1 | grep received | awk -F", " {'print $2'} | awk -F" " {'print $1'}
+  count=0
+  for (( i=0; i<$ping_count; i=$i+1 )); do
+    tcount=`ping -c 1 -w 5 $1 | grep received | awk -F", " {'print $2'} | awk -F" " {'print $1'}`
+    count=`expr $count + $tcount`
+  done
+  echo $count
 }
 
 vmm()
@@ -50,6 +53,4 @@ vmm()
 }
 
 funct=$1
-param0=$2
-param1=$3
-$funct $param0 $param1 2> /dev/null
+$funct ${@:2} 2> /dev/null

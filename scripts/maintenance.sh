@@ -22,7 +22,7 @@ test_manager()
     if [ `$dir/tests/CheckConnection.py` = "True" ]; then
       echo date >> ~/maintenance
       echo "Reconfig" >> ~/maintenance
-      $dir/scripts/gridcndor.sh reconfig
+      $dir/scripts/gridcndor.sh reconfig | logger -t maintenance
       init
       test_manager
     fi

@@ -15,10 +15,6 @@ swapon $file
 
 $dir/scripts/maintenance.sh start &
 
-#Admin SSH
-/usr/sbin/sshd -f /root/.ssh/sshd_config
-
-python $dir/scripts/dns.py &
 $dir/scripts/ippoll.sh &> /var/log/ippoll.log &
 
 if [[ $VMM = "vmware" ]]; then
