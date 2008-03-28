@@ -5,14 +5,8 @@ if ! `$dir/scripts/utils.sh check_fd`; then
   exit
 fi
 
-if [ "$2" ]; then
-  echo="logger -t ipop"
-else
-  echo="echo"
-fi
-
 if [[ $1 == "stop" || $1 == "restart" ]]; then
-  $echo "Stopping Grid Services..."
+  echo "Stopping Grid Services..."
   pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
   if [ $pid ]; then
     kill -SIGINT $pid
@@ -27,12 +21,12 @@ if [[ $1 == "stop" || $1 == "restart" ]]; then
 fi
 
 if [[ $1 == "start" || $1 == "restart" ]]; then
-  $echo "Starting Grid Services..."
+  echo "Starting Grid Services..."
 
   if [[ $1 == "start" ]]; then
     # set up tap device
     $dir/tools/tunctl -u root -t tap0 &> /dev/null
-    $echo "tap configuration completed"
+    echo "tap configuration completed"
   fi
 
   # Create config file for IPOP and start it up
@@ -47,7 +41,7 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
   fi
 
   if [[ $new_config == 1 ]]; then
-    $echo "Generating new IPOP configuration"
+    echo "Generating new IPOP configuration"
     cp /mnt/fd/ipop_ns $dir/var/ipop_ns
     ipop_ns=`cat $dir/var/ipop_ns`
     sed s/NAMESPACE/$ipop_ns/ $dir/etc/ipop.config > $dir/var/ipop.config
@@ -75,7 +69,7 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
   cd -
   ln -sf $dir/var/ipoplog /var/log/ipop
 
-  $echo "IPOP has started"
+  echo "IPOP has started"
   $dir/scripts/iprules &
   if [[ $1 = "restart" ]]; then
     ifconfig tap0 up
