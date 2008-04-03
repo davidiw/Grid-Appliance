@@ -20,8 +20,6 @@ test_manager()
   if [[ 0 = `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
     logger -t maintenance "Unable to contact manager, restarting Condor..."
     if [ `$dir/tests/CheckConnection.py` = "True" ]; then
-      echo date >> ~/maintenance
-      echo "Reconfig" >> ~/maintenance
       $dir/scripts/gridcndor.sh reconfig | logger -t maintenance
       init
       test_manager

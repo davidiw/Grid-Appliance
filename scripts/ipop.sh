@@ -50,6 +50,7 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
 
   cd $dir/tools
   rm -rf data
+  oldhostname=`hostname`
   hostname localhost
   mono CondorIpopNode.exe $dir/var/node.config $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
   pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
@@ -64,6 +65,7 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
     $dir/scripts/DhtHelper.py register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
   fi
 
+  hostname $oldhostname
   dhclient3 -pf /var/run/dhclient.tap0.pid -lf /var/lib/dhcp3/dhclient.tap0.leases tap0
 
   cd -
