@@ -1,5 +1,6 @@
 #!/bin/bash
 dir="/usr/local/ipop"
+device=`cat $dir/etc/device`
 
 if ! `$dir/scripts/utils.sh check_fd`; then
   exit
@@ -13,21 +14,10 @@ if [[ $1 == "stop" || $1 == "restart" ]]; then
     sleep 5
     kill -KILL $pid
   fi
-
-  if [[ $1 == "stop" ]]; then
-    ifdown tap0
-    $dir/tools/tunctl -d tap0
-  fi
 fi
 
 if [[ $1 == "start" || $1 == "restart" ]]; then
   echo "Starting Grid Services..."
-
-  if [[ $1 == "start" ]]; then
-    # set up tap device
-    $dir/tools/tunctl -u root -t tap0 &> /dev/null
-    echo "tap configuration completed"
-  fi
 
   # Create config file for IPOP and start it up
   if test -f $dir/var/ipop_ns; then
@@ -58,6 +48,12 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
     sleep 5
     pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
   done
+  sleep 3
+  test=`/sbin/ifconfig tapipop | grep tapipop`
+  if test -z "$test"; then
+    $dir/scripts/ipop.sh restart
+    exit
+  fi
   renice -19 -p $pid
 
   if [ ! `$dir/scripts/utils.sh get_pid DhtProxy` ]; then
@@ -66,14 +62,11 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
   fi
 
   hostname $oldhostname
-  dhclient3 -pf /var/run/dhclient.tap0.pid -lf /var/lib/dhcp3/dhclient.tap0.leases tap0
+  dhclient3 -pf /var/run/dhclient.$device.pid -lf /var/lib/dhcp3/dhclient.$device.leases $device
 
   cd -
   ln -sf $dir/var/ipoplog /var/log/ipop
 
   echo "IPOP has started"
   $dir/scripts/iprules &
-  if [[ $1 = "restart" ]]; then
-    ifconfig tap0 up
-  fi
 fi

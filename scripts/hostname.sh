@@ -1,6 +1,7 @@
 #!/bin/bash
 dir="/usr/local/ipop"
-ip=`$dir/scripts/utils.sh get_ip tap0`
+device=`cat $dir/etc/device`
+ip=`$dir/scripts/utils.sh get_ip $device`
 hostname="C"
 for (( i = 2; i < 5; i++ )); do
   temp=`echo $ip | awk -F"." '{print $'$i'}' | awk -F"." '{print $1}'`

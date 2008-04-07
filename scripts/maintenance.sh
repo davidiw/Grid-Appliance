@@ -1,16 +1,15 @@
 #!/bin/bash
 dir="/usr/local/ipop"
-
+device=`cat $dir/etc/device`
 connection_check_period=600
 
 init()
 {
-  dev="tap0"
   #  Need ping to wait until after we wake up, duh
-  ip=`$dir/scripts/utils.sh get_ip $dev`
+  ip=`$dir/scripts/utils.sh get_ip $device`
   while [ ! $ip ]; do
     sleep 60
-    ip=`$dir/scripts/utils.sh get_ip $dev`
+    ip=`$dir/scripts/utils.sh get_ip $device`
   done
 }
 

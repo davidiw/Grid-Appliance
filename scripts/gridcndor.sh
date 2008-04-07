@@ -1,5 +1,6 @@
 #!/bin/bash
 dir="/usr/local/ipop"
+device=`cat $dir/etc/device`
 
 configure_condor()
 {
@@ -7,7 +8,7 @@ configure_condor()
   ipop_ns=`cat /mnt/fd/ipop_ns`
   cp $dir/etc/condor_config /etc/condor/condor_config
 #  We bind to all interfaces for condor interface to work
-  ip=`$dir/scripts/utils.sh get_ip tap0`
+  ip=`$dir/scripts/utils.sh get_ip $device`
   echo "NETWORK_INTERFACE = "$ip >> /etc/condor/condor_config
   $dir/scripts/sscndor.sh
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 #watch for new IPs and restart programs / scripts if necessary
 dir="/usr/local/ipop"
+device=`cat $dir/etc/device`
 
 ip=''
 if test -f $dir/var/oldip; then
@@ -13,10 +14,10 @@ firstrun=1
 
 
 while true; do
-  ip=`$dir/scripts/utils.sh get_ip tap0`
+  ip=`$dir/scripts/utils.sh get_ip $device`
   while [[ $ip == '' ]]; do
     sleep 60;
-    ip=`$dir/scripts/utils.sh get_ip tap0`
+    ip=`$dir/scripts/utils.sh get_ip $device`
   done
 
   if [[ $ip == $oldip && ! $firstrun ]]; then 
