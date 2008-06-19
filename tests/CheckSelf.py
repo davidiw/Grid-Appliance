@@ -9,4 +9,5 @@ try:
   res &= "self" in server.localproxy("sys:link.GetNeighbors")
 except:
   res = False
+print res
 sys.exit(res)

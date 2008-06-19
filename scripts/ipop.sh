@@ -42,7 +42,8 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
   rm -rf data
   oldhostname=`hostname`
   hostname localhost
-  mono CondorIpopNode.exe $dir/var/node.config $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
+#trace is only enabled to help find bugs, to use it execute kill -USR2 $CondorIpopNode_PID
+  mono --trace=disabled CondorIpopNode.exe $dir/var/node.config $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
   pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
   while [ ! $pid ]; do
     sleep 5

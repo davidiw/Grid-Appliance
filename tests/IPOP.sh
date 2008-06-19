@@ -20,20 +20,20 @@ for flc in $floppy_contents; do
   fi
 done
 
-res=`grep ipop_namespace $config | awk -F ">" {'print $2'} | awk -F "<" {'print $1'}`
+res=`grep IpopNamespace $config | awk -F ">" {'print $2'} | awk -F "<" {'print $1'}`
 if [ "$res" != "`cat /mnt/fd/ipop_ns`" ]; then
   echo "Namespace error: "$res" != "`cat /mnt/fd/ipop_ns`"!"
 fi
 
-if [ -z `$dir/scripts/utils.sh get_pid IPRouter` ]; then
-  echo "IPRouter isn't running!"
+if [ -z `$dir/scripts/utils.sh get_pid Ipop` ]; then
+  echo "IPOP isn't running!"
 fi
 
-if [ -z `$dir/scripts/utils.sh get_pid dhclient.tap0` ]; then
+if [ -z `$dir/scripts/utils.sh get_pid dhclient.tapipop` ]; then
   echo "Dhcp services for tap0 aren't running."
 fi
 
-if [ -z `$dir/scripts/utils.sh get_ip tap0` ]; then
+if [ -z `$dir/scripts/utils.sh get_ip tapipop` ]; then
   echo "tap0 has no ip address."
 fi
 
