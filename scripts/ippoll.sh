@@ -29,6 +29,12 @@ while true; do
     if test -f /mnt/fd/ipsec_server; then
       $dir/scripts/ipsec.py $ip $oldip
     fi
+    if test -f /mnt/fd/ipopsec_server; then
+      if test ! -f $dir/tools/certificates/lc.cert; then
+        baddr=`grep -z -o -E brunet:node:[a-zA-Z0-9]+ $dir/var/node.config`
+        $dir/scripts/ipopsec.py $baddr
+      fi
+    fi
   fi
   firstrun=
   oldip=$ip

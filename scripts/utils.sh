@@ -49,7 +49,11 @@ ping_test()
 
 vmm()
 {
-  echo `cat /proc/1/environ | tr "\0" ":" | awk -F"vmm=" {'print $2'} | awk -F":" {'print $1'}`
+  if [[ -n `/usr/sbin/vmware-checkvm | grep good` ]]; then
+    echo -n vmware
+  else
+    echo -n qemu
+  fi
 }
 
 funct=$1

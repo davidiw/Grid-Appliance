@@ -35,6 +35,9 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
     cp /mnt/fd/ipop_ns $dir/var/ipop_ns
     ipop_ns=`cat $dir/var/ipop_ns`
     sed s/NAMESPACE/$ipop_ns/ $dir/etc/ipop.config > $dir/var/ipop.config
+    if test -f /mnt/fd/ipopsec_server; then
+      sed s/\<EndToEndSecurity\>false/\<EndToEndSecurity\>true/ -i $dir/var/ipop.config
+    fi
     cp /mnt/fd/node.config $dir/var/node.config
   fi
 
