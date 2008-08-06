@@ -15,6 +15,11 @@ check_release()
   fi
 }
 
+get_baddr()
+{
+  grep -z -o -E brunet:node:[a-zA-Z0-9]+ $dir/var/node.config
+}
+
 get_ip()
 {
   res=`/sbin/ifconfig $1 | awk -F"inet addr:" {'print $2'} | awk -F" " {'print $1'} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`

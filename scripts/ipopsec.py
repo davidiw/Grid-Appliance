@@ -19,33 +19,38 @@ cmd = "mono certhelper.exe makecert "
 cmd += "outkey=" + dir + "/tools/keys/private_key "
 cmd += "outcert=" + dir + "/var/tosign "
 
-f = open("/mnt/fd/userinfo", "rb")
-userinfo = pickle.load(f)
+f = open("/mnt/fd/ipopsec_userinfo", "rb")
+userinfo = f.read()
 f.close()
 
-cmd += "country=\"" + userinfo['country'] + "\""
-cmd += " organization=\"" + userinfo['organization'] + "\""
-cmd += " organizational_unit=\"" + userinfo['organizational_unit'] + "\""
-cmd += " name=\"" + userinfo['name'] + "\""
-cmd += " email=\"" + userinfo['email'] + "\""
-cmd += " node_address=" + node_address
+for line in userinfo.split('\n'):
+  params = line.split('=')
+  if(len(params) < 2):
+    continue
+  cmd += params[0] + "=\"" + params[1] + "\" "
+cmd += "node_address=" + node_address
 
 os.system(cmd)
 
+#get secret key
+f = open("/mnt/fd/ipopsec_secret", "rb")
+secret = f.read().strip(' \n\t\r')
+f.close()
+
 #read request
 f = open(dir + "/var/tosign", "rb")
-key = base64.urlsafe_b64encode(f.read())
+cert = base64.urlsafe_b64encode(f.read())
 f.close()
 
 # send request
 f = open("/mnt/fd/ipopsec_server")
-server_url = f.read().strip('\n')
+server_url = f.read().strip(' \n\t\r')
 f.close()
 
 while True:
   try:
     server = xmlrpclib.Server(server_url)
-    res = server.CertificateRequest(key)
+    res = server.CertificateRequest(cert, secret)
     break
   except:
     time.sleep(300)
@@ -53,7 +58,7 @@ while True:
 #receive cert
 while True:
   try:
-    cert = server.CertificateInquiry(res)
+    cert = server.CertificateInquiry(res, secret)
     if cert != "wait":
       cert = base64.urlsafe_b64decode(cert)
       break
