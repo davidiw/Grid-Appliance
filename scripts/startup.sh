@@ -13,9 +13,7 @@ dd if=/dev/zero of=$file bs=1024K count=128
 mkswap $file
 swapon $file
 
-$dir/scripts/maintenance.sh start &
-
-$dir/scripts/ippoll.sh &> /var/log/ippoll.log &
+$dir/scripts/monitor.sh &> /var/log/monitor.log &
 
 if [[ $VMM = "vmware" ]]; then
   ln -sf $dir/etc/xorg.conf.vmware /etc/X11/xorg.conf

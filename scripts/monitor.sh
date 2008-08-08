@@ -67,9 +67,9 @@ condor_control()
   manager_ip=`cat $dir/var/condor_manager`
 
 # Send some pings to the manager, see if he is operational
-  if [[ 0 = `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
+  if [[ 0 == `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
 # No ping responses, so let's make sure we are connected
-    if [ `$dir/tests/CheckConnection.py` = "True" ]; then
+    if [[ `$dir/tests/CheckConnection.py` == "True" ]]; then
 # We are connected but no response from manager, let's reconfig
       logger -t maintenance "Unable to contact manager, restarting Condor..."
       $dir/scripts/gridcndor.sh reconfig | logger -t maintenance
@@ -102,7 +102,7 @@ ip_control()
 # step 4 - if we have a change in ip, update oldip config and update ipsec,
 # if necessary
   if [[ $old_ip != $ip ]]; then
-    old_ip=ip
+    old_ip=$ip
     echo $ip > $dir/var/oldip
     if test -f /mnt/fd/ipsec_server; then
       $dir/scripts/ipsec.py $ip $old_ip
