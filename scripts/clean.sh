@@ -20,4 +20,5 @@ done
 rm -f /home/griduser/.xison \
 /home/griduser/.xdisabled \
 /var/cache/apt/archives/*deb
-
+touch /var/log/dmesg
+touch /var/log/wtmp

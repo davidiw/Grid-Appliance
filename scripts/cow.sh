@@ -53,7 +53,7 @@ if [[ $1 = "start" ]]; then
         else
           chmod 755 /.unionfs/$dir &> /dev/null
         fi
-        mount -t $fs -odefaults,dirs=/.unionfs/$dir=rw:/$dir=ro none /$dir &. /dev/null
+        mount -t $fs -odefaults,dirs=/.unionfs/$dir=rw:/$dir=ro none /$dir &> /dev/null
       fi
     done
   fi
