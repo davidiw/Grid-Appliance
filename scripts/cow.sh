@@ -46,7 +46,7 @@ if [[ $1 = "start" ]]; then
     mkdir $tmp &> /dev/null
     dirs=`ls /`
     for dir in $dirs; do
-      if [[ -d "/$dir" && $dir != "proc" && $dir != "sys" ]]; then
+      if [[ -d "/$dir" && $dir != "proc" && $dir != "sys" && $dir != "lost+found" ]]; then
         mkdir /.unionfs/$dir &> /dev/null
         if [[ $dir = "tmp" ]]; then
           chmod 777 /.unionfs/$dir &> /dev/null

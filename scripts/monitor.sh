@@ -29,7 +29,6 @@ baddr_control()
   if [[ ! $baddr && (! $baddr_start || $old_baddr == $baddr) ]]; then
     return
   fi
-  baddr_start=
 
 # step 2 - determine if there was a change in baddr
   if [[ $old_baddr != $baddr ]]; then
@@ -39,6 +38,7 @@ baddr_control()
   elif [[ ! $baddr_start ]]; then
     return
   fi
+  baddr_start=
 
 # step 4 - check and update certificate if necessary
   if test -f /mnt/fd/ipopsec_server; then
