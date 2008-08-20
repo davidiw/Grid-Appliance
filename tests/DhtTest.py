@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import xmlrpclib, time, random
+import xmlrpclib, time, random, socket
 from datetime import datetime
 
 dhtip="127.0.0.1"
@@ -13,6 +13,7 @@ values=3
 ttl_min=120
 ttl_max=600
 
+socket.setdefaulttimeout(10)
 dht = xmlrpclib.Server("http://" + dhtip + ":" + dhtport + "/xd.rem")
 proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
 

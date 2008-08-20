@@ -82,6 +82,10 @@ condor_control()
 # hostname and ipsec
 ip_control()
 {
+# step 0 - check if Ipop is working!
+  if [[ `$dir/tests/CheckSelf.py` == "False" ]]; then
+    /etc/init.d/ipop.sh restart
+  fi
 # step 1 - determine if we should proceed
   ip=`$dir/scripts/utils.sh get_ip $device`
   if [[ ! $ip ]]; then
