@@ -63,17 +63,21 @@ baddr_control()
 # and will help find a new one if we are no longer able to connect to him
 condor_control()
 {
-  condor_break=
+  if [[ `$dir/scripts/utils.sh get_pid gridcndor.sh` == "" ]]; then
+    condor_break=
+  fi
   manager_ip=`cat $dir/var/condor_manager`
 
 # Send some pings to the manager, see if he is operational
   if [[ 0 == `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
 # No ping responses, so let's make sure we are connected
     if [[ `$dir/tests/CheckConnection.py` == "True" ]]; then
+      if [[ !$condor_break ]]; then
 # We are connected but no response from manager, let's reconfig
-      logger -t maintenance "Unable to contact manager, restarting Condor..."
-      $dir/scripts/gridcndor.sh reconfig | logger -t maintenance
-      condor_break=true
+        logger -t maintenance "Unable to contact manager, restarting Condor..."
+        $dir/scripts/gridcndor.sh reconfig | logger -t maintenance &
+        condor_break=true
+      fi
     fi
   fi
 }
