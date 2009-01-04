@@ -16,6 +16,7 @@ for k in "/.unionfs/.unionfs" "/.unionfs" "/"; do
     for j in `find $i`; do
       rm -f $k/$j/* &> /dev/null
       rm -f $k/$j/.* &> /dev/null
+    done
   done
   rm -f $k/home/griduser/.xison \
   $k/home/griduser/.xdisabled \
@@ -28,3 +29,12 @@ done
 
 touch /var/log/dmesg
 touch /var/log/wtmp
+
+paths1="/usr/share/man
+/usr/share/doc
+/usr/share/doc-base
+"
+
+for i in $paths1; do
+  rm -rf $i &> /dev/null
+done

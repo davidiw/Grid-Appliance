@@ -12,11 +12,11 @@ if old_na == node_address:
   sys.exit()
 
 # Get the CA Cert from the Floppy
-os.system("cp /mnt/fd/cacert " + dir + "/tools/certificates/.")
+os.system("cp /mnt/fd/cacert " + dir + "/tools/certificates/ca.cert")
 # Create cert / key
 os.chdir(dir + "/tools")
 cmd = "mono certhelper.exe makecert "
-cmd += "outkey=" + dir + "/tools/keys/private_key "
+cmd += "inkey=" + dir + "/tools/private_key "
 cmd += "outcert=" + dir + "/var/tosign "
 
 f = open("/mnt/fd/ipopsec_userinfo", "rb")
@@ -74,7 +74,8 @@ f.close()
 while True:
   try:
     ipop = xmlrpclib.Server("http://127.0.0.1:10000/xm.rem")
-    ipop.localproxy("Security.ReadCertificates")
+    ipop.localproxy("Security.AddCertificate", "lc.cert")
+    ipop.localproxy("Security.AddCertificate", "ca.cert")
     break
   except:
     pass

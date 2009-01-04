@@ -163,14 +163,20 @@ class DhtProxy:
       data_change.set()
     return found
 
-  def dump(self):
-    dump_res = []
-    for key in values_p.iterkeys():
-      dump_res.append([])
-      i = len(dump_res) - 1
+  def dump(self, key = None):
+    if key == None:
+      dump_res = []
+      for key in values_p.iterkeys():
+        dump_res.append([])
+        i = len(dump_res) - 1
+        for tup in values_p[key]:
+          dump_res[i].append(((tup[0] - datetime.now()).seconds, tup[1], tup[2], tup[3]))
+      return dump_res
+    else:
+      dump_res = []
       for tup in values_p[key]:
-        dump_res[i].append(((tup[0] - datetime.now()).seconds, tup[1], tup[2], tup[3]))
-    return dump_res
+        dump_res.append(tup[2])
+      return dump_res
 
 if __name__ == "__main__":
   main()

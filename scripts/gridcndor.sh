@@ -1,22 +1,21 @@
 #!/bin/bash
 dir="/usr/local/ipop"
+config=$dir"/etc/condor_config.d/00root"
 device=`cat $dir/etc/device`
 
 configure_condor()
 {
-  old_ip=$2
   ipop_ns=`cat /mnt/fd/ipop_ns`
-  cp $dir/etc/condor_config /etc/condor/condor_config
 #  We bind to all interfaces for condor interface to work
   ip=`$dir/scripts/utils.sh get_ip $device`
-  echo "NETWORK_INTERFACE = "$ip >> /etc/condor/condor_config
-  $dir/scripts/sscndor.sh
+  echo "NETWORK_INTERFACE = "$ip > $config
 
   type=`cat /mnt/fd/type`
   if [ $type = "Server" ]; then
-    if [ $oldip ]; then
-      $dir/scripts/DhtHelper.py unregister $ipop_ns:condor:server $oldip 
-    fi
+    registered=`$dir/scripts/DhtHelper.py dump $ipop_ns:condor:server`
+    for reg in $registered; do
+      $dir/scripts/DhtHelper.py unregister $ipop_ns:condor:server $reg
+    done
     $dir/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 600
     server=$ip
   else
@@ -38,11 +37,17 @@ configure_condor()
     DAEMONS="MASTER, STARTD, SCHEDD"
   fi
 
-  echo "DAEMON_LIST = "$DAEMONS >> /etc/condor/condor_config
-  echo "CONDOR_HOST = "$server >> /etc/condor/condor_config
+  echo "DAEMON_LIST = "$DAEMONS >> $config
+  echo "CONDOR_HOST = "$server >> $config
   echo $server > $dir/var/condor_manager
-  echo "FLOCK_TO = "$flock >> /etc/condor/condor_config
-  echo $flock > /etc/condor/flock
+  echo "FLOCK_TO = "$flock >> $config
+  echo $flock > $dir/var/condor_flock
+
+  if test -f /mnt/fd/condor_group; then
+    echo "MachineOwner = \"`cat /mnt/fd/condor_group`\"" >> $config
+    echo "STARTD_ATTRS = \$(STARTD_ATTRS) MachineOwner" >> $config
+    echo "RANK = TARGET.Group =?= MY.MachineOwner" >> $config
+  fi
 }
 
 update_flock()
@@ -51,15 +56,14 @@ update_flock()
   flock=`cat /etc/condor/flock`
   new_flock=`$dir/scripts/DhtHelper.py get flock $ipop_ns`
   if [[ $flock != $new_flock ]]; then
-    echo "FLOCK_TO = "$flock >> /etc/condor/condor_config
-    echo $flock > /etc/condor/flock
+    echo "FLOCK_TO = "$flock >> $config
+    echo $flock > $dir/var/condor_flock
     /opt/condor/sbin/condor_reconfig
   fi
 }
 
 if [ $1 = "start" ]; then
-  configure_condor $2
-
+  configure_condor
   rm -f /opt/condor/var/log/* /opt/condor/var/log/*
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
   # of physical memory, that means a swap disk is necessary!
@@ -67,7 +71,7 @@ if [ $1 = "start" ]; then
   /opt/condor/sbin/condor_master
 elif [ $1 = "restart" ]; then
   $dir/scripts/gridcndor.sh stop
-  $dir/scripts/gridcndor.sh start $2
+  $dir/scripts/gridcndor.sh start
 elif [ $1 = "stop" ]; then
   pkill -KILL condor
 elif [ $1 = "reconfig" ]; then

@@ -2,6 +2,7 @@
 # Monitor the state of our features (Brunet, IPOP, and Condor)
 dir="/usr/local/ipop"
 device=`cat $dir/etc/device`
+statefd=$dir"/var/monitor.state"
 
 ip=
 old_ip=
@@ -54,6 +55,7 @@ baddr_control()
     fi
 
     if [[ $makecert ]]; then
+      echo "makecert" > $statefd
       $dir/scripts/ipopsec.py $baddr
     fi
   fi
@@ -89,6 +91,7 @@ ip_control()
 # step 0 - check if Ipop is working!
   if [[ `$dir/tests/CheckSelf.py` == "False" ]]; then
     /etc/init.d/ipop.sh restart
+    ip_start=true
   fi
 # step 1 - determine if we should proceed
   ip=`$dir/scripts/utils.sh get_ip $device`
@@ -120,7 +123,8 @@ ip_control()
 # step 5 - clear ip_start, set our hostname, and (re)start condor
   ip_start=
   $dir/scripts/hostname.sh
-  $dir/scripts/gridcndor.sh restart $old_ip
+  $dir/scripts/gridcndor.sh restart
+  condor_break=true
 }
 
 while true; do
@@ -129,8 +133,16 @@ while true; do
 # If there is a failure in condor (unable to communicate to manager) or we
 # haven't been allocated an IP yet, let's begin to loop faster.
   if [[ $ip_start || $baddr_start || $condor_break ]]; then
+    if [[ $ip_start ]]; then
+      echo "ip_start" > $statefd
+    elif [[ $baddr_start ]]; then
+      echo "baddr_start" > $statefd
+    elif [[ $condor_break ]]; then
+      echo "condor_break" > $statefd
+    fi
     sleep 60
   else
+    echo "good" > $statefd
     sleep 600
   fi
 done

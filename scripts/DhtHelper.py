@@ -22,7 +22,10 @@ def main():
     value = sys.argv[3]
     unregister(key, value)
   elif method == "dump":
-    dump()
+    key = None
+    if len(sys.argv) == 3:
+      key = sys.argv[2]
+    dump(key)
 
 def get(key):
   dhtserver = xmlrpclib.Server("http://" + dhtip + ":" + dhtport + "/xd.rem")
@@ -54,9 +57,14 @@ def unregister(key, value):
   proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
   proxy.unregister(key, value)
 
-def dump():
+def dump(key = None):
   proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
-  print proxy.dump()
+  if key == None:
+    print proxy.dump()
+  else:
+    res = proxy.dump(key)
+    for i in res:
+      print i
 
 if __name__ == "__main__":
   for i in range(3):

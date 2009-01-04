@@ -35,10 +35,17 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
     cp /mnt/fd/ipop_ns $dir/var/ipop_ns
     ipop_ns=`cat $dir/var/ipop_ns`
     sed s/NAMESPACE/$ipop_ns/ $dir/etc/ipop.config > $dir/var/ipop.config
-    if test -f /mnt/fd/ipopsec_server; then
-      sed s/\<EndToEndSecurity\>false/\<EndToEndSecurity\>true/ -i $dir/var/ipop.config
-    fi
     cp /mnt/fd/node.config $dir/var/node.config
+    if test -f /mnt/fd/ipopsec_server; then
+      cd $dir/tools
+      rm -f private_key
+      mono Keymaker.exe
+      mv rsa_private private_key
+      rm -f rsa_public
+      cd -
+      sed 's/<EndToEndSecurity>false/<EndToEndSecurity>true/' -i $dir/var/ipop.config
+      sed -n '1h;1!H;${;g;s/<Security>\s*<Enabled>false/<Security>\n    <Enabled>true/g;p;}' -i $dir/var/node.config
+    fi
   fi
 
   cd $dir/tools
@@ -48,7 +55,7 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
 #trace is only enabled to help find bugs, to use it execute kill -USR2 $CondorIpopNode_PID
   mono --trace=disabled CondorIpopNode.exe $dir/var/node.config $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
   pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
-  while [ ! $pid ]; do
+  while [ ! "$pid" ]; do
     sleep 5
     pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
   done
