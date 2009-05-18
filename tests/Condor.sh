@@ -2,7 +2,7 @@
 # This is used to check whether or not condor got configured properly
 
 dir="/usr/local/ipop"
-config="/etc/condor/condor_config"
+config="/usr/local/ipop/etc/condor_config.d/00root"
 fail=0
 if [ ! -e $config ]; then
   echo "condor_config missing"
@@ -18,7 +18,7 @@ fi
 
 res=`grep DAEMON_LIST $config | awk -F "= " {'print $2'}`
 if [ "$res" = "`echo $res | grep -E "[[:space:]]"`" ]; then     
-  $res=""
+  res=""
 fi
 if [ -z "$res" ]; then
   fail=1

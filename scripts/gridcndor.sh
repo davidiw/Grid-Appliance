@@ -43,10 +43,26 @@ configure_condor()
   echo "FLOCK_TO = "$flock >> $config
   echo $flock > $dir/var/condor_flock
 
-  if test -f /mnt/fd/condor_group; then
-    echo "MachineOwner = \"`cat /mnt/fd/condor_group`\"" >> $config
-    echo "STARTD_ATTRS = \$(STARTD_ATTRS) MachineOwner" >> $config
-    echo "RANK = TARGET.Group =?= MY.MachineOwner" >> $config
+  if test -e /mnt/fd/condor_group; then
+    echo "Group = \"`cat /mnt/fd/condor_group`\"" >> $config
+    echo "STARTD_ATTRS = \$(STARTD_ATTRS), Group" >> $config
+    echo "RANK = TARGET.Group =?= MY.Group" >> $config
+    echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), Group" >> $config
+    if [ $type = "Server" ]; then
+      echo "NEGOTIATOR_PRE_JOB_RANK = 10 * (MY.RANK) + 1 * (RemoteOwner =?= UNDEFINED)" >> $config
+    fi
+  fi
+
+  if test -e /mnt/fd/condor_user; then
+    user=`cat /mnt/fd/condor_user`
+  elif test -e /mnt/fd/user_config; then
+    user=`grep  -E 'O=\S*' /mnt/fd/user_config  | awk -F"=" '{print $2}'`
+  fi
+
+  if [ "$user" ]; then
+    echo "User = $user" >> $config
+    echo "STARTD_ATTRS = \$(STARTD_ATTRS), User" >> $config
+    echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), User" >> $config
   fi
 }
 
