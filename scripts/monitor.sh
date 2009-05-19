@@ -65,23 +65,24 @@ baddr_control()
 # and will help find a new one if we are no longer able to connect to him
 condor_control()
 {
-  if [[ `$dir/scripts/utils.sh get_pid gridcndor.sh` == "" ]]; then
-    condor_break=
+  condor_break=true
+# Are we connected, is gridcndor running?  let's come back soon...
+  if [[ `$dir/tests/CheckConnection.py` == "True" || "`$dir/scripts/utils.sh get_pid gridcndor.sh`" ]]; then
+    return
+  elif [[ ! "`$dir/scripts/utils.sh get_pid condor`" ]]; then
+    $dir/scripts/gridcndor.sh restart | logger -t maintenance &
+    return
   fi
-  manager_ip=`cat $dir/var/condor_manager`
 
+  manager_ip=`cat $dir/var/condor_manager`
 # Send some pings to the manager, see if he is operational
-  if [[ 0 == `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
-# No ping responses, so let's make sure we are connected
-    if [[ `$dir/tests/CheckConnection.py` == "True" ]]; then
-      if [[ !$condor_break ]]; then
-# We are connected but no response from manager, let's reconfig
-        logger -t maintenance "Unable to contact manager, restarting Condor..."
-        $dir/scripts/gridcndor.sh reconfig | logger -t maintenance &
-        condor_break=true
-      fi
-    fi
+  if [[ "$manager_ip" || 0 == `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
+    logger -t maintenance "Unable to contact manager, restarting Condor..."
+    $dir/scripts/gridcndor.sh reconfig | logger -t maintenance &
+    return
   fi
+
+  condor_break=
 }
 
 # This handles condor control loop and other features that rely on IP such as
@@ -127,9 +128,18 @@ ip_control()
   condor_break=true
 }
 
+floppy_check()
+{
+  if ! test -e /mnt/fd/ipop_ns; then
+    umount /mnt/fd
+    mount /dev/fd0 /mnt/fd
+  fi
+}
+
 while true; do
   baddr_control
   ip_control
+  floppy_check
 # If there is a failure in condor (unable to communicate to manager) or we
 # haven't been allocated an IP yet, let's begin to loop faster.
   if [[ $ip_start || $baddr_start || $condor_break ]]; then

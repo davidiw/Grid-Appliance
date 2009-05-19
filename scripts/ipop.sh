@@ -1,83 +1,91 @@
 #!/bin/bash
-dir="/usr/local/ipop"
-device=`cat $dir/etc/device`
+DIR="/usr/local/ipop"
+PIDFILE=$DIR/var/ipop.pid
+DEVICE=`cat $DIR/etc/DEVICE`
 
-if ! `$dir/scripts/utils.sh check_fd`; then
+if ! `$DIR/scripts/utils.sh check_fd`; then
   exit
 fi
 
+# If we don't have PIDFILE, guess all is ok!
 if [[ $1 == "stop" || $1 == "restart" ]]; then
   echo "Stopping Grid Services..."
-  pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
-  if [ $pid ]; then
-    kill -SIGINT $pid
-    sleep 5
-    kill -KILL $pid
+  if [[ ! -e $PIDFILE ]]; then
+    exit
   fi
+
+  pid=`cat $PIDFILE`
+
+  if [[ ! $pid || ! -e /proc/$pid ]]; then
+    exit
+  fi
+
+  kill -SIGINT $pid
+  sleep 5
+  kill -KILL $pid
+
+  rm $PIDFILE
 fi
 
 if [[ $1 == "start" || $1 == "restart" ]]; then
-  echo "Starting Grid Services..."
+  if [[ -e $PIDFILE ]]; then
+    pid=`cat $PIDFILE`
 
-  # Create config file for IPOP and start it up
-  if test -f $dir/var/ipop_ns; then
-    if [[ `cat $dir/var/ipop_ns` == `cat /mnt/fd/ipop_ns` ]]; then
-      new_config=0
-    else
-      new_config=1
+    if [[ $pid && -e /proc/$pid ]]; then
+      echo "IPOP Already running..."
+      exit
     fi
-  else
-    new_config=1
   fi
 
-  if [[ $new_config == 1 ]]; then
+  # Create config file for IPOP and start it up
+  new_config=true
+  if [[ -e $DIR/var/ipop_ns ]]; then
+    if [[ `cat $DIR/var/ipop_ns` == `cat /mnt/fd/ipop_ns` ]]; then
+      unset new_config
+    fi
+  fi
+
+  if [[ $new_config ]]; then
     echo "Generating new IPOP configuration"
-    cp /mnt/fd/ipop_ns $dir/var/ipop_ns
-    ipop_ns=`cat $dir/var/ipop_ns`
-    sed s/NAMESPACE/$ipop_ns/ $dir/etc/ipop.config > $dir/var/ipop.config
-    cp /mnt/fd/node.config $dir/var/node.config
-    if test -f /mnt/fd/ipopsec_server; then
-      cd $dir/tools
+    cp /mnt/fd/ipop_ns $DIR/var/ipop_ns
+    ipop_ns=`cat $DIR/var/ipop_ns`
+    sed s/NAMESPACE/$ipop_ns/ $DIR/etc/ipop.config > $DIR/var/ipop.config
+    cp /mnt/fd/node.config $DIR/var/node.config
+    if [[ -f /mnt/fd/ipopsec_server ]]; then
+      cd $DIR/tools
       rm -f private_key
       mono Keymaker.exe
       mv rsa_private private_key
       rm -f rsa_public
       cd -
-      sed 's/<EndToEndSecurity>false/<EndToEndSecurity>true/' -i $dir/var/ipop.config
-      sed -n '1h;1!H;${;g;s/<Security>\s*<Enabled>false/<Security>\n    <Enabled>true/g;p;}' -i $dir/var/node.config
+      sed 's/<EndToEndSecurity>false/<EndToEndSecurity>true/' -i $DIR/var/ipop.config
+      sed -n '1h;1!H;${;g;s/<Security>\s*<Enabled>false/<Security>\n    <Enabled>true/g;p;}' -i $DIR/var/node.config
     fi
   fi
 
-  cd $dir/tools
+  cd $DIR/tools
   rm -rf data
+  cd -
+#service will throw exceptions if we don't have a FQDN
   oldhostname=`hostname`
   hostname localhost
 #trace is only enabled to help find bugs, to use it execute kill -USR2 $CondorIpopNode_PID
-  mono --trace=disabled CondorIpopNode.exe $dir/var/node.config $dir/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$dir/var/ipoplog $dir/var/ipop.log.%y%m%d &
-  pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
-  while [ ! "$pid" ]; do
-    sleep 5
-    pid=`$dir/scripts/utils.sh get_pid CondorIpopNode`
-  done
-  sleep 3
-  test=`/sbin/ifconfig tapipop | grep tapipop`
-  if test -z "$test"; then
-    $dir/scripts/ipop.sh restart
-    exit
-  fi
+  mono --trace=disabled CondorIpopNode.exe $DIR/var/node.config $DIR/var/ipop.config 2>&1 | { /usr/bin/cronolog --period="1 day" --symlink=$DIR/var/ipoplog $DIR/var/ipop.log.%y%m%d; } &
+  pid=$!
+  echo $pid > $PIDFILE
   renice -19 -p $pid
 
-  if [ ! `$dir/scripts/utils.sh get_pid DhtProxy` ]; then
-    $dir/scripts/DhtProxy.py &
-    $dir/scripts/DhtHelper.py register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
+# only need one DhtProxy
+  if [ ! `$DIR/scripts/utils.sh get_pid DhtProxy` ]; then
+    $DIR/scripts/DhtProxy.py &
+    $DIR/scripts/DhtHelper.py register dhcp:ipop_namespace:`cat /mnt/fd/ipop_ns` `cat /mnt/fd/dhcpdata.conf` 302400 &
   fi
 
-  hostname $oldhostname
-  dhclient3 -pf /var/run/dhclient.$device.pid -lf /var/lib/dhcp3/dhclient.$device.leases $device
+  dhclient3 -pf /var/run/dhclient.$DEVICE.pid -lf /var/lib/dhcp3/dhclient.$DEVICE.leases $DEVICE
 
-  cd -
-  ln -sf $dir/var/ipoplog /var/log/ipop
+# setup logging
+  ln -sf $DIR/var/ipoplog /var/log/ipop
 
+  $DIR/scripts/iprules &
   echo "IPOP has started"
-  $dir/scripts/iprules &
 fi
