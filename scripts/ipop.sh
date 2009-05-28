@@ -1,40 +1,40 @@
 #!/bin/bash
 DIR="/usr/local/ipop"
-PIDFILE=$DIR/var/ipop.pid
-DEVICE=`cat $DIR/etc/DEVICE`
+DEVICE=`cat $DIR/etc/device`
 
 if ! `$DIR/scripts/utils.sh check_fd`; then
-  exit
+  return 1
 fi
 
-# If we don't have PIDFILE, guess all is ok!
-if [[ $1 == "stop" || $1 == "restart" ]]; then
+function stop()
+{
   echo "Stopping Grid Services..."
-  if [[ ! -e $PIDFILE ]]; then
-    exit
+
+  pid=`$DIR/scripts/utils.sh get_pid CondorIpopNode`
+
+  if [[ ! $pid ]]; then
+    return 1
   fi
 
-  pid=`cat $PIDFILE`
+  kill -SIGINT $pid &> /dev/null
 
-  if [[ ! $pid || ! -e /proc/$pid ]]; then
-    exit
+  while [[ `$DIR/scripts/utils.sh get_pid CondorIpopNode` ]]; do
+    sleep 5
+    kill -KILL $pid &> /dev/null
+  done
+
+  if [[ -e /proc/sys/net/ipv4/neigh/tapipop ]]; then
+    ./tunctl -d tapipop 2>1 | logger -t ipop
   fi
+}
 
-  kill -SIGINT $pid
-  sleep 5
-  kill -KILL $pid
+function start()
+{
+  pid=`$DIR/scripts/utils.sh get_pid CondorIpopNode`
 
-  rm $PIDFILE
-fi
-
-if [[ $1 == "start" || $1 == "restart" ]]; then
-  if [[ -e $PIDFILE ]]; then
-    pid=`cat $PIDFILE`
-
-    if [[ $pid && -e /proc/$pid ]]; then
-      echo "IPOP Already running..."
-      exit
-    fi
+  if [[ $pid ]]; then
+    echo "IPOP Already running..."
+    return 1
   fi
 
   # Create config file for IPOP and start it up
@@ -65,15 +65,22 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
 
   cd $DIR/tools
   rm -rf data
-  cd -
 #service will throw exceptions if we don't have a FQDN
   oldhostname=`hostname`
   hostname localhost
+  if [[ ! -e /proc/sys/net/ipv4/neigh/tapipop ]]; then
+    ./tunctl -t tapipop 2>1 | logger -t ipop
+  fi
 #trace is only enabled to help find bugs, to use it execute kill -USR2 $CondorIpopNode_PID
-  mono --trace=disabled CondorIpopNode.exe $DIR/var/node.config $DIR/var/ipop.config 2>&1 | { /usr/bin/cronolog --period="1 day" --symlink=$DIR/var/ipoplog $DIR/var/ipop.log.%y%m%d; } &
-  pid=$!
-  echo $pid > $PIDFILE
+  mono --trace=disabled CondorIpopNode.exe $DIR/var/node.config $DIR/var/ipop.config 2>&1 | /usr/bin/cronolog --period="1 day" --symlink=$DIR/var/ipoplog $DIR/var/ipop.log.%y%m%d &
+  pid=`$DIR/scripts/utils.sh get_pid CondorIpopNode`
+  if [[ ! $pid ]]; then
+    sleep 5
+  fi
+
+  pid=`$DIR/scripts/utils.sh get_pid CondorIpopNode`
   renice -19 -p $pid
+  cd -
 
 # only need one DhtProxy
   if [ ! `$DIR/scripts/utils.sh get_pid DhtProxy` ]; then
@@ -88,4 +95,18 @@ if [[ $1 == "start" || $1 == "restart" ]]; then
 
   $DIR/scripts/iprules &
   echo "IPOP has started"
-fi
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+esac
+exit 0

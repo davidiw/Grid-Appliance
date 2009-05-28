@@ -50,6 +50,7 @@ if [ $1 == "start" ]; then
 
   mkdir -p $base_path/mnt/local &> /dev/null
   mount --bind $base_path/mnt/local /mnt/local &> /dev/null
+  chown -R griduser:griduser $base_path/mnt/local &> /dev/null
     
   echo "Mounting CoW complete"
 fi

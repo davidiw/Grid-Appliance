@@ -67,7 +67,7 @@ condor_control()
 {
   condor_break=true
 # Are we connected, is gridcndor running?  let's come back soon...
-  if [[ `$dir/tests/CheckConnection.py` == "True" || "`$dir/scripts/utils.sh get_pid gridcndor.sh`" ]]; then
+  if [[ `$dir/tests/CheckConnection.py` != "True" || "`$dir/scripts/utils.sh get_pid gridcndor.sh`" ]]; then
     return
   elif [[ ! "`$dir/scripts/utils.sh get_pid condor`" ]]; then
     $dir/scripts/gridcndor.sh restart | logger -t maintenance &
@@ -76,7 +76,7 @@ condor_control()
 
   manager_ip=`cat $dir/var/condor_manager`
 # Send some pings to the manager, see if he is operational
-  if [[ "$manager_ip" || 0 == `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
+  if [[ "$manager_ip" && 0 == `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
     logger -t maintenance "Unable to contact manager, restarting Condor..."
     $dir/scripts/gridcndor.sh reconfig | logger -t maintenance &
     return
