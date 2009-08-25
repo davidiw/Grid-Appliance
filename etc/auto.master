@@ -1,2 +1,2 @@
-/mnt/ganfs /usr/local/ipop/scripts/nfs_automount.sh
-/mnt/dhtnfs /usr/local/ipop/scripts/dht_nfs_automount.sh
+/mnt/ganfs /etc/autofs/nfs_automount.sh
+/mnt/dhtnfs /etc/autofs/dht_nfs_automount.sh

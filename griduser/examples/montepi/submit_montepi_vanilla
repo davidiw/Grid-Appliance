@@ -1,0 +1,11 @@
+Universe = vanilla
+Executable = montepi
+Log = montepi.$(Cluster).$(Process).log
+Output = montepi.$(Cluster).$(Process).out
+Error = montepi.$(Cluster).$(Process).err
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+Arguments = 10000000
+Queue 50
+Arguments = 20000000
+Queue 50

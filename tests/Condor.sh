@@ -1,8 +1,7 @@
 #!/bin/bash
 # This is used to check whether or not condor got configured properly
 
-dir="/usr/local/ipop"
-config="/usr/local/ipop/etc/condor_config.d/00root"
+config=$DIR"/condor_config.d/00root"
 fail=0
 if [ ! -e $config ]; then
   echo "condor_config missing"
@@ -38,9 +37,9 @@ res=`grep NETWORK_INTERFACE $config | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
 if [ -z "$res" ]; then
   fail=1
   echo "no NETWORK_INTERFACE defined!"
-elif [[ "$res" != "`$dir/scripts/utils.sh get_ip tap0`" ]]; then
+elif [[ "$res" != "`$DIR/scripts/utils.sh get_ip tap0`" ]]; then
   fail=1
-  echo "NETWORK_INTERFACE incorrect: "$res" != "`$dir/scripts/utils.sh get_ip tap0`"!"
+  echo "NETWORK_INTERFACE incorrect: "$res" != "`$DIR/scripts/utils.sh get_ip tap0`"!"
 fi
 
 if [ $fail = 1 ]; then

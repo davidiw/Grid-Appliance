@@ -3,10 +3,6 @@
 # script start them, having input parameter 1 defined.  Such as
 # `./DhtTest.sh test`.
 
-if [ $1 ]; then
-  ../scripts/DhtProxy.py &
-  pid=$!
-fi
 key=dhttest0
 value=dhttestvalue0
 
@@ -70,7 +66,3 @@ fi
 
 #../scripts/DhtHelper.py dump
 echo "Done with testing.  If no failure messages, tests succeeded"
-
-if [ $pid ]; then
-  kill -KILL $pid
-fi

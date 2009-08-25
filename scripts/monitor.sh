@@ -1,65 +1,18 @@
 #!/bin/bash
 # Monitor the state of our features (Brunet, IPOP, and Condor)
-dir="/usr/local/ipop"
-device=`cat $dir/etc/device`
-statefd=$dir"/var/monitor.state"
+source /etc/ipop.vpn.config
+source /etc/grid_appliance.config
+
+statefd=$DIR"/var/monitor.state"
 
 ip=
 old_ip=
-if test -f $dir/var/oldip; then
-  old_ip=`cat $dir/var/oldip`
-fi
-
-baddr=
-old_baddr=
-if test -f $dir/var/oldbaddr; then
-  old_baddr=`cat $dir/var/oldbaddr`
+if test -f $DIR/var/oldip; then
+  old_ip=`cat $DIR/var/oldip`
 fi
 
 ip_start=true
-baddr_start=true
 condor_break=
-
-# this has a lot of logic for future operations, but currently it is only used
-# to determine whether or not we should check the ipopsec info to see if it is
-# up to date and accurate
-baddr_control()
-{
-# step 1 - determine if we should proceed
-  baddr=`$dir/scripts/utils.sh get_baddr`
-  if [[ ! $baddr && (! $baddr_start || $old_baddr == $baddr) ]]; then
-    return
-  fi
-
-# step 2 - determine if there was a change in baddr
-  if [[ $old_baddr != $baddr ]]; then
-    echo $baddr > $dir/var/oldbaddr
-    old_baddr=baddr
-# step 3 - if no change in baddr, quit if this isn't our first run
-  elif [[ ! $baddr_start ]]; then
-    return
-  fi
-  baddr_start=
-
-# step 4 - check and update certificate if necessary
-  if test -f /mnt/fd/ipopsec_server; then
-    makecert=true
-    if test -f $dir/tools/certificates/lc.cert; then
-      cd $dir/tools
-      certout=`mono certhelper.exe readcert cert=$dir/tools/certificates/lc.cert`
-      certaddr=`echo $certout | grep -z -o -E brunet:node:[a-zA-Z0-9]+`
-      if [[ $certaddr == $baddr ]]; then
-        makecert=
-      fi
-      cd - &> /dev/null
-    fi
-
-    if [[ $makecert ]]; then
-      echo "makecert" > $statefd
-      $dir/scripts/ipopsec.py $baddr
-    fi
-  fi
-}
 
 # This is used to determine if we are still connected to the condor manager
 # and will help find a new one if we are no longer able to connect to him
@@ -67,35 +20,34 @@ condor_control()
 {
   condor_break=true
 # Are we connected, is gridcndor running?  let's come back soon...
-  if [[ `$dir/tests/CheckConnection.py` != "True" || "`$dir/scripts/utils.sh get_pid gridcndor.sh`" ]]; then
+  if [[ `$DIR/tests/CheckConnection.py` != "True" || "`$DIR/scripts/utils.sh get_pid gridcndor.sh`" ]]; then
     return
-  elif [[ ! "`$dir/scripts/utils.sh get_pid condor`" ]]; then
-    $dir/scripts/gridcndor.sh restart | logger -t maintenance &
+  elif [[ ! "`$DIR/scripts/utils.sh get_pid condor`" ]]; then
+    $DIR/scripts/gridcndor.sh restart | logger -t maintenance &
     return
   fi
 
-  manager_ip=`cat $dir/var/condor_manager`
+  manager_ip=`cat $DIR/var/condor_manager`
 # Send some pings to the manager, see if he is operational
-  if [[ "$manager_ip" && 0 == `$dir/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
+  if [[ "$manager_ip" && 0 == `$DIR/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
     logger -t maintenance "Unable to contact manager, restarting Condor..."
-    $dir/scripts/gridcndor.sh reconfig | logger -t maintenance &
+    $DIR/scripts/gridcndor.sh reconfig | logger -t maintenance &
     return
   fi
 
   condor_break=
 }
 
-# This handles condor control loop and other features that rely on IP such as
-# hostname and ipsec
+# This handles condor control loop and other features that rely on IP
 ip_control()
 {
 # step 0 - check if Ipop is working!
-  if [[ `$dir/tests/CheckSelf.py` == "False" ]]; then
+  if [[ `$DIR/tests/CheckSelf.py` == "False" ]]; then
     /etc/init.d/ipop.sh restart
     ip_start=true
   fi
 # step 1 - determine if we should proceed
-  ip=`$dir/scripts/utils.sh get_ip $device`
+  ip=`$DIR/scripts/utils.sh get_ip $DEVICE`
   if [[ ! $ip ]]; then
 # if we don't have a working hostname, things break, if we don't have an IP
 # address that resolves properly, then other things begin to break
@@ -116,37 +68,22 @@ ip_control()
   if [[ $old_ip != $ip ]]; then
     old_ip=$ip
     echo $ip > $dir/var/oldip
-    if test -f /mnt/fd/ipsec_server; then
-      $dir/scripts/ipsec.py $ip $old_ip
-    fi
   fi
 
 # step 5 - clear ip_start, set our hostname, and (re)start condor
   ip_start=
-  $dir/scripts/hostname.sh
-  $dir/scripts/gridcndor.sh restart
+  $DIR/scripts/hostname.sh
+  $DIR/scripts/gridcndor.sh restart
   condor_break=true
 }
 
-floppy_check()
-{
-  if ! test -e /mnt/fd/ipop_ns; then
-    umount /mnt/fd
-    mount /dev/fd0 /mnt/fd
-  fi
-}
-
 while true; do
-  baddr_control
   ip_control
-  floppy_check
 # If there is a failure in condor (unable to communicate to manager) or we
 # haven't been allocated an IP yet, let's begin to loop faster.
   if [[ $ip_start || $baddr_start || $condor_break ]]; then
     if [[ $ip_start ]]; then
       echo "ip_start" > $statefd
-    elif [[ $baddr_start ]]; then
-      echo "baddr_start" > $statefd
     elif [[ $condor_break ]]; then
       echo "condor_break" > $statefd
     fi

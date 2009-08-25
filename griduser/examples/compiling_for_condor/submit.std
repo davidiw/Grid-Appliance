@@ -1,0 +1,14 @@
+Universe	= standard
+Executable	= simple.std
+Log		= simple.log
+Output		= simple.$(Process).out
+Error		= simple.$(Process).err
+
+Arguments	= 4 10
+Queue
+
+Arguments	= 4 11
+Queue
+
+Arguments	= 4 12
+Queue

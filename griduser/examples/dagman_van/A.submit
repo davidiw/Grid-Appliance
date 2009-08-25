@@ -1,0 +1,15 @@
+###################################################
+# Submit file for Job A
+#
+# This will generate a random number and print 
+# the number to STDOUT, which we'll save in A.out
+###################################################
+
+Universe   = vanilla 
+Executable = random.condor
+output     = A.out
+log        = diamond.log
+should_transfer_files = if_needed
+when_to_transfer_output = on_exit
+Queue
+

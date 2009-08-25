@@ -1,0 +1,8 @@
+executable = env-test.pl
+universe = vanilla
+environment = foo = bar; zot = qux
+output = env-test.out.$(cluster)
+log = env-test.log.$(cluster)
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+queue

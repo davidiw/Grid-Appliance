@@ -1,66 +1,60 @@
 #!/bin/bash
-dir="/usr/local/ipop"
-config=$dir"/etc/condor_config.d/00root"
-device=`cat $dir/etc/device`
+source /etc/ipop.vpn.config
+source /etc/grid_appliance.config
+source /etc/group_appliance.config
+config=$DIR"/etc/condor_config.d/00root"
 
 configure_condor()
 {
-  ipop_ns=`cat /mnt/fd/ipop_ns`
+  ipop_ns=`$DIR/scripts/utils.sh get_ipopns`
 #  We bind to all interfaces for condor interface to work
-  ip=`$dir/scripts/utils.sh get_ip $device`
+  ip=`$DIR/scripts/utils.sh get_ip $DEVICE`
   echo "NETWORK_INTERFACE = "$ip > $config
 
-  type=`cat /mnt/fd/type`
-  if [ $type = "Server" ]; then
-    registered=`$dir/scripts/DhtHelper.py dump $ipop_ns:condor:server`
+  if [ $MACHINE_TYPE = "Server" ]; then
+    registered=`$DIR/scripts/DhtHelper.py dump $ipop_ns:condor:server`
     for reg in $registered; do
-      $dir/scripts/DhtHelper.py unregister $ipop_ns:condor:server $reg
+      $DIR/scripts/DhtHelper.py unregister $ipop_ns:condor:server $reg
     done
-    $dir/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 600
+    $DIR/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 600
     server=$ip
   else
-    server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
+    server=`$DIR/scripts/DhtHelper.py get server $ipop_ns`
     while [ ! $server ]; do
       sleep 15
-      server=`$dir/scripts/DhtHelper.py get server $ipop_ns`
+      server=`$DIR/scripts/DhtHelper.py get server $ipop_ns`
     done
   fi
-  flock=`$dir/scripts/DhtHelper.py get flock $ipop_ns`
+  flock=`$DIR/scripts/DhtHelper.py get flock $ipop_ns`
 
-  if [ $type = "Server" ]; then
+  if [ $MACHINE_TYPE = "Server" ]; then
     DAEMONS="MASTER, COLLECTOR, NEGOTIATOR"
-  elif [ $type = "Submit" ]; then
+  elif [ $MACHINE_TYPE = "Submit" ]; then
     DAEMONS="MASTER, SCHEDD"
-  elif [ $type = "Worker" ]; then
+  elif [ $MACHINE_TYPE = "Worker" ]; then
     DAEMONS="MASTER, STARTD"
-  else #$type = Client
+  else #$MACHINE_TYPE = Client
     DAEMONS="MASTER, STARTD, SCHEDD"
   fi
 
   echo "DAEMON_LIST = "$DAEMONS >> $config
   echo "CONDOR_HOST = "$server >> $config
-  echo $server > $dir/var/condor_manager
+  echo $server > $DIR/var/condor_manager
   echo "FLOCK_TO = "$flock >> $config
-  echo $flock > $dir/var/condor_flock
+  echo $flock > $DIR/var/condor_flock
 
-  if test -e /mnt/fd/condor_group; then
-    echo "Group = \"`cat /mnt/fd/condor_group`\"" >> $config
+  if [[ "$CONDOR_GROUP" ]]; then
+    echo "Group = \"$CONDOR_GROUP\"" >> $config
     echo "STARTD_ATTRS = \$(STARTD_ATTRS), Group" >> $config
     echo "RANK = TARGET.Group =?= MY.Group" >> $config
     echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), Group" >> $config
-    if [ $type = "Server" ]; then
+    if [ $MACHINE_TYPE = "Server" ]; then
       echo "NEGOTIATOR_PRE_JOB_RANK = 10 * (MY.RANK) + 1 * (RemoteOwner =?= UNDEFINED)" >> $config
     fi
   fi
 
-  if test -e /mnt/fd/condor_user; then
-    user=`cat /mnt/fd/condor_user`
-  elif test -e /mnt/fd/user_config; then
-    user=`grep  -E 'O=\S*' /mnt/fd/user_config  | awk -F"=" '{print $2}'`
-  fi
-
-  if [ "$user" ]; then
-    echo "User = $user" >> $config
+  if [ "$CONDOR_USER" ]; then
+    echo "User = $CONDOR_USER" >> $config
     echo "STARTD_ATTRS = \$(STARTD_ATTRS), User" >> $config
     echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), User" >> $config
   fi
@@ -68,12 +62,12 @@ configure_condor()
 
 update_flock()
 {
-  ipop_ns=`cat /mnt/fd/ipop_ns`
+  ipop_ns=`$DIR/scripts/utils.sh get_ipopns`
   flock=`cat /etc/condor/flock`
-  new_flock=`$dir/scripts/DhtHelper.py get flock $ipop_ns`
+  new_flock=`$DIR/scripts/DhtHelper.py get flock $ipop_ns`
   if [[ $flock != $new_flock ]]; then
     echo "FLOCK_TO = "$flock >> $config
-    echo $flock > $dir/var/condor_flock
+    echo $flock > $DIR/var/condor_flock
     /opt/condor/sbin/condor_reconfig
   fi
 }
@@ -86,8 +80,8 @@ if [ $1 = "start" ]; then
   ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
   /opt/condor/sbin/condor_master
 elif [ $1 = "restart" ]; then
-  $dir/scripts/gridcndor.sh stop
-  $dir/scripts/gridcndor.sh start
+  $DIR/scripts/gridcndor.sh stop
+  $DIR/scripts/gridcndor.sh start
 elif [ $1 = "stop" ]; then
   pkill -KILL condor
 elif [ $1 = "reconfig" ]; then

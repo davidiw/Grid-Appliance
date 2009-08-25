@@ -1,6 +1,6 @@
 #!/bin/bash
-dir="/usr/local/ipop"
-release=`$dir/scripts/utils.sh check_release`
+source /etc/grid_appliance.config
+release=`$DIR/scripts/utils.sh check_release`
 #aufs or unionfs
 fs="aufs"
 

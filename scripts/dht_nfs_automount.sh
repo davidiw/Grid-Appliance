@@ -1,7 +1,7 @@
 #!/bin/bash
 #mounts dht shared folders (experimental)
-dir="/usr/local/ipop"
+source /etc/grid_appliance.config
 
 key=$1
-host=`$dir/scripts/DhtHelper.py get $key`
+host=`$DIR/scripts/DhtHelper.py get $key`
 echo "-fstype=nfs,ro,nolock $host:/mnt/local" 

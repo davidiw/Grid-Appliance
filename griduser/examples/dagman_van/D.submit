@@ -1,0 +1,19 @@
+###################################################
+# Submit file for Job D
+#
+# sum.condor will open up each file specified on
+# the command line, read an integer from each one, 
+# add up all the results, and print the final value 
+# to STDOUT.
+###################################################
+
+Universe   = vanilla 
+Executable = sum.condor
+arguments  = B.out C.out
+output     = D.out
+error      = D.err
+log        = diamond.log
+should_transfer_files = if_needed
+when_to_transfer_output = on_exit
+transfer_input_files = B.out, C.out
+Queue

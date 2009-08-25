@@ -1,12 +1,6 @@
 #!/usr/bin/python
 import sys, xmlrpclib, random, time, socket
 
-dhtip="127.0.0.1" #sys.argv[2]
-dhtport="64221" #sys.argv[3]
-
-proxyip="127.0.0.1"
-proxyport="103182"
-
 def main():
   method = sys.argv[1]
   if method == "get":
@@ -15,7 +9,7 @@ def main():
   elif method == "register":
     key = sys.argv[2]
     value = sys.argv[3]
-    ttl = sys.argv[4]
+    ttl = int(sys.argv[4])
     register(key, value, ttl)
   elif method == "unregister":
     key = sys.argv[2]
@@ -28,43 +22,45 @@ def main():
     dump(key)
 
 def get(key):
-  dhtserver = xmlrpclib.Server("http://" + dhtip + ":" + dhtport + "/xd.rem")
+  rpc = xmlrpclib.Server("http://127.0.0.1:10000/xm.rem")
   rv = ""
   if key == "server":
     ipop_ns = sys.argv[3]
-    res = dhtserver.Get(ipop_ns + ":condor:server")
+    res = rpc.localproxy("DhtClient.Get", xmlrpclib.Binary(ipop_ns + ":condor:server"))
     if len(res) > 0:
-      rv = res[random.randint(0, len(res) - 1)]["valueString"]
+      rv = res[random.randint(0, len(res) - 1)]["value"].data
   elif key == "flock":
     ipop_ns = sys.argv[3]
-    res = dhtserver.Get(ipop_ns + ":condor:server")
+    res = rpc.localproxy("DhtClient.Get", xmlrpclib.Binary(ipop_ns + ":condor:server"))
     if len(res) > 0:
       for entry in res:
-        rv += entry["valueString"] + ", "
+        rv += entry["value"].data + ", "
       rv = rv[:-2]
   else:
     try:
-      rv = dhtserver.Get(key)[0]["valueString"] 
+      rv = rpc.localproxy("DhtClient.Get", xmlrpclib.Binary(key))
     except:
       rv = ""
   print rv
 
 def register(key, value, ttl):
-  proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
-  proxy.rif_register("put", key, value, ttl, True)
+  rpc = xmlrpclib.Server("http://127.0.0.1:10000/xm.rem")
+  rpc.localproxy("RpcDhtProxy.Register", xmlrpclib.Binary(key), xmlrpclib.Binary(value), ttl)
 
 def unregister(key, value):
-  proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
-  proxy.unregister(key, value)
+  rpc = xmlrpclib.Server("http://127.0.0.1:10000/xm.rem")
+  rpc.localproxy("RpcDhtProxy.Unregister", xmlrpclib.Binary(key), xmlrpclib.Binary(value))
 
 def dump(key = None):
-  proxy = xmlrpclib.Server("http://" + proxyip + ":" + proxyport)
-  if key == None:
-    print proxy.dump()
-  else:
-    res = proxy.dump(key)
-    for i in res:
-      print i
+  rpc = xmlrpclib.Server("http://127.0.0.1:10000/xm.rem")
+  res = rpc.localproxy("RpcDhtProxy.ListEntries")
+  skip = False
+  if(key == none):
+    skip = True
+  for entry in res:
+    if(not skip and entry["Key"].data != key):
+      continue
+    print entry["Key"].data + ", " + entry["Value"].data 
 
 if __name__ == "__main__":
   for i in range(3):

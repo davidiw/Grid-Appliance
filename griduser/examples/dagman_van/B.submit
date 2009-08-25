@@ -1,0 +1,16 @@
+###################################################
+# Submit file for Job B
+#
+# half.condor will read in a number from STDIN,
+# divide it by two, and print the result on STDOUT. 
+###################################################
+
+Universe   = vanilla 
+Executable = half.condor
+input      = A.out
+output     = B.out
+log        = diamond.log
+should_transfer_files = if_needed
+when_to_transfer_output = on_exit
+transfer_input_files = A.out
+Queue

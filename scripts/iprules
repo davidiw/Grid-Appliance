@@ -1,7 +1,7 @@
 #!/bin/bash
 # Flush all existing rules
-dir="/usr/local/ipop"
-device=`cat $dir/etc/device`
+source /etc/ipop.vpn.config
+
 iptables -F
 
 #Allow root running applications send data out
@@ -11,7 +11,7 @@ iptables -A OUTPUT -m owner --gid-owner root -j ACCEPT
 iptables -A OUTPUT -o eth0 -j DROP
 
 #Block incoming SSH over IPOP and Eth0
-iptables -A INPUT -p tcp -i $device --dport 22 -j DROP
+iptables -A INPUT -p tcp -i $DEVICE --dport 22 -j DROP
 iptables -A INPUT -p tcp -i eth0 --dport 22 -j DROP
 
 if test -f /home/griduser/local_iprules; then

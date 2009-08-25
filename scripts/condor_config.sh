@@ -1,7 +1,7 @@
 #!/bin/bash
-dir="/usr/local/ipop"
+source /etc/grid_appliance.config
 
-path=$dir"/etc/condor_config.d/"
+path=$DIR"/etc/condor_config.d/"
 for i in `ls $path`; do
   if test -f $path"/"$i; then
     cat $path"/"$i

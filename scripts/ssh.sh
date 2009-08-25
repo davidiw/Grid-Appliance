@@ -1,20 +1,20 @@
 #!/bin/bash
 #SSH enable
-
-type=`cat /mnt/fd/type`
+source /etc/grid_appliance.config
+source /etc/group_appliance.config
 
 # Only submit nodes should have ssh enabled by default
-if [ $type = "Client" ]; then
+if [ $MACHINE_TYPE = "Client" ]; then
   /etc/init.d/ssh start
 fi
 
 # All nodes should enable admin ssh if the floppy enables it
-if [ -f /mnt/fd/sshd_config ]; then
+if [ -f $CONFIG_PATH/sshd_config ]; then
   rm -rf /root/.ssh &> /dev/null
-  mkdir /root/.ssh
-  cp /mnt/fd/authorized_keys /root/.ssh/authorized_keys
+  mkdir -p /root/.ssh
+  cp $CONFIG_PATH/authorized_keys /root/.ssh/authorized_keys
   chown -R root:root /root
   chmod 700 /root/.ssh
   chmod 600 /root/.ssh/*
-  /usr/sbin/sshd -f /mnt/fd/sshd_config
+  /usr/sbin/sshd -f $CONFIG_PATH/sshd_config
 fi

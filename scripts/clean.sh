@@ -1,5 +1,5 @@
 #!/bin/bash
-dir="/usr/local/ipop"
+source /etc/grid_appliance.config
 
 paths="opt/condor/var
 var/log
@@ -18,9 +18,9 @@ for k in "/.unionfs/.unionfs" "/.unionfs" "/"; do
       rm -f $k/$j/.* &> /dev/null
     done
   done
-  rm -f $k/home/griduser/.xison \
-  $k/home/griduser/.xdisabled \
-  $k/var/cache/apt/archives/*deb &> /dev/null
+  rm -f $k/var/cache/apt/archives/*deb &> /dev/null
+  rm $k/$DIR/var/*
+  rm $k/$DIR/var/*/*
 
   if [[ k != "/" ]]; then
     rm -f $k/home/griduser/.Xauthority &> /dev/null

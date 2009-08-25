@@ -1,6 +1,7 @@
 #!/bin/bash
-dir="/usr/local/ipop"
-VMM=`$dir/scripts/utils.sh vmm`
+source /etc/grid_appliance.config
+source /etc/group_appliance.config
+VMM=`$DIR/scripts/utils.sh vmm`
 
 if [ -d /.unionfs/.unionfs ]; then
   file=/.unionfs/.unionfs/swapfile
@@ -13,19 +14,21 @@ dd if=/dev/zero of=$file bs=1024K count=128
 mkswap $file
 swapon $file
 
-$dir/scripts/monitor.sh &> /var/log/monitor.log &
+$DIR/scripts/monitor.sh &> /var/log/monitor.log &
+$DIR/scripts/ssh.sh
 
 if [[ $VMM = "vmware" ]]; then
-  ln -sf $dir/etc/xorg.conf.vmware /etc/X11/xorg.conf
+  ln -sf $DIR/etc/xorg.conf.vmware /etc/X11/xorg.conf
 else
-  ln -sf $dir/etc/xorg.conf.vesa /etc/X11/xorg.conf
+  ln -sf $DIR/etc/xorg.conf.vesa /etc/X11/xorg.conf
 fi
 
-if [[ `cat /mnt/fd/type` == "Client" ]]; then
-  rm /home/griduser/.xison &> /dev/null
-  cd /home/griduser
-  su griduser /home/griduser/startx.sh &
-  cd -
+if [[ $MACHINE_TYPE == "Client" ]]; then
+  if [[ ! `$DIR/scripts/utils.sh get_pid X` && ! -f /home/griduser/.xdisabled ]]; then
+    cd /home/griduser
+    su griduser startx &> /dev/null &
+    cd - &> /dev/null
+  fi
 fi
 
 clear

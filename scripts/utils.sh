@@ -1,10 +1,5 @@
 #!/bin/bash
-dir="/usr/local/ipop"
-
-check_fd()
-{
-  return `test -f /mnt/fd/ipop_ns`
-}
+source /etc/grid_appliance.config
 
 check_release()
 {
@@ -15,9 +10,16 @@ check_release()
   fi
 }
 
+get_ipopns()
+{
+  source /etc/ipop.vpn.config
+  grep -oE 'IpopNamespace>.*</IpopNamespace' $DIR/etc/ipop.config | grep -oE '[>][^<>]+[<]' | grep -oE '[^<>]+'
+}
+
 get_baddr()
 {
-  grep -z -o -E brunet:node:[a-zA-Z0-9]+ $dir/var/node.config
+  source /etc/ipop.vpn.config
+  grep -z -o -E brunet:node:[a-zA-Z0-9]+ $DIR/etc/node.config
 }
 
 get_ip()

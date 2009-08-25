@@ -1,5 +1,5 @@
 #!/bin/bash
+
 mkdir /mnt/fd
-device="/dev/fd0"
 modprobe floppy
-mount $device /mnt/fd
+mount /dev/fd0 /mnt/fd

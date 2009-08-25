@@ -1,7 +1,7 @@
 #!/bin/bash
 # This runs all the tests as necessary and places all the results into a single file
 
-dir="/usr/local/ipop"
+source /etc/grid_appliance.config
 echo "IPOP test results..." > $dir/tests/out
 $dir/tests/IPOP.sh >> $dir/tests/out
 echo "Condor test results..." >> $dir/tests/out
