@@ -55,7 +55,7 @@ def dump(key = None):
   rpc = xmlrpclib.Server("http://127.0.0.1:10000/xm.rem")
   res = rpc.localproxy("RpcDhtProxy.ListEntries")
   skip = False
-  if(key == none):
+  if(key == None):
     skip = True
   for entry in res:
     if(not skip and entry["Key"].data != key):

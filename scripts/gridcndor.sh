@@ -9,6 +9,7 @@ configure_condor()
   ipop_ns=`$DIR/scripts/utils.sh get_ipopns`
 #  We bind to all interfaces for condor interface to work
   ip=`$DIR/scripts/utils.sh get_ip $DEVICE`
+  rm -f $config
   echo "NETWORK_INTERFACE = "$ip > $config
 
   if [ $MACHINE_TYPE = "Server" ]; then
@@ -39,8 +40,10 @@ configure_condor()
 
   echo "DAEMON_LIST = "$DAEMONS >> $config
   echo "CONDOR_HOST = "$server >> $config
+  rm -f $DIR/var/condor_manager
   echo $server > $DIR/var/condor_manager
   echo "FLOCK_TO = "$flock >> $config
+  rm -f $DIR/var/condor_flock
   echo $flock > $DIR/var/condor_flock
 
   if [[ "$CONDOR_GROUP" ]]; then
@@ -53,10 +56,12 @@ configure_condor()
     fi
   fi
 
-  if [ "$CONDOR_USER" ]; then
-    echo "User = $CONDOR_USER" >> $config
+  if [[ "$CONDOR_USER" ]]; then
+    echo "User = \"$CONDOR_USER\"" >> $config
     echo "STARTD_ATTRS = \$(STARTD_ATTRS), User" >> $config
     echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), User" >> $config
+    echo "AccountGroup = \"$CONDOR_GROUP.$CONDOR_USER\"" >> $config
+    echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), AccountingGroup" >> $config
   fi
 }
 

@@ -53,7 +53,7 @@ done
 
 mkdir -p $PACKAGE_DIR/etc
 cd $PACKAGE_DIR/etc
-for i in grid_appliance.config exports auto.master issue; do
+for i in ipop.vpn.config grid_appliance.config exports auto.master issue; do
   ln -sf ../opt/grid_appliance/etc/$i .
 done
 ln -sf ../opt/grid_appliance/var/group_appliance.config .
@@ -73,6 +73,10 @@ done
 cd - &> /dev/null
 
 mkdir -p $PACKAGE_DIR/opt/grid_appliance/var
+
+source $path/etc/ipop.vpn.config
+mkdir -p $PACKAGE_DIR/$DIR/bin
+cp $path/tools/Brunet.Inject.HostActivity.dll $PACKAGE_DIR/$DIR/bin
 
 if [[ ! $PACKAGE_DIR ]]; then
   echo "Done installing GridAppliance"

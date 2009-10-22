@@ -6,6 +6,8 @@ var/log
 tmp
 var/run
 var/lib/apt
+opt/grid_appliance/var
+opt/ipop/var
 usr/local/ipop/var
 etc/condor
 root/.wapi
