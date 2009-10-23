@@ -1,0 +1,8 @@
+Package: grid-appliance-base
+Priority: optional
+Section: net
+Installed-Size: 1
+Maintainer: David Wolinsky <davidiw@ufl.edu>
+Architecture: all
+Depends: ipop,condor
+Description: Grid Appliance base

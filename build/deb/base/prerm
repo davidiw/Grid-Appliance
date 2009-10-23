@@ -1,0 +1,4 @@
+#!/bin/bash
+for i in issue ipop.vpn.config; do
+  mv /opt/grid_appliance/etc/$i.old /etc/$i
+done
