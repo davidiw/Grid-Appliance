@@ -12,7 +12,7 @@ configure_condor()
   rm -f $config
   echo "NETWORK_INTERFACE = "$ip > $config
 
-  if [ $MACHINE_TYPE = "Server" ]; then
+  if [[ $MACHINE_TYPE = "Server" ]]; then
     registered=`$DIR/scripts/DhtHelper.py dump $ipop_ns:condor:server`
     for reg in $registered; do
       $DIR/scripts/DhtHelper.py unregister $ipop_ns:condor:server $reg
@@ -21,18 +21,18 @@ configure_condor()
     server=$ip
   else
     server=`$DIR/scripts/DhtHelper.py get server $ipop_ns`
-    while [ ! $server ]; do
+    while [[ ! $server ]]; do
       sleep 15
       server=`$DIR/scripts/DhtHelper.py get server $ipop_ns`
     done
   fi
   flock=`$DIR/scripts/DhtHelper.py get flock $ipop_ns`
 
-  if [ $MACHINE_TYPE = "Server" ]; then
+  if [[ $MACHINE_TYPE = "Server" ]]; then
     DAEMONS="MASTER, COLLECTOR, NEGOTIATOR"
-  elif [ $MACHINE_TYPE = "Submit" ]; then
+  elif [[ $MACHINE_TYPE = "Submit" ]]; then
     DAEMONS="MASTER, SCHEDD"
-  elif [ $MACHINE_TYPE = "Worker" ]; then
+  elif [[ $MACHINE_TYPE = "Worker" ]]; then
     DAEMONS="MASTER, STARTD"
   else #$MACHINE_TYPE = Client
     DAEMONS="MASTER, STARTD, SCHEDD"
@@ -51,7 +51,7 @@ configure_condor()
     echo "STARTD_ATTRS = \$(STARTD_ATTRS), Group" >> $config
     echo "RANK = TARGET.Group =?= MY.Group" >> $config
     echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), Group" >> $config
-    if [ $MACHINE_TYPE = "Server" ]; then
+    if [[ $MACHINE_TYPE = "Server" ]]; then
       echo "NEGOTIATOR_PRE_JOB_RANK = 10 * (MY.RANK) + 1 * (RemoteOwner =?= UNDEFINED)" >> $config
     fi
   fi
@@ -77,19 +77,19 @@ update_flock()
   fi
 }
 
-if [ $1 = "start" ]; then
+if [[ $1 = "start" ]]; then
   configure_condor
   rm -f /opt/condor/var/log/* /opt/condor/var/log/*
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
   # of physical memory, that means a swap disk is necessary!
   ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
   /opt/condor/sbin/condor_master
-elif [ $1 = "restart" ]; then
+elif [[ $1 = "restart" ]]; then
   $DIR/scripts/gridcndor.sh stop
   $DIR/scripts/gridcndor.sh start
-elif [ $1 = "stop" ]; then
+elif [[ $1 = "stop" ]]; then
   pkill -KILL condor
-elif [ $1 = "reconfig" ]; then
+elif [[ $1 = "reconfig" ]]; then
   configure_condor
   /opt/condor/sbin/condor_reconfig
 fi
