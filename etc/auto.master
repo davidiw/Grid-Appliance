@@ -1,2 +1,0 @@
-/mnt/ganfs /etc/autofs/nfs_automount.sh
-/mnt/dhtnfs /etc/autofs/dht_nfs_automount.sh

@@ -1,8 +1,8 @@
-Package: grid-appliance-base
+Package: grid-appliance-nfs
 Priority: optional
 Section: net
 Installed-Size: 1
 Maintainer: David Wolinsky <davidiw@ufl.edu>
 Architecture: all
-Depends: ipop,condor,iptables
-Description: Grid Appliance base
+Depends: grid-appliance-base,nfs-kernel-server
+Description: Grid Appliance NFS

@@ -8,11 +8,11 @@
 *     USA
 *
 *
-*    Team: Abhishek Agrawal, Arijit Ganguly, David Wolinsky,
-*    P. Oscar Boykin, Renato Figueiredo 
+*    Authors: David Wolinsky, P. Oscar Boykin, Renato Figueiredo
+*    Contributors: Abhishek Agrawal, Arijit Ganguly, Pierre St. Juste
 *
 *    For more information about this and other related projects:
-*    http://wow.acis.ufl.edu 
+*    http://www.grid-appliance.org
 *
 ********************************************************************************
 
@@ -33,13 +33,13 @@ alongside the  VM image of the appliance.
 More information about the appliance and other related projects, including 
 links to the latest VM image and detailed documentation can be found at:
 
-http://wow.acis.ufl.edu
+http://www.grid-appliance.org
 
 Users are advised to visit this page for most up-to-date information and 
 available updates.
 
-This appliance uses VMware virtualization software. The following products
-have been tested: Workstation 5.5, Player 1.0.1, Server 1.0.0. 
+This appliance uses virtualization software. The following products have been
+tested with VMware Player, Server, and Workstation; VirtualBox; and KVM.
 
 If you already have VMware in your system, please skip to the next section.
 If you obtained the appliance via a CD or DVD, a copy of the free VMware Player
@@ -184,7 +184,6 @@ the "log" directory as sim-vanilla.condor.ID.0.out and .ID.0.res for the first
 simulation, and as .ID.1.out and .ID.1.res for the second simulation,
 where ID is the cluster number assigned by Condor when you submitted the job.
 
-
 SOME USEFUL COMMANDS
 ---------------------
 
@@ -218,8 +217,6 @@ Some useful command references:
 
 8) To analyze the status of the submitted job run "condor_q -analyze"
 
-
-
 KNOWN ISSUES
 -------------
 
@@ -230,7 +227,6 @@ cross several types of firewalls and network address translation devices,
 it is possible that the Grid Appliance is unable to join the wide-area virtual 
 network if they are behind certain firewalls/NATs, e.g. if they block UDP 
 traffic or change port assignments dynamically and frequently.
-
 
 SUPPORT
 --------

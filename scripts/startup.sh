@@ -3,19 +3,18 @@ source /etc/grid_appliance.config
 source /etc/group_appliance.config
 VMM=`$DIR/scripts/utils.sh vmm`
 
-if [ -d /.unionfs/.unionfs ]; then
+if test -d /.unionfs/.unionfs; then
   file=/.unionfs/.unionfs/swapfile
-else
+elif test -d /.unionfs/
   file=/.unionfs/swapfile
+else
+  file=/swapfile
 fi
 
 rm -rf $file &> /dev/null
 dd if=/dev/zero of=$file bs=1024K count=128
 mkswap $file
 swapon $file
-
-$DIR/scripts/monitor.sh &> /var/log/monitor.log &
-$DIR/scripts/ssh.sh
 
 if [[ $VMM = "vmware" ]]; then
   ln -sf $DIR/etc/xorg.conf.vmware /etc/X11/xorg.conf

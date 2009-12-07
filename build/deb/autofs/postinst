@@ -1,0 +1,14 @@
+#!/bin/bash
+source /etc/grid_appliance.config
+
+mkdir -p /etc/autofs &> /dev/null
+ln -sf $DIR/scripts/nfs_automount.sh /etc/autofs/.
+ln -sf $DIR/scripts/dht_nfs_automount.sh /etc/autofs/.
+
+if [[ `grep "nfs_automount" /etc/auto.master` == "" ]]; then
+  echo "/mnt/ganfs /etc/autofs/nfs_automount.sh" >> /etc/auto.master
+  echo "/mnt/dhtnfs /etc/autofs/dht_nfs_automount.sh" >> /etc/auto.master
+fi
+
+mkdir /mnt/ganfs &> /dev/null
+/etc/init.d/autofs restart

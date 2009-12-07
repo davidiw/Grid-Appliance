@@ -1,4 +1,8 @@
 #!/bin/bash
-for i in issue ipop.vpn.config; do
-  mv /opt/grid_appliance/etc/$i.old /etc/$i
-done
+/etc/init.d/grid_appliance.sh stop
+
+mv -f /opt/grid_appliance/etc/issue.old /etc/issue
+source etc/ipop.vpn.config
+rm -f $DIR/bin/Brunet.Inject.HostActivity.dll
+
+update-rc.d -f grid_appliance.sh remove

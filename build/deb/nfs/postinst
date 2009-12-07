@@ -1,0 +1,6 @@
+#!/bin/bash
+if [[ `grep "/mnt/local" /etc/exports` == "" ]]; then
+  echo "/mnt/local  *(ro,insecure,all_squash,no_subtree_check)" >> /etc/exports
+fi
+mkdir /mnt/local &> /dev/null
+/etc/init.d/nfs-kernel-server restart

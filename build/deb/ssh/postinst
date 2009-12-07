@@ -1,0 +1,9 @@
+#!/bin/bash
+source /etc/grid_appliance.config
+
+if ! test -e /etc/ssh/sshd_config.orig; then
+  cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+fi
+
+ln -sf $DIR/etc/sshd_config /etc/ssh/sshd_config
+update-rc.d ssh defaults
