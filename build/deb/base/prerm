@@ -1,8 +1,25 @@
 #!/bin/bash
+source /etc/ipop.vpn.config
+IDIR=$DIR
+source /etc/grid_appliance.config
+
 /etc/init.d/grid_appliance.sh stop
 
-mv -f /opt/grid_appliance/etc/issue.old /etc/issue
-source etc/ipop.vpn.config
-rm -f $DIR/bin/Brunet.Inject.HostActivity.dll
+# Remove files
+rm -f /etc/condor/condor_config.sh \
+  $IDIR/bin/Brunet.Inject.HostActivity.dll
+
+# Restore files
+mv -f $DIR/etc/issue.old /etc/issue
+
+# Update files
+sed "/condor_config\.sh/d" -i /etc/auto.master
+
+# Fix rc
+
+if test -e /etc/init.d/condor; then
+  update-rc.d condor defaults
+  /etc/init.d/condor start
+fi
 
 update-rc.d -f grid_appliance.sh remove

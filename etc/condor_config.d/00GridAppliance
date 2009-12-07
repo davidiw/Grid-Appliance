@@ -1,0 +1,23 @@
+# Grid Appliance Condor Tweaks
+# RJOF
+CLIENT_TIMEOUT          = 120
+NEGOTIATOR_TIMEOUT      = 120
+QUERY_TIMEOUT           = 120
+NEGOTIATOR_SOCKET_CACHE_SIZE    = 256
+# Allow flocking from everywhere to everywhere
+FLOCK_FROM = *
+# The two below allow us to use the condor interface outside the VM
+ENABLE_SOAP = True
+BIND_ALL_INTERFACES = True
+QUEUE_ALL_USERS_TRUSTED = True
+SCHEDD_ARGS = -p 9501
+# Send jobs requests often
+NEGOTIATOR_INTERVAL = 90
+# Helps with bad connectivity
+JobLeaseDuration = 14400
+UPDATE_INTERVAL = 600
+SUBMIT_EXPRS = $(SUBMIT_EXPRS), JobLeaseDuration
+# Allow x86 jobs to run on x64 machines
+APPEND_REQUIREMENTS = (ARCH == "INTEL") || (ARCH == "X86_64")
+# Enforce run as nobody
+STARTER_ALLOW_RUNAS_OWNER = False

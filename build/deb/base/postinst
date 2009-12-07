@@ -1,16 +1,20 @@
 #!/bin/bash
-mv /etc/issue /opt/grid_appliance/etc/issue.old
-
-cd /etc/
-for i in ipop.vpn.config grid_appliance.config issue; do
-  ln -sf ../opt/grid_appliance/etc/$i .
-done
-cd - &> /dev/null
-
-source /etc/grid_appliance.config
-GDIR=$DIR
 source /etc/ipop.vpn.config
-ln -sf $GDIR/tools/Brunet.Inject.HostActivity.dll $DIR/bin/.
+IDIR=$DIR
+source /etc/grid_appliance.config
+
+# Store files
+mv /etc/issue $DIR/etc/issue.old
+
+# Add files
+ln -sf $DIR/etc/issue /etc/.
+ln -sf $DIR/scripts/condor_config.sh /etc/condor/.
+ln -sf $DIR/tools/Brunet.Inject.HostActivity.dll $IDIR/bin/.
+
+if test -e /etc/init.d/condor; then
+  update-rc.d -f condor remove
+  /etc/init.d/condor stop
+fi
 
 update-rc.d grid_appliance.sh defaults
 

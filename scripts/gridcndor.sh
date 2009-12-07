@@ -73,17 +73,16 @@ update_flock()
   if [[ $flock != $new_flock ]]; then
     echo "FLOCK_TO = "$flock >> $config
     echo $flock > $DIR/var/condor_flock
-    /opt/condor/sbin/condor_reconfig
+    condor_reconfig
   fi
 }
 
 if [[ $1 = "start" ]]; then
   configure_condor
-  rm -f /opt/condor/var/log/* /opt/condor/var/log/*
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
   # of physical memory, that means a swap disk is necessary!
   ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
-  /opt/condor/sbin/condor_master
+  condor_master
 elif [[ $1 = "restart" ]]; then
   $DIR/scripts/gridcndor.sh stop
   $DIR/scripts/gridcndor.sh start
@@ -91,5 +90,5 @@ elif [[ $1 = "stop" ]]; then
   pkill -KILL condor
 elif [[ $1 = "reconfig" ]]; then
   configure_condor
-  /opt/condor/sbin/condor_reconfig
+  condor_reconfig
 fi

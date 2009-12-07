@@ -6,32 +6,27 @@ fi
 
 path="../../.."
 package_dir=grid_appliance
+source $path/etc/grid_appliance.config
 version=$1
 
-mkdir -p $package_dir/opt/grid_appliance
+mkdir -p $package_dir/$DIR
 for i in etc scripts tests tools; do
-  cp -axf $path/$i $package_dir/opt/grid_appliance/.
+  cp -axf $path/$i $package_dir/$DIR
 done
-mkdir -p $package_dir/opt/grid_appliance/etc/condor_config.d
 
 mkdir -p $package_dir/etc/init.d
 cd $package_dir/etc/init.d
 for i in cow.sh grid_appliance.sh; do
-  ln -sf ../../opt/grid_appliance/scripts/$i .
+  ln -sf ../../$DIR/scripts/$i .
 done
 cd  - &> /dev/null
 
 cd $package_dir/etc
-ln -sf ../opt/grid_appliance/var/group_appliance.config .
+ln -sf ../$DIR/var/group_appliance.config .
+ln -sf ../$DIR/etc/grid_appliance.config .
 cd - &> /dev/null
 
-mkdir -p $package_dir/etc/condor
-cd $package_dir/etc/condor
-ln -sf ../../opt/grid_appliance/etc/condor_config .
-ln -sf ../../opt/grid_appliance/scripts/condor_config.sh .
-cd - &> /dev/null
-
-mkdir -p $package_dir/opt/grid_appliance/var
+mkdir -p $package_dir/$DIR/var
 
 debian_dir=$package_dir"/DEBIAN"
 mkdir -p $debian_dir

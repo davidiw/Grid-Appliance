@@ -34,6 +34,11 @@ function start() {
   sed -i 's/USE_IPOP_HOSTNAME=$/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
   sed -i -r 's/USE_IPOP_HOSTNAME=\s+/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
 
+  # Ensure proper loading of condor
+  if [[ ! `grep condor_config.sh /etc/condor/condor_config` ]]; then
+    echo "LOCAL_CONFIG_FILE  = /etc/condor/condor_config.sh|" >> /etc/condor/condor_config
+  fi
+
   # Mount the floppy, umount first
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
   if [[ $? == 0 ]]; then
@@ -56,6 +61,12 @@ function start() {
   # If we didn't mount a floppy, no point in proceeding!
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
   if [[ $? != 0 ]]; then
+    ec2
+    if [[ $? == 0 ]]; then
+      start
+      return
+    fi
+
     echo "No floppy.img, add a floppy.img and then restart grid_appliance."
     echo "/etc/init.d/grid_appliance.sh start"
     exit 0
@@ -90,6 +101,25 @@ function start() {
 
   #Start the monitoring service
   $DIR/scripts/monitor.sh &> /var/log/monitor.log &
+}
+
+function ec2() {
+  # Get the floppy image and prepare the system for its use
+  wget http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
+  if [[ $? != 0 ]]; then
+    return -1
+  fi
+
+  cd /tmp
+  unzip floppy.zip &> /dev/null
+  mv -f floppy.img $DIR/etc/floppy.img &> /dev/null
+
+  # If the floppy exists, we've done well!
+  if test -e $DIR/etc/floppy.img; then
+    return 0
+  fi
+
+  return -1
 }
 
 case "$1" in

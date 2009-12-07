@@ -72,6 +72,10 @@ ip_control()
 
 # step 5 - clear ip_start, set our hostname, and (re)start condor
   ip_start=
+  # Ensure resolvconf is properly working
+  if test -e /etc/init.d/resolvconf; then
+    /etc/init.d/resolvconf reload
+  fi
   $DIR/scripts/hostname.sh
   $DIR/scripts/gridcndor.sh restart
   condor_break=true
