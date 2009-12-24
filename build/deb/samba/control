@@ -1,0 +1,8 @@
+Package: grid-appliance-samba
+Priority: optional
+Section: net
+Installed-Size: 1
+Maintainer: David Wolinsky <davidiw@ufl.edu>
+Architecture: all
+Depends: grid-appliance-base,samba,libpam-smbpass
+Description: Grid Appliance Samba

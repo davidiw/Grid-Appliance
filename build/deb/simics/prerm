@@ -1,0 +1,12 @@
+#!/bin/bash
+source /etc/grid_appliance.config
+
+if test -e $DIR/etc/condor_config.d/S01simics-x86; then
+  rm $DIR/etc/condor_config.d/S01simics-x86
+fi
+
+if test -e $DIR/etc/condor_config.d/S01simics-amd64; then
+  rm $DIR/etc/condor_config.d/S01simics-amd64
+fi
+
+$DIR/scripts/gridcndor.sh reconfig

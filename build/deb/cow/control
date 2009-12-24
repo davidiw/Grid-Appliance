@@ -1,0 +1,8 @@
+Package: grid-appliance-cow
+Priority: optional
+Section: net
+Installed-Size: 1
+Maintainer: David Wolinsky <davidiw@ufl.edu>
+Architecture: all
+Depends: grid-appliance-base,unionfs-fuse
+Description: Grid Appliance Copy-on-Write, remember to edit your Grub or LILO config, and set mount permissions on the underlying disks appropriately (mount counts and interval checks)

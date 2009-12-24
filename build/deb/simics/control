@@ -1,0 +1,8 @@
+Package: grid-appliance-simics
+Priority: optional
+Section: net
+Installed-Size: 1
+Maintainer: David Wolinsky <davidiw@ufl.edu>
+Architecture: all
+Depends: simics-x86
+Description: Grid Appliance Simics

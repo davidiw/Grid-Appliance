@@ -69,8 +69,11 @@ function start() {
 
     echo "No floppy.img, add a floppy.img and then restart grid_appliance."
     echo "/etc/init.d/grid_appliance.sh start"
+    touch $DIR/etc/not_configured
     exit 0
   fi
+
+  rm $DIR/etc/not_configured
 
   # Check to see if there is a new floppy / config
   md5old=`md5sum $DIR/var/groupvpn.zip 2> /dev/null | awk '{print $1}'`

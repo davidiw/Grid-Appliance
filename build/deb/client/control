@@ -1,0 +1,8 @@
+Package: grid-appliance-client
+Priority: optional
+Section: net
+Installed-Size: 1
+Maintainer: David Wolinsky <davidiw@ufl.edu>
+Architecture: all
+Depends: xorg,icewm
+Description: Grid Appliance Client Package

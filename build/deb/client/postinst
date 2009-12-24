@@ -1,0 +1,11 @@
+#!/bin/bash
+update-rc.d startx.sh start 99 2 3 4 5 .
+echo "auto eth1" >> /etc/network/interfaces
+echo "iface eth1 inet dhcp" >> /etc/network/interfaces
+
+sed 's/allowed_users=.*/allowed_users=anybody/g' -i /etc/X11/Xwrapper.config
+if [[ ! `grep allowed_users /etc/X11/Xwrapper.config` ]]; then
+  echo allowed_users=anybody >> /etc/X11/Xwrapper.config
+fi
+
+dpkg-reconfigure x11-common

@@ -1,0 +1,6 @@
+#!/bin/bash
+if test -e /etc/samba/smb.conf.orig; then
+  mv -f /etc/samba/smb.conf.orig /etc/samba/smb.conf
+fi
+
+service samba restart

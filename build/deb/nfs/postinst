@@ -2,5 +2,7 @@
 if [[ `grep "/mnt/local" /etc/exports` == "" ]]; then
   echo "/mnt/local  *(ro,insecure,all_squash,no_subtree_check)" >> /etc/exports
 fi
-mkdir /mnt/local &> /dev/null
+mkdir /mnt/local >- 2>-
+chown :users -R /mnt/local >- 2>-
+chmod 775 -R /mnt/local >- 2>-
 /etc/init.d/nfs-kernel-server restart

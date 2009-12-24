@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mountall="/etc/init/mountall.conf"
+if test -e $mountall; then
+  sed -i '/pre-start script/,/end script/ d' $mountall
+else
+  update-rc.d -f cow.sh remove
+fi

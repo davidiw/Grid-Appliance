@@ -1,0 +1,20 @@
+#
+#        Simics Academic floating license file
+#        -------------------------------------
+#
+#  Template $Revision: 1.4 $
+#
+#  Contact at U_Florida: renato@acis,ufl.edu
+#
+#
+#  Place this file in the directory 'simics-x.y.z/licenses/' or set the
+#  environment variable VTECH_LICENSE_FILE to the path where it is
+#  located.
+#
+#  For support issues related to licensing please consult
+#  http://www.simics.net/support/ or contact license@virtutech.com
+#
+# Edit servername.
+SERVER 5.1.1.251 000c29b515a0
+USE_SERVER
+#

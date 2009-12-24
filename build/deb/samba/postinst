@@ -1,0 +1,9 @@
+#!/bin/bash
+source /etc/grid_appliance.config
+
+if ! test -e /etc/samba/smb.conf.orig; then
+  cp /etc/samba/smb.conf /etc/samba/smb.conf.orig
+fi
+
+ln -sf $DIR/etc/smb.conf /etc/samba/smb.conf
+service samba restart

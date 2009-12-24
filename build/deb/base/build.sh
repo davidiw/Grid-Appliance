@@ -10,13 +10,15 @@ source $path/etc/grid_appliance.config
 version=$1
 
 mkdir -p $package_dir/$DIR
-for i in etc scripts tests tools; do
+for i in etc scripts tests tools user; do
   cp -axf $path/$i $package_dir/$DIR
 done
 
+cp $path/README $package_dir/$DIR/user/.
+
 mkdir -p $package_dir/etc/init.d
 cd $package_dir/etc/init.d
-for i in cow.sh grid_appliance.sh; do
+for i in cow.sh grid_appliance.sh startx.sh; do
   ln -sf ../../$DIR/scripts/$i .
 done
 cd  - &> /dev/null

@@ -1,0 +1,14 @@
+#!/bin/bash
+source /etc/grid_appliance.config
+
+if test -d /opt/virtutech/simics3/x86-linux; then
+  echo 'HasSimicsX86 = True' > $DIR/etc/condor_config.d/S01simics-x86
+  echo 'STARTD_ATTRS = $(STARTD_ATTRS) HasArcherX86' >> $DIR/etc/condor_config.d/S01simics-x86
+fi
+
+if test -d /opt/virtutech/simics3/amd64-linux; then
+  echo 'HasSimicsAmd64 = True' > $DIR/etc/condor_config.d/S01simics-x86
+  echo 'STARTD_ATTRS = $(STARTD_ATTRS) HasArcherAmd64' >> $DIR/etc/condor_config.d/S01simics-x86
+fi
+
+$DIR/scripts/gridcndor.sh reconfig
