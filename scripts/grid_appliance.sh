@@ -30,6 +30,9 @@ function stop() {
 }
 
 function start() {
+  # Ubuntu's switch to upstart makes the next two lines requires :(
+  /etc/init.d/resolvconf restart
+  /etc/init.d/networking restart
   # Add proper hostname usage, it can be overwritten any time IPOP is updated:
   sed -i 's/USE_IPOP_HOSTNAME=$/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
   sed -i -r 's/USE_IPOP_HOSTNAME=\s+/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
