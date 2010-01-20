@@ -1,9 +1,11 @@
 #!/bin/bash
 source /etc/grid_appliance.config
+update-rc.d -f samba remove
+service samba stop
 
 if ! test -e /etc/samba/smb.conf.orig; then
   cp /etc/samba/smb.conf /etc/samba/smb.conf.orig
 fi
 
-ln -sf $DIR/etc/smb.conf /etc/samba/smb.conf
-service samba restart
+sed -i -r 's/SAMBA_ENABLED=false/SAMBA_ENABLED=true/g' /etc/grid_appliance.config
+service grid_appliance.sh samba

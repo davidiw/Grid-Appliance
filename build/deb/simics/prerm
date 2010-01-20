@@ -9,4 +9,6 @@ if test -e $DIR/etc/condor_config.d/S01simics-amd64; then
   rm $DIR/etc/condor_config.d/S01simics-amd64
 fi
 
-$DIR/scripts/gridcndor.sh reconfig
+if ! test -e $DIR/etc/not_configured; then
+  $DIR/scripts/gridcndor.sh reconfig
+fi

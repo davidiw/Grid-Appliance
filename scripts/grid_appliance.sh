@@ -14,6 +14,14 @@ source /etc/ipop.vpn.config
 source /etc/grid_appliance.config
 
 function stop() {
+  if [[ $SAMBA_ENABLED == "true" ]]; then
+    service samba stop
+  fi
+
+  if [[ $SSH_ENABLED == "true" ]]; then
+    service ssh stop
+  fi
+
   #Stop IPOP
   /etc/init.d/groupvpn.sh stop
   #Remove DOS prevention rule
@@ -107,6 +115,9 @@ function start() {
 
   #Start the monitoring service
   $DIR/scripts/monitor.sh &> /var/log/monitor.log &
+
+  ssh
+  samba
 }
 
 function ec2() {
@@ -128,6 +139,40 @@ function ec2() {
   return -1
 }
 
+function ssh() {
+  if [[ $SSH_ENABLED != "true" ]]; then
+    return
+  fi
+
+  cidr=$($DIR/scripts/utils.sh get_cidr eth1)
+  if [[ ! "$cidr" ]]; then
+    return
+  fi
+  cidr=$(echo -n $cidr | sed 's/\//\\\//g')
+
+  service ssh stop
+  cp -f $DIR/etc/sshd_config /etc/ssh/.
+  sed -i "s/HOSTONLY/$cidr/g" /etc/ssh/sshd_config
+  service ssh start
+}
+
+function samba() {
+  if [[ $SAMBA_ENABLED != "true" ]]; then
+    return
+  fi
+
+  cidr=$($DIR/scripts/utils.sh get_cidr eth1)
+  if [[ ! "$cidr" ]]; then
+    return
+  fi
+  cidr=$(echo -n $cidr | sed 's/\//\\\//g')
+
+  service samba stop
+  cp -f $DIR/etc/smb.conf /etc/samba/.
+  sed -i "s/HOSTONLY/$cidr/g" /etc/samba/smb.conf
+  service samba start
+}
+
 case "$1" in
   start)
     start
@@ -138,6 +183,12 @@ case "$1" in
   restart)
     stop
     start
+    ;;
+  samba)
+    samba
+    ;;
+  ssh)
+    ssh
     ;;
   *)
     echo "usage: start, stop, restart"

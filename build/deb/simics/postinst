@@ -11,4 +11,6 @@ if test -d /opt/virtutech/simics3/amd64-linux; then
   echo 'STARTD_ATTRS = $(STARTD_ATTRS) HasArcherAmd64' >> $DIR/etc/condor_config.d/S01simics-x86
 fi
 
-$DIR/scripts/gridcndor.sh reconfig
+if ! test -e $DIR/etc/not_configured; then
+  $DIR/scripts/gridcndor.sh reconfig
+fi

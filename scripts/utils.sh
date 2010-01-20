@@ -28,6 +28,12 @@ get_ip()
   echo -n $res
 }
 
+get_netmask()
+{
+  res=`/sbin/ifconfig $1 | awk -F"Mask:" {'print $2'} | awk -F" " {'print $1'} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
+  echo -n $res
+}
+
 get_pid()
 {
   res=`ps uax | grep $1 | grep -v grep | grep -v get_pid | awk -F" " {'print $2'} | grep -oE "[0-9]+"`
@@ -61,6 +67,46 @@ vmm()
   else
     echo -n qemu
   fi
+}
+
+get_cidr()
+{
+  ip=$(get_ip $1)
+  mask=$(get_netmask $1)
+  if [[ $ip == "" || $mask == "" ]]; then
+    return
+  fi
+
+  ipa=($(echo $ip | sed 's/\./ /g'))
+  maska=($(echo $mask | sed 's/\./ /g'))
+
+  cidr=$((${ipa[0]} & ${maska[0]}))
+  cidr=$cidr.$((${ipa[1]} & ${maska[1]}))
+  cidr=$cidr.$((${ipa[2]} & ${maska[2]}))
+  cidr=$cidr.$((${ipa[3]} & ${maska[3]}))
+  cidr=$cidr/$(mask2cidr $mask)
+  echo -n $cidr
+}
+
+mask2cidr()
+{
+  nbits=0
+  IFS=.
+  for dec in $1 ; do
+    case $dec in
+      255) let nbits+=8;;
+      254) let nbits+=7;;
+      252) let nbits+=6;;
+      248) let nbits+=5;;
+      240) let nbits+=4;;
+      224) let nbits+=3;;
+      192) let nbits+=2;;
+      128) let nbits+=1;;
+      0);;
+      *) echo "Error: $dec is not recognised"; exit 1
+    esac
+  done
+  echo -n "$nbits"
 }
 
 funct=$1

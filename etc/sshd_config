@@ -73,7 +73,5 @@ Subsystem	sftp	/usr/lib/openssh/sftp-server
 
 UsePAM yes
 
-Match Address 172.16.0.0/16
-PasswordAuthentication yes
-Match Address 192.168.0.0/16
+Match Address HOSTONLY
 PasswordAuthentication yes
