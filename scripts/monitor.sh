@@ -43,7 +43,7 @@ ip_control()
 {
 # step 0 - check if Ipop is working!
   if [[ `$DIR/tests/CheckSelf.py` == "False" ]]; then
-    /etc/init.d/ipop.sh restart
+    /etc/init.d/groupvpn.sh restart
     ip_start=true
   fi
 # step 1 - determine if we should proceed

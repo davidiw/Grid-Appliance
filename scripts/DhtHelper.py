@@ -38,7 +38,11 @@ def get(key):
       rv = rv[:-2]
   else:
     try:
-      rv = rpc.localproxy("DhtClient.Get", xmlrpclib.Binary(key))
+      res = rpc.localproxy("DhtClient.Get", xmlrpclib.Binary(key))
+      rv = res[0]["value"].data
+#      for entry in res:
+#        rv += entry["value"].data + "\n" 
+#      rv = rv[:-2]
     except:
       rv = ""
   print rv

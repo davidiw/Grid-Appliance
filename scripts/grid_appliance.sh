@@ -146,7 +146,7 @@ function ssh() {
 
   cidr=$($DIR/scripts/utils.sh get_cidr eth1)
   if [[ ! "$cidr" ]]; then
-    return
+    cidr="0.0.0.0/32"
   fi
   cidr=$(echo -n $cidr | sed 's/\//\\\//g')
 
@@ -163,7 +163,7 @@ function samba() {
 
   cidr=$($DIR/scripts/utils.sh get_cidr eth1)
   if [[ ! "$cidr" ]]; then
-    return
+    cidr="0.0.0.0/32"
   fi
   cidr=$(echo -n $cidr | sed 's/\//\\\//g')
 
