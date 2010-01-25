@@ -14,11 +14,11 @@ source /etc/ipop.vpn.config
 source /etc/grid_appliance.config
 
 function stop() {
-  if [[ $SAMBA_ENABLED == "true" ]]; then
+  if $(test -e $DIR/etc/samba); then
     service samba stop
   fi
 
-  if [[ $SSH_ENABLED == "true" ]]; then
+  if $(test -e $DIR/etc/ssh); then
     service ssh stop
   fi
 
@@ -38,9 +38,6 @@ function stop() {
 }
 
 function start() {
-  # Ubuntu's switch to upstart makes the next two lines requires :(
-  /etc/init.d/resolvconf restart
-  /etc/init.d/networking restart
   # Add proper hostname usage, it can be overwritten any time IPOP is updated:
   sed -i 's/USE_IPOP_HOSTNAME=$/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
   sed -i -r 's/USE_IPOP_HOSTNAME=\s+/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
@@ -140,7 +137,7 @@ function ec2() {
 }
 
 function ssh() {
-  if [[ $SSH_ENABLED != "true" ]]; then
+  if $(test -e $DIR/etc/ssh); then
     return
   fi
 
@@ -157,7 +154,7 @@ function ssh() {
 }
 
 function samba() {
-  if [[ $SAMBA_ENABLED != "true" ]]; then
+  if $(test -e $DIR/etc/samba); then
     return
   fi
 

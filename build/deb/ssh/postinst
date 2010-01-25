@@ -7,5 +7,5 @@ if ! test -e /etc/ssh/sshd_config.orig; then
   mv -f /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
 fi
 
-sed -i -r 's/SSH_ENABLED=false/SSH_ENABLED=true/g' /etc/grid_appliance.config
+touch $DIR/etc/ssh
 service grid_appliance.sh ssh

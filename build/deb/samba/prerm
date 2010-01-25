@@ -1,6 +1,6 @@
 #!/bin/bash
 service samba stop
-sed -i -r 's/SAMBA_ENABLED=true/SAMBA_ENABLED=false/g' /etc/grid_appliance.config
+rm -f $DIR/etc/samba
 if test -e /etc/samba/smb.conf.orig; then
   mv -f /etc/samba/smb.conf.orig /etc/samba/smb.conf
 fi

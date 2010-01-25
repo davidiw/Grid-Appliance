@@ -7,5 +7,5 @@ if ! test -e /etc/samba/smb.conf.orig; then
   cp /etc/samba/smb.conf /etc/samba/smb.conf.orig
 fi
 
-sed -i -r 's/SAMBA_ENABLED=false/SAMBA_ENABLED=true/g' /etc/grid_appliance.config
+touch $DIR/etc/samba
 service grid_appliance.sh samba
