@@ -4,7 +4,7 @@ IDIR=$DIR
 source /etc/grid_appliance.config
 
 paths=(var/log tmp var/run $DIR/var $IDIR/var root/.wapi root/.ssh)
-
+files=($DIR/etc/condor_config.d/00root)
 ipopfiles=(ipop.config bootstrap.config certificates/* dhcp.config node.config private_key)
 
 dirs=("/")
@@ -28,6 +28,10 @@ for base in ${dirs[@]}; do
 
   for file in ${ipopfiles[@]}; do
     rm -f $base/$IDIR/etc/$file >- 2>-
+  done
+
+  for file in ${files[@]}; do
+    rm -f $base/$file
   done
 
   rm $base/var/log/* >- 2>-

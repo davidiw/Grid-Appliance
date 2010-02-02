@@ -58,10 +58,16 @@ function start() {
     mkdir $CONFIG_PATH &> /dev/null
   fi
 
+  try_fd=true
   # Determine which device and mount
   if test -e $DIR/etc/floppy.img; then
     mount -o loop $DIR/etc/floppy.img $CONFIG_PATH
-  else
+    if [[ $? == 0 ]]; then
+      try_fd=
+    fi
+  fi
+
+  if [[ "$try_fd" ]]; then
     modprobe floppy
     mount /dev/fd0 $CONFIG_PATH
   fi
@@ -88,10 +94,14 @@ function start() {
   md5new=`md5sum $CONFIG_PATH/groupvpn.zip 2> /dev/null | awk '{print $1}'`
   if [[ "$md5old" != "$md5new" ]]; then
     rm -f $DIR/var/groupvpn.zip
-    for i in groupvpn.zip group_appliance.config; do
-      cp $CONFIG_PATH/$i $DIR/var/.
-    done
+    cp $CONFIG_PATH/groupvpn.zip $DIR/var/.
+    cp $CONFIG_PATH/group_appliance.config $DIR/var/.
     groupvpn_prepare.sh $DIR/var/groupvpn.zip
+    if [[ $? != 0 ]]; then
+      rm -f $DIR/var/groupvpn.zip
+      "GroupVPN config failed, configuration error, fix and restart grid_appliance.sh"
+      exit 1
+    fi
 
     if test -e $CONFIG_PATH/authorized_keys; then
       mkdir -p /root/.ssh &> /dev/null
@@ -121,7 +131,7 @@ function ec2() {
   # Get the floppy image and prepare the system for its use
   wget http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
   if [[ $? != 0 ]]; then
-    return -1
+    return 1
   fi
 
   cd /tmp
@@ -133,11 +143,11 @@ function ec2() {
     return 0
   fi
 
-  return -1
+  return 1
 }
 
 function ssh() {
-  if $(test -e $DIR/etc/ssh); then
+  if ! $(test -e $DIR/etc/ssh); then
     return
   fi
 
@@ -154,7 +164,7 @@ function ssh() {
 }
 
 function samba() {
-  if $(test -e $DIR/etc/samba); then
+  if ! $(test -e $DIR/etc/samba); then
     return
   fi
 

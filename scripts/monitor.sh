@@ -71,10 +71,6 @@ ip_control()
   fi
 
 # step 5 - clear ip_start, set our hostname, and (re)start condor
-  # Ensure resolvconf is properly working
-  if test -e /etc/init.d/resolvconf; then
-    /etc/init.d/resolvconf reload
-  fi
   $DIR/scripts/hostname.sh
   hostname -f >- 2>- <-
   if [[ $? == 1 ]]; then
