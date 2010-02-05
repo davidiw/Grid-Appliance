@@ -1,6 +1,7 @@
 #!/bin/bash
 # Monitor the state of our features (Brunet, IPOP, and Condor)
 source /etc/ipop.vpn.config
+IDIR=$DIR
 source /etc/grid_appliance.config
 
 statefd=$DIR"/var/monitor.state"
@@ -43,19 +44,32 @@ ip_control()
 {
 # step 0 - check if Ipop is working!
   if [[ `$DIR/tests/CheckSelf.py` == "False" ]]; then
-    /etc/init.d/groupvpn.sh restart
-    ip_start=true
-  fi
-# step 1 - determine if we should proceed
-  ip=`$DIR/scripts/utils.sh get_ip $DEVICE`
-  if [[ ! $ip ]]; then
+# Now in some bizarre undiagnosed cases, some of the config files are broken,
+# this is not an easily recoverable or detectable error, so this checks the configs
+# if one is bad, re-run groupvpn_prepare.sh...
+    for file in $(ls $IDIR/etc/*.config); do
+      python $DIR/scripts/xml-check.py $IDIR/etc/$file
+      if [[ $? != 0 ]]; then
+        groupvpn_prepare.sh $DIR/var/groupvpn.zip
+        break
+      fi
+    done
+    /etc/init.d/groupvpn.sh stop
 # if we don't have a working hostname, things break, if we don't have an IP
 # address that resolves properly, then other things begin to break
     hostname localhost
+    resolvconf -u
+    /etc/init.d/groupvpn.sh start
+    ip_start=true
+  fi
+
+# step 1 - determine if we should proceed
+  ip=`$DIR/scripts/utils.sh get_ip $DEVICE`
+  if [[ ! $ip ]]; then
     return
   fi
 
-# step 2 -We have an IP, let's check condor
+# step 2 - We have an IP, let's check condor
   condor_control
 
 # step 3 - if no change in ip, quit if this isn't our first run
