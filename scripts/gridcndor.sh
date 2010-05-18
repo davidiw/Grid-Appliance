@@ -35,8 +35,11 @@ configure_condor()
   elif [[ $MACHINE_TYPE = "Worker" ]]; then
     DAEMONS="MASTER, STARTD"
   else #$MACHINE_TYPE = Client
-    DAEMONS="MASTER, STARTD, SCHEDD"
+    DAEMONS="MASTER, STARTD, SCHEDD, KBDD"
   fi
+
+  submit_exprs=""
+  startd_attrs=""
 
   echo "DAEMON_LIST = "$DAEMONS >> $config
   echo "CONDOR_HOST = "$server >> $config
@@ -48,9 +51,10 @@ configure_condor()
 
   if [[ "$CONDOR_GROUP" ]]; then
     echo "Group = \"$CONDOR_GROUP\"" >> $config
-    echo "STARTD_ATTRS = \$(STARTD_ATTRS), Group" >> $config
     echo "RANK = TARGET.Group =?= MY.Group" >> $config
+    startd_attrs=$startd_attrs", Group"
     echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), Group" >> $config
+    submit_exprs=$submit_exprs", Group"
     if [[ $MACHINE_TYPE = "Server" ]]; then
       echo "NEGOTIATOR_PRE_JOB_RANK = 10 * (MY.RANK) + 1 * (RemoteOwner =?= UNDEFINED)" >> $config
     fi
@@ -58,11 +62,19 @@ configure_condor()
 
   if [[ "$CONDOR_USER" ]]; then
     echo "User = \"$CONDOR_USER\"" >> $config
-    echo "STARTD_ATTRS = \$(STARTD_ATTRS), User" >> $config
-    echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), User" >> $config
-    echo "AccountGroup = \"$CONDOR_GROUP.$CONDOR_USER\"" >> $config
-    echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS), AccountingGroup" >> $config
+    startd_attrs=$startd_attrs", User"
+    submit_exprs=$submit_exprs", User"
+    if [[ $CONDOR_GROUP ]]; then
+      echo "AccountGroup = \"$CONDOR_GROUP.$CONDOR_USER\"" >> $config
+      submit_exprs=", AccountingGroup"
+    fi
+    submit_exprs=", AccountingGroup"
   fi
+
+  echo "APPLIANCE_VERSION = $(cat $DIR/etc/version)" >> $config
+  startd_attrs=$startd_attrs", APPLIANCE_VERSION"
+  echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS)"$submit_exprs >> $config
+  echo "STARTD_ATTRS = \$(STARTD_ATTRS)"$startd_attrs >> $config
 }
 
 update_flock()
