@@ -1,5 +1,4 @@
 # Grid Appliance Condor Tweaks
-# RJOF
 CLIENT_TIMEOUT          = 120
 NEGOTIATOR_TIMEOUT      = 120
 QUERY_TIMEOUT           = 120
@@ -21,3 +20,9 @@ SUBMIT_EXPRS = $(SUBMIT_EXPRS), JobLeaseDuration
 APPEND_REQUIREMENTS = (ARCH == "INTEL") || (ARCH == "X86_64")
 # Enforce run as nobody
 STARTER_ALLOW_RUNAS_OWNER = False
+# Enable remote users to run jobs
+HOSTALLOW_READ = *
+HOSTALLOW_WRITE = *
+# Limit Parallel Network activities
+MAX_CONCURRENT_DOWNLOADS = 10
+MAX_CONCURRENT_UPLOAD = 10
