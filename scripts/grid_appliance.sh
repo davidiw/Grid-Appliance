@@ -25,7 +25,7 @@ function stop() {
   #Stop IPOP
   /etc/init.d/groupvpn.sh stop
   #Remove DOS prevention rule
-  iptables -D OUTPUT -m owner --uid-owner nobody ! -o $DEVICE -j DROP &> /dev/null
+  firewall_stop
 
   # Kill the monitor program
   pkill -KILL monitor.sh 
@@ -116,9 +116,9 @@ function start() {
   /etc/init.d/groupvpn.sh start
 
   # Don't have duplicate rules
-  iptables -D OUTPUT -m owner --uid-owner nobody ! -o $DEVICE -j DROP &> /dev/null
+  firewall_stop
   #Configure IPTables to prevent DOS attacks and LAN attacks from condor jobs
-  iptables -A OUTPUT -m owner --uid-owner nobody ! -o $DEVICE -j DROP &> /dev/null
+  firewall_start
 
   #Start the monitoring service
   $DIR/scripts/monitor.sh &> /var/log/monitor.log &
@@ -178,6 +178,18 @@ function samba() {
   cp -f $DIR/etc/smb.conf /etc/samba/.
   sed -i "s/HOSTONLY/$cidr/g" /etc/samba/smb.conf
   service samba start
+}
+
+function firewall_start() {
+  iptables -A OUTPUT -m owner --uid-owner nobody -o lo+ -j ACCEPT &> /dev/null
+  iptables -A OUTPUT -m owner --uid-owner nobody -o $DEVICE -j ACCEPT &> /dev/null
+  iptables -A OUTPUT -m owner --uid-owner nobody -j DROP &> /dev/null
+}
+
+function firewall_stop() {
+  iptables -D OUTPUT -m owner --uid-owner nobody -j DROP &> /dev/null
+  iptables -D OUTPUT -m owner --uid-owner nobody -o $DEVICE -j ACCEPT &> /dev/null
+  iptables -D OUTPUT -m owner --uid-owner nobody -o lo+ -j ACCEPT &> /dev/null
 }
 
 case "$1" in
