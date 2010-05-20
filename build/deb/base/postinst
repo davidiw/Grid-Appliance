@@ -8,6 +8,7 @@ mv /etc/issue $DIR/etc/issue.old
 
 # Add files
 ln -sf $DIR/etc/issue /etc/.
+ln -sf $DIR/etc/apt /etc/apt/apt.conf.d/02ga-upgrades
 ln -sf $DIR/scripts/condor_config.sh /etc/condor/.
 ln -sf $DIR/tools/Brunet.Inject.HostActivity.dll $IDIR/bin/.
 
