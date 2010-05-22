@@ -38,8 +38,6 @@ for base in ${dirs[@]}; do
   rm $base/var/log/*/* >- 2>-
   rm $base/var/log/*/*/* >- 2>-
 
-  sed "/eth/d" -i $base/etc/udev/rules.d/70-persistent-net.rules
-
   touch $base/var/log/dmesg
   touch $base/var/log/wtmp
 done
