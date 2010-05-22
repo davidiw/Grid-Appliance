@@ -13,9 +13,14 @@
 source /etc/ipop.vpn.config
 source /etc/grid_appliance.config
 
+smb=samba
+if [[ -e /etc/init.d/smbd ]]; then
+  smb=smbd
+fi
+
 function stop() {
   if $(test -e $DIR/etc/samba); then
-    service samba stop
+    service $smb stop
   fi
 
   if $(test -e $DIR/etc/ssh); then
@@ -174,10 +179,10 @@ function samba() {
   fi
   cidr=$(echo -n $cidr | sed 's/\//\\\//g')
 
-  service samba stop
+  service smbd stop
   cp -f $DIR/etc/smb.conf /etc/samba/.
   sed -i "s/HOSTONLY/$cidr/g" /etc/samba/smb.conf
-  service samba start
+  service smbd start
 }
 
 function firewall_start() {
