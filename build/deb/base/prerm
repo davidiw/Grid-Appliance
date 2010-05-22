@@ -8,7 +8,8 @@ source /etc/grid_appliance.config
 # Remove files
 rm -f /etc/condor/condor_config.sh \
   $IDIR/bin/Brunet.Inject.HostActivity.dll \
-  /etc/apt/apt.conf.d/02ga-upgrades
+  /etc/apt/apt.conf.d/02ga-upgrades \
+  /usr/sbin/condor_kbdd
 
 # Restore files
 mv -f $DIR/etc/issue.old /etc/issue
