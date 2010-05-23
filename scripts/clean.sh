@@ -42,3 +42,8 @@ for base in ${dirs[@]}; do
   touch $base/var/log/wtmp
 done
 
+for user in `ls /home`; do
+  deluser $user
+done
+
+touch $DIR/etc/not_configured
