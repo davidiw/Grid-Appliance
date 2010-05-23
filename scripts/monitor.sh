@@ -81,7 +81,7 @@ ip_control()
 # if necessary
   if [[ $old_ip != $ip ]]; then
     old_ip=$ip
-    echo $ip > $dir/var/oldip
+    echo $ip > $DIR/var/oldip
   fi
 
 # step 5 - clear ip_start, set our hostname, and (re)start condor
