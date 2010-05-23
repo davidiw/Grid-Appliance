@@ -1,8 +1,13 @@
 #!/bin/bash
-service samba stop
-rm -f $DIR/etc/samba
+smb=samba
+if [[ -e /etc/init.d/smbd ]]; then
+  smb=smbd
+fi
+
+service $smb stop
+rm -f $DIR/etc/samba/smb.conf
 if test -e /etc/samba/smb.conf.orig; then
   mv -f /etc/samba/smb.conf.orig /etc/samba/smb.conf
 fi
-update-rc.d samba defaults
-service samba start
+update-rc.d $smb defaults
+service $smb start

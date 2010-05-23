@@ -110,7 +110,7 @@ function start() {
 
     if test -e $CONFIG_PATH/authorized_keys; then
       mkdir -p /root/.ssh &> /dev/null
-      cp -f $CONFIG_PATH/authorized_keys /root/.ssh/authorized_keys
+      cat $CONFIG_PATH/authorized_keys >> /root/.ssh/authorized_keys
       chown -R root:root /root
       chmod 700 /root/.ssh
       chmod 600 /root/.ssh/*
@@ -179,10 +179,10 @@ function samba() {
   fi
   cidr=$(echo -n $cidr | sed 's/\//\\\//g')
 
-  service smbd stop
+  service $smb stop
   cp -f $DIR/etc/smb.conf /etc/samba/.
   sed -i "s/HOSTONLY/$cidr/g" /etc/samba/smb.conf
-  service smbd start
+  service $smb start
 }
 
 function firewall_start() {

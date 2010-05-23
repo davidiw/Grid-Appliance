@@ -1,7 +1,12 @@
 #!/bin/bash
+smb=samba
+if [[ -e /etc/init.d/smbd ]]; then
+  smb=smbd
+fi
+
 source /etc/grid_appliance.config
-update-rc.d -f samba remove
-service samba stop
+update-rc.d -f $smb remove
+service $smb stop
 
 if ! test -e /etc/samba/smb.conf.orig; then
   cp /etc/samba/smb.conf /etc/samba/smb.conf.orig
