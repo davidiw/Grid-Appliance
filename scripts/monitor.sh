@@ -47,7 +47,7 @@ ip_control()
 # Now in some bizarre undiagnosed cases, some of the config files are broken,
 # this is not an easily recoverable or detectable error, so this checks the configs
 # if one is bad, re-run groupvpn_prepare.sh...
-    for file in $(ls $IDIR/etc/*.config); do
+    for file in ipop.config node.config bootstrap.config dhcp.config; do
       python $DIR/scripts/xml-check.py $IDIR/etc/$file
       if [[ $? != 0 ]]; then
         groupvpn_prepare.sh $DIR/var/groupvpn.zip
