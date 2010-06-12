@@ -33,7 +33,7 @@ function stop() {
   firewall_stop
 
   # Kill the monitor program
-  pkill -KILL monitor.sh 
+  pkill -KILL monitor.sh
 
   # Umount the floppy
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
@@ -81,6 +81,12 @@ function start() {
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
   if [[ $? != 0 ]]; then
     ec2
+    if [[ $? == 0 ]]; then
+      start
+      return
+    fi
+
+    nimbus
     if [[ $? == 0 ]]; then
       start
       return
@@ -134,7 +140,7 @@ function start() {
 
 function ec2() {
   # Get the floppy image and prepare the system for its use
-  wget http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
+  wget --tries=2 http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
   if [[ $? != 0 ]]; then
     return 1
   fi
@@ -147,6 +153,49 @@ function ec2() {
   if test -e $DIR/etc/floppy.img; then
     return 0
   fi
+
+  return 1
+}
+
+function nimbus() {
+  # Get the floppy image and prepare the system for its use
+  wait_for_net
+  if [[ $? != 0 ]]; then
+    return 1
+  fi
+
+  user_uri="`cat /var/nimbus-metadata-server-url`/2007-01-19/user-data"
+  wget --tries=2 $user_uri -O /tmp/floppy.zip.b64
+  openssl enc -d -base64 -in /tmp/floppy.zip.b64 -out /tmp/floppy.zip
+
+  cd /tmp
+  unzip floppy.zip &> /dev/null
+  if [[ $? != 0 ]]; then
+    return 1
+  fi
+
+  mv -f floppy.img $DIR/etc/floppy.img &> /dev/null
+
+  # If the floppy exists, we've done well!
+  if test -e $DIR/etc/floppy.img; then
+    return 0
+  fi
+
+  return 1
+}
+
+function wait_for_net() {
+  MAX_ATTEMPT=20
+  count=0
+  while [ "$count" -lt "$MAX_ATTEMPT" ]
+    do
+      addr=`ifconfig eth0| grep "inet addr"|awk {'print $2'}|awk -F":" {'print $2'}`
+      if [ "$addr" ]; then
+        return 0
+      fi
+      sleep 0.5
+      let count=count+1 
+    done
 
   return 1
 }
