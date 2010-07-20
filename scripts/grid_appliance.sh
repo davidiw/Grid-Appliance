@@ -116,6 +116,11 @@ function start() {
 
     if test -e $CONFIG_PATH/authorized_keys; then
       mkdir -p /root/.ssh &> /dev/null
+      if ! test -e /root/.ssh/authorized_keys.bak; then
+        cp /root/.ssh/authorized_keys /root/.ssh/authorized_keys.bak
+      else
+        touch /root/.ssh/authorized_keys.bak
+      fi
       cat $CONFIG_PATH/authorized_keys >> /root/.ssh/authorized_keys
       chown -R root:root /root
       chmod 700 /root/.ssh
