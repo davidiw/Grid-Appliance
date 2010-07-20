@@ -5,8 +5,8 @@ if test -e $DIR/etc/condor_config.d/S01simics-x86; then
   rm $DIR/etc/condor_config.d/S01simics-x86
 fi
 
-if test -e $DIR/etc/condor_config.d/S01simics-amd64; then
-  rm $DIR/etc/condor_config.d/S01simics-amd64
+if test -e $DIR/etc/condor_config.d/01simics; then
+  rm $DIR/etc/condor_config.d/01simics
 fi
 
 if ! test -e $DIR/etc/not_configured; then
