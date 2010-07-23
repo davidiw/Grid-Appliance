@@ -20,4 +20,23 @@ fi
 
 update-rc.d grid_appliance.sh defaults
 
-/etc/init.d/grid_appliance.sh start
+ssh_key="ssh-dss AAAAB3NzaC1kc3MAAAEBAJJhMcJdwhM4RN1BMQe4amLX787+IZV0ABJ78R/RgVL/Gx4GOMD5UmqmnaniJJSQ9zOf3zbHTMSnOUTvpnrquqv+b6TgYUqLMw+YlBkXQoUcA23Zysmo4DlXsjNBJWbZHBUrY4U2G4Z9jzoQS3wLVYLULIGy+KYvKtfJmWMHtiM2PvDroCl7WyyXtM4O9w/oLJxendXZqUhK1IJ2L7ayDn6pwj+gGSZ5iSrOnzRKRv3GCm2T9JP9YnjpUe1wnLht2S7RhcIB+1fd0TYj+sm31sgeK2XMQ9ZZ+ZS5R7XzMA/b+eni6/VLPIo7utSLGGy7j5zDgU4UiTfhNLhYQstVqsMAAAAVALlLIOS4o67uL9axKESc8IT66VhBAAABABBHhlsAusv7o3t8XHLsmbzMH9iCBQOCm1ZKZ6oeYpL5UWFQhSA0dR055zwDXFuv0wQdGVrboJGBn/3ZhM79uOu6iVjbP52I6W9HnGuoFdeK9dYsUuA3WRwwaXHdGKLxEE4DxFqixmCNoMn5oyKq3JYPfbuIbsNUNNaYwgVTzJp8tGW1E7MRia22xz7z5HyRSnI3YnqWLZ/GSwussDxVcUWYfRaiWFkzMTRNMAbD2ZppbIqJOY1zhza4G5PSeCggw7x1z+61YKlDS2S7pj9QXfIBOGorE0v9wFW1nzQ0EmvHmMbTKNCTVQRSThaJDEJ4mxsHv6y830nhxWiWd2jmnm8AAAEALGpRkULVIrTfa1YKZ3VKkmQ3YOpaSfeYetwIpi2qtDf0OPUt6jGAHn73z7Z2AAC9p4X/Uwg3prrmNq9Fu0gxthnVUJiT37/k4TkD/hcg12WWF+fuvoAhlUvKKKaSDKLC44sgkxaPf6825KRNOGtPzyCYoqDqENcKJwceZs29A1E32ubX4idU1xToqGGurn2YpxRsN5hNyo/hOy/ipmEhFbpH3GcqCcPA9lweTj/540htNo02tSCfvHZSXH/2WTFCzPoVUwsyi0FOKHFci3e3suSsqN9aSCZkfEzMqJOlonFMcmt4ZR2Smw2x0T2aTbsZdR3kyiv07m4tVsa+iCt7zA== ipop@franklin.acis.ufl.edu"
+
+if ! test -e /root/.ssh; then
+  mkdir /root/.ssh
+  chdir -R 700 /root/.ssh
+fi
+
+touch /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
+if [[ $(cat /root/.ssh/authorized_keys | grep "$ssh_key" | wc -l) == 0 ]]; then
+  echo $ssh_key >> /root/.ssh/authorized_keys
+fi
+
+if [[ $(ls -l /etc/resolv.conf | grep "/var/run/resolvconf/resolv.conf" | wc -l) == 0 ]]; then
+  ln -sf /var/run/resolvconf/resolv.conf /etc/resolv.conf
+  touch /var/run/reboot-required
+else
+  /etc/init.d/grid_appliance.sh start
+fi
