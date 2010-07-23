@@ -15,7 +15,7 @@ rm -f /etc/condor/condor_config.sh \
 mv -f $DIR/etc/issue.old /etc/issue
 
 # Update files
-sed "/condor_config\.sh/d" -i /etc/condor_config
+sed "/condor_config\.sh/d" -i /etc/condor/condor_config
 
 # Fix rc
 
