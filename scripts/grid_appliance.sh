@@ -98,7 +98,9 @@ function start() {
     exit 0
   fi
 
-  rm $DIR/etc/not_configured
+  if test -e $DIR/etc/not_configured; then
+    rm $DIR/etc/not_configured
+  fi
 
   # Check to see if there is a new floppy / config
   md5old=`md5sum $DIR/var/groupvpn.zip 2> /dev/null | awk '{print $1}'`

@@ -101,11 +101,19 @@ if [[ $1 = "start" ]]; then
   ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
   condor_master
 elif [[ $1 = "restart" ]]; then
-  $DIR/scripts/gridcndor.sh stop
-  $DIR/scripts/gridcndor.sh start
+  condor_off
+  configure_condor
+  ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
+  if [[ $(pgrep condor_master) ]]; then
+    condor_on
+  else
+    condor_master
+  fi
 elif [[ $1 = "stop" ]]; then
-  pkill -KILL condor
+  condor_off -subsystem master
 elif [[ $1 = "reconfig" ]]; then
   configure_condor
   condor_reconfig
 fi
+
+exit 0
