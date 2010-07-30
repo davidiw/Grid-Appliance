@@ -86,7 +86,7 @@ ip_control()
 
 # step 5 - clear ip_start, set our hostname, and (re)start condor
   $DIR/scripts/hostname.sh
-  hostname -f >- 2>- <-
+  hostname -f >&- 2>&- <&-
   if [[ $? == 1 ]]; then
     ip_start=true
     hostname=localhost

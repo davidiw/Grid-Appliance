@@ -19,14 +19,8 @@ if [[ -e /etc/init.d/smbd ]]; then
 fi
 
 function stop() {
-  if $(test -e $DIR/etc/samba); then
-    service $smb stop
-  fi
-
-  if $(test -e $DIR/etc/ssh); then
-    service ssh stop
-  fi
-
+  #We could stop samba and ssh, but that makes things more difficult to debug
+  #so from now on, we leave them running, once they've been turned on
   #Stop IPOP
   /etc/init.d/groupvpn.sh stop
   #Remove DOS prevention rule
