@@ -4,5 +4,5 @@ Section: net
 Installed-Size: 1
 Maintainer: David Wolinsky <davidiw@ufl.edu>
 Architecture: all
-Depends: ipop,condor,iptables
+Depends: ipop,condor,iptables,unattended-upgrades
 Description: Grid Appliance base
