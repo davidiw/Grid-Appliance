@@ -104,7 +104,11 @@ elif [[ $1 = "restart" ]]; then
   $DIR/scripts/condor.sh stop
   $DIR/scripts/condor.sh start
 elif [[ $1 = "stop" ]]; then
-  condor_off -subsystem master
+  msg=$(condor_off -subsystem master 2>&1)
+  # If our IP address changed, we won't be able to kill condor via condor_off
+  if [[ $msg == "Can't connect to local master" ]]; then
+    pkill -KILL condor_
+  fi
 elif [[ $1 = "reconfig" ]]; then
   configure_condor
   condor_reconfig
