@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys, xmlrpclib, random, time, socket
+socket.setdefaulttimeout(60)
 
 def main():
   method = sys.argv[1]
