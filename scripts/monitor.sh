@@ -107,7 +107,7 @@ while true; do
     elif [[ $condor_break ]]; then
       echo "condor_break" > $statefd
     fi
-    sleep 60
+    sleep 30
   else
     echo "good" > $statefd
     sleep 600

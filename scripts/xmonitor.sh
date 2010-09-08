@@ -8,19 +8,17 @@ The default password is password
 
 start()
 {
-  update_msg
-  $DIR/scripts/xmonitor.sh background $pid &> /dev/null < /dev/null &
+  $DIR/scripts/xmonitor.sh background &> /dev/null < /dev/null &
 }
 
 background()
 {
-  pid=$1
   while true; do
+    update_msg
     sleep 5
-    if [[ ! $(ps uax | grep $pid | grep -v grep) ]]; then
+    if [[ ! "$(ps uax | grep $pid | grep -v grep)" ]]; then
       exit 0
     fi
-    update_msg
   done
 }
 
@@ -28,7 +26,7 @@ update_msg()
 {
   public_ip=$($DIR/scripts/utils.sh get_ip eth1)
   ipop_ip=$($DIR/scripts/utils.sh get_ip $DEVICE)
-  condor=$(ps uax | grep condor_master | grep -v grep)
+  condor=$(pgrep condor_master)
 
   if [[ $public_ip == $old_public_ip &&
           $ipop_ip == $old_ipop_ip &&
@@ -62,7 +60,7 @@ update_msg()
     kill -KILL $pid
   fi
   echo -e "$default_msg\\n$ipmsg\\n$ipopmsg\\n$condormsg" |
-    /usr/bin/xmessage -buttons "Close" -file - &
+    /usr/bin/xmessage -geometry +0+0 -buttons "Close" -file - &
   pid=$!
 }
 

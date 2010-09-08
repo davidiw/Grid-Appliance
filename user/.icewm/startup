@@ -2,4 +2,4 @@
 source /etc/grid_appliance.config
 $DIR/scripts/xmonitor.sh start
 cd ~
-/usr/bin/xterm &
+/usr/bin/xterm -geometry +0+171 &
