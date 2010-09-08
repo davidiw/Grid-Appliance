@@ -1,12 +1,5 @@
 #!/bin/bash
 source /etc/grid_appliance.config
-ip=`$DIR/scripts/utils.sh get_ip eth1`
-if [[ $ip ]]; then
-  ipmsg="The IP address used to access this appliance is: $ip"
-else
-  ipmsg="There is no external IP address to access this appliance"
-fi
-
-echo -e "$ipmsg\\nYour user name is `whoami`\\nThe default password is password" | /usr/bin/xmessage -buttons "Click here to close this window":0 -file - &
+$DIR/scripts/xmonitor.sh start
 cd ~
 /usr/bin/xterm &
