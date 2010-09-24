@@ -21,10 +21,10 @@ configure_condor()
     server=$ip
   else
     server=`$DIR/scripts/DhtHelper.py get server $ipop_ns`
-    while [[ ! $server ]]; do
-      sleep 15
-      server=`$DIR/scripts/DhtHelper.py get server $ipop_ns`
-    done
+    if [[ ! "$server" ]]; then
+      echo "Unable to find a server.  Try again later."
+      exit 1
+    fi
   fi
   flock=`$DIR/scripts/DhtHelper.py get flock $ipop_ns`
 
