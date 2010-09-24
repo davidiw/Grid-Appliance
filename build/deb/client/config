@@ -1,0 +1,8 @@
+[build]
+version = 0.01
+base_path = ../../..
+package = grid_appliance_client
+[debian]
+control = true
+prerm = true
+postinst = true

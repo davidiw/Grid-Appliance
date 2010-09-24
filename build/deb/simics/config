@@ -1,0 +1,10 @@
+[build]
+version = 0.02
+base_path = ../../..
+package = grid_appliance_simics
+[debian]
+control = true
+prerm = true
+postinst = true
+[files]
+etc/simics.lic = /opt/virtutech/simics3/licenses/license.lic
