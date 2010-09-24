@@ -1,8 +1,10 @@
 [build]
-version = 0.03
+version = 0.04
 base_path = ../../..
 package = grid_appliance_samba
 [debian]
 control = true
 prerm = true
 postinst = true
+[files]
+etc/smb.conf = /opt/grid_appliance/etc/smb.conf

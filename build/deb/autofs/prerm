@@ -1,6 +1,5 @@
 #!/bin/bash
 /etc/init.d/autofs stop
-rm /etc/autofs/nfs_automount.sh /etc/autofs/dht_nfs_automount.sh
 sed "/dht_nfs_automount/d" -i /etc/auto.master
 sed "/nfs_automount/d" -i /etc/auto.master
 rm -rf /mnt/ganfs

@@ -202,7 +202,7 @@ function wait_for_net() {
 }
 
 function ssh() {
-  if ! $(test -e $DIR/etc/ssh); then
+  if [[ ! -e $DIR/etc/sshd_config ]]; then
     return
   fi
 
@@ -219,7 +219,7 @@ function ssh() {
 }
 
 function samba() {
-  if ! $(test -e $DIR/etc/samba); then
+  if [[ ! -e $DIR/etc/smb.conf ]]; then
     return
   fi
 

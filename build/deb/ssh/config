@@ -1,8 +1,10 @@
 [build]
-version = 0.02
+version = 0.03
 base_path = ../../..
 package = grid_appliance_ssh
 [debian]
 control = true
 prerm = true
 postinst = true
+[files]
+etc/sshd_config = /opt/grid_appliance/etc/sshd_config

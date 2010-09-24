@@ -1,6 +1,5 @@
 #!/bin/bash
 service ssh stop
-rm -f $DIR/etc/ssh
 if test -e /etc/ssh/sshd_config.orig; then
   mv -f /etc/ssh/sshd_config.orig /etc/ssh/sshd_config
 fi

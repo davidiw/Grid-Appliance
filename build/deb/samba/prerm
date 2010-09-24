@@ -5,7 +5,6 @@ if [[ -e /etc/init.d/smbd ]]; then
 fi
 
 service $smb stop
-rm -f $DIR/etc/samba/smb.conf
 if test -e /etc/samba/smb.conf.orig; then
   mv -f /etc/samba/smb.conf.orig /etc/samba/smb.conf
 fi

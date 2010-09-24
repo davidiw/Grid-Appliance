@@ -1,8 +1,11 @@
 [build]
-version = 0.01
+version = 0.02
 base_path = ../../..
 package = grid_appliance_autofs
 [debian]
 control = true
 prerm = true
 postinst = true
+[files]
+scripts/nfs_automount.sh = /etc/autofs/nfs_automount.sh
+scripts/dht_nfs_automount.sh = /etc/autofs/dht_nfs_automount.sh

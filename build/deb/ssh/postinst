@@ -7,5 +7,4 @@ if ! test -e /etc/ssh/sshd_config.orig; then
   mv -f /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
 fi
 
-touch $DIR/etc/ssh
 service grid_appliance.sh ssh

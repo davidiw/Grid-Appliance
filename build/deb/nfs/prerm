@@ -1,4 +1,3 @@
 #!/bin/bash
 sed "/local/d" -i /etc/exports
-rm -rf /mnt/local &> /dev/null
 /etc/init.d/nfs-kernel-server restart
