@@ -24,15 +24,16 @@ condor_control()
   if [[ `$DIR/tests/CheckConnection.py` != "True" || "`$DIR/scripts/utils.sh get_pid condor.sh`" ]]; then
     return
   elif [[ ! "`$DIR/scripts/utils.sh get_pid condor`" ]]; then
-    $DIR/scripts/condor.sh restart | logger -t maintenance &
+    logger -t maintenance "Condor is off, starting Condor..."
+    $DIR/scripts/condor.sh restart | logger -t maintenance
     return
   fi
 
   manager_ip=`cat $DIR/var/condor_manager`
 # Send some pings to the manager, see if he is operational
   if [[ "$manager_ip" && 0 == `$DIR/scripts/utils.sh ping_test $manager_ip 3 60` ]]; then
-    logger -t maintenance "Unable to contact manager, restarting Condor..."
-    $DIR/scripts/condor.sh reconfig | logger -t maintenance &
+    logger -t maintenance "Unable to contact manager, reconfiguring Condor..."
+    $DIR/scripts/condor.sh reconfig | logger -t maintenance
     return
   fi
 
@@ -44,9 +45,9 @@ ip_control()
 {
 # step 0 - check if Ipop is working!
   if [[ `$DIR/tests/CheckSelf.py` == "False" ]]; then
-# Now in some bizarre undiagnosed cases, some of the config files are broken,
-# this is not an easily recoverable or detectable error, so this checks the configs
-# if one is bad, re-run groupvpn_prepare.sh...
+# Now in some bizarre undiagnosed cases, the config files are broken, this is
+# not an easily recoverable or detectable error, so this checks the configs
+# if this fails, re-run groupvpn_prepare.sh...
     for file in ipop.config node.config bootstrap.config dhcp.config; do
       python $DIR/scripts/xml-check.py $IDIR/etc/$file
       if [[ $? != 0 ]]; then
@@ -97,6 +98,10 @@ ip_control()
   condor_break=true
 }
 
+function backup_ipop() {
+  $IDIR/bin/dump_dht_proxy.py $IDIR/etc/dht_proxy
+}
+
 while true; do
   ip_control
 # If there is a failure in condor (unable to communicate to manager) or we
@@ -110,6 +115,7 @@ while true; do
     sleep 30
   else
     echo "good" > $statefd
+    backup_ipop
     sleep 600
   fi
 done
