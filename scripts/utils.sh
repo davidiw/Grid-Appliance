@@ -24,26 +24,22 @@ get_baddr()
 
 get_ip()
 {
-  res=`/sbin/ifconfig $1 | awk -F"inet addr:" {'print $2'} | awk -F" " {'print $1'} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
-  echo -n $res
+  /sbin/ifconfig $1 | awk -F"inet addr:" {'print $2'} | awk -F" " {'print $1'} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"
 }
 
 get_netmask()
 {
-  res=`/sbin/ifconfig $1 | awk -F"Mask:" {'print $2'} | awk -F" " {'print $1'} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
-  echo -n $res
+  /sbin/ifconfig $1 | awk -F"Mask:" {'print $2'} | awk -F" " {'print $1'} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"
 }
 
 get_pid()
 {
-  res=`ps uax | grep $1 | grep -v grep | grep -v get_pid | awk -F" " {'print $2'} | grep -oE "[0-9]+"`
-  echo -n $res
+  ps uax | grep $1 | grep -v grep | grep -v get_pid | awk -F" " {'print $2'} | grep -oE "[0-9]+"
 }
 
 get_port()
 {
-  res=`netstat -aup | grep $1 | awk -F":" {'print $2'} | grep -oE "[0-9]+"`
-  echo -n $res
+  netstat -aup | grep $1 | awk -F":" {'print $2'} | grep -oE "[0-9]+"
 }
 
 ping_test()
