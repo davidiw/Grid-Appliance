@@ -60,6 +60,8 @@ function start() {
   try_fd=true
   # Determine which device and mount
   if test -e $DIR/etc/floppy.img; then
+    # Secure our private data!
+    chmod 700 $DIR/etc/floppy.img
     mount -o loop $DIR/etc/floppy.img $CONFIG_PATH
     if [[ $? == 0 ]]; then
       try_fd=
@@ -146,16 +148,8 @@ function ec2() {
     return 1
   fi
 
-  cd /tmp
-  unzip floppy.zip &> /dev/null
-  mv -f floppy.img $DIR/etc/floppy.img &> /dev/null
-
-  # If the floppy exists, we've done well!
-  if test -e $DIR/etc/floppy.img; then
-    return 0
-  fi
-
-  return 1
+  cloud_floppy
+  return $?
 }
 
 function nimbus() {
@@ -166,13 +160,27 @@ function nimbus() {
   fi
 
   user_uri="`cat /var/nimbus-metadata-server-url`/2007-01-19/user-data"
-  wget --tries=2 $user_uri -O /tmp/floppy.zip.b64
-  openssl enc -d -base64 -in /tmp/floppy.zip.b64 -out /tmp/floppy.zip
-
-  cd /tmp
-  unzip floppy.zip &> /dev/null
+  wget --tries=2 $user_uri -O /tmp/floppy.zip
   if [[ $? != 0 ]]; then
     return 1
+  fi
+
+  cloud_floppy
+  return $?
+}
+
+function cloud_floppy() {
+  cd /tmp
+  unzip floppy.zip &> /dev/null
+
+  # ec2 converts user-data into base64, eucalyptus doesn't, the user must
+  if [[ $? != 0 ]]; then
+    mv floppy.zip floppy.zip.b64
+    openssl enc -d -base64 -in /tmp/floppy.zip.b64 -out /tmp/floppy.zip
+    unzip floppy.zip &> /dev/null
+    if [[ $? != 0 ]]; then
+      return 1
+    fi
   fi
 
   mv -f floppy.img $DIR/etc/floppy.img &> /dev/null
@@ -186,19 +194,16 @@ function nimbus() {
 }
 
 function wait_for_net() {
-  MAX_ATTEMPT=20
+  MAX_ATTEMPTS=10
   count=0
-  while [ "$count" -lt "$MAX_ATTEMPT" ]
-    do
-      addr=`ifconfig eth0| grep "inet addr"|awk {'print $2'}|awk -F":" {'print $2'}`
-      if [ "$addr" ]; then
-        return 0
-      fi
-      sleep 0.5
-      let count=count+1 
-    done
+  for (( count = 0; $count < $MAX_ATTEMPTS; count = $count + 1 )); do
+    if [[ "$($DIR/scripts/utils.sh get_ip eth0)" ]]; then
+      return 0
+    fi
+    sleep 1
+  done
 
-  return 1
+  return -1
 }
 
 function ssh() {
