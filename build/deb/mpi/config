@@ -1,0 +1,33 @@
+[build]
+version = 0.02
+base_path = ../../..
+package = grid_appliance_mpi
+[debian]
+control = true
+preinst = true
+[files]
+mpi/scripts/discover_mpi_hosts.sh = /opt/grid-appliance/scripts/discover_mpi_hosts.sh
+mpi/scripts/start_mpd_ring.sh = /opt/grid-appliance/scripts/start_mpd_ring.sh
+mpi/user/examples/mpi_teragrid/b.data = /opt/grid-appliance/scripts/b.data
+mpi/user/examples/mpi_teragrid/Broadcast_ch6.c = /opt/grid-appliance/scripts/Broadcast_ch6.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch2.c = /opt/grid-appliance/scripts/GameOfLife_ch2.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch3.c = /opt/grid-appliance/scripts/GameOfLife_ch3.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch4.c = /opt/grid-appliance/scripts/GameOfLife_ch4.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch5.c = /opt/grid-appliance/scripts/GameOfLife_ch5.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch6.c = /opt/grid-appliance/scripts/GameOfLife_ch6.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch7.c = /opt/grid-appliance/scripts/GameOfLife_ch7.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch8.c = /opt/grid-appliance/scripts/GameOfLife_ch8.c
+mpi/user/examples/mpi_teragrid/GameOfLife_ch9.c = /opt/grid-appliance/scripts/GameOfLife_ch9.c
+mpi/user/examples/mpi_teragrid/Gather_ch6.c = /opt/grid-appliance/scripts/Gather_ch6.c
+mpi/user/examples/mpi_teragrid/HelloWorld.c = /opt/grid-appliance/scripts/HelloWorld.c
+mpi/user/examples/mpi_teragrid/ParIoRead_ch8.c = /opt/grid-appliance/scripts/ParIoRead_ch8.c
+mpi/user/examples/mpi_teragrid/ParIoReadOffset_ch8.c = /opt/grid-appliance/scripts/ParIoReadOffset_ch8.c
+mpi/user/examples/mpi_teragrid/ParIoWrite_ch8.c = /opt/grid-appliance/scripts/ParIoWrite_ch8.c
+mpi/user/examples/mpi_teragrid/ParIoWriteOffset_ch8.c = /opt/grid-appliance/scripts/ParIoWriteOffset_ch8.c
+mpi/user/examples/mpi_teragrid/ProcessColors.c = /opt/grid-appliance/scripts/ProcessColors.c
+mpi/user/examples/mpi_teragrid/Reduce_ch6.c = /opt/grid-appliance/scripts/Reduce_ch6.c
+mpi/user/examples/mpi_teragrid/SafeExchange_ch4.c = /opt/grid-appliance/scripts/SafeExchange_ch4.c
+mpi/user/examples/mpi_teragrid/Scatter_ch6.c = /opt/grid-appliance/scripts/Scatter_ch6.c
+mpi/user/examples/mpi_teragrid/SendRecvNonBloakcing_ch4.c = /opt/grid-appliance/scripts/SendRecvNonBloakcing_ch4.c
+mpi/user/examples/mpi_teragrid/SendRecvWithGetCount_ch4.c = /opt/grid-appliance/scripts/SendRecvWithGetCount_ch4.c
+mpi/user/examples/mpi_teragrid/SimpleSendRecv_ch4.c = /opt/grid-appliance/scripts/SimpleSendRecv_ch4.c
