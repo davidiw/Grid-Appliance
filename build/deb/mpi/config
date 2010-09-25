@@ -5,8 +5,6 @@ package = grid_appliance_mpi
 [debian]
 control = true
 preinst = true
-[directories]
-/home/mpi = true
 [files]
 mpi/scripts/discover_mpi_hosts.sh = /opt/grid-appliance/scripts/discover_mpi_hosts.sh
 mpi/scripts/start_mpd_ring.sh = /opt/grid-appliance/scripts/start_mpd_ring.sh
