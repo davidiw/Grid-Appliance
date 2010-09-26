@@ -76,6 +76,12 @@ function start() {
   # If we didn't mount a floppy, no point in proceeding!
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
   if [[ $? != 0 ]]; then
+    # Get the floppy image and prepare the system for its use
+    wait_for_net
+    if [[ $? != 0 ]]; then
+      return 1
+    fi
+
     ec2
     if [[ $? == 0 ]]; then
       start
@@ -153,12 +159,6 @@ function ec2() {
 }
 
 function nimbus() {
-  # Get the floppy image and prepare the system for its use
-  wait_for_net
-  if [[ $? != 0 ]]; then
-    return 1
-  fi
-
   user_uri="`cat /var/nimbus-metadata-server-url`/2007-01-19/user-data"
   wget --tries=2 $user_uri -O /tmp/floppy.zip
   if [[ $? != 0 ]]; then
@@ -194,7 +194,7 @@ function cloud_floppy() {
 }
 
 function wait_for_net() {
-  MAX_ATTEMPTS=10
+  MAX_ATTEMPTS=30
   count=0
   for (( count = 0; $count < $MAX_ATTEMPTS; count = $count + 1 )); do
     if [[ "$($DIR/scripts/utils.sh get_ip eth0)" ]]; then
@@ -203,7 +203,7 @@ function wait_for_net() {
     sleep 1
   done
 
-  return -1
+  return 1
 }
 
 function ssh() {
