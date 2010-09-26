@@ -94,23 +94,35 @@ if test -e $DIR/etc/not_configured; then
   exit -1
 fi
 
-if [[ $1 = "start" ]]; then
+if [[ $1 == "start" ]]; then
   configure_condor
+  if [[ $? != 0 ]]; then
+    echo "Failed to configure... try again later..."
+    exit 1
+  fi
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
   # of physical memory, that means a swap disk is necessary!
   ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
   condor_master
-elif [[ $1 = "restart" ]]; then
+elif [[ $1 == "restart" ]]; then
   $DIR/scripts/condor.sh stop
   $DIR/scripts/condor.sh start
-elif [[ $1 = "stop" ]]; then
+elif [[ $1 == "stop" ]]; then
   msg=$(condor_off -subsystem master 2>&1)
-  # If our IP address changed, we won't be able to kill condor via condor_off
-  if [[ $msg == "Can't connect to local master" ]]; then
-    pkill -KILL condor_
-  fi
-elif [[ $1 = "reconfig" ]]; then
+  # condor_off is a nice way to shut things down, but sometimes, frequently enough, it doesn't
+  for (( count = 0; $count < 5; count = $count + 1 )); do
+    if [[ ! "$(pgrep condor_)" ]]; then
+      return 0
+    fi
+    sleep 1
+  done
+  pkill -KILL condor_
+elif [[ $1 == "reconfig" ]]; then
   configure_condor
+  if [[ $? != 0 ]]; then
+    echo "Failed to configure... try again later..."
+    exit 1
+  fi
   condor_reconfig
 fi
 
