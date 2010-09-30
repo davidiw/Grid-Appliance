@@ -270,7 +270,7 @@ case "$1" in
     ssh
     ;;
   *)
-    echo "usage: start, stop, restart"
+    echo "usage: start, stop, restart, samba, ssh"
   ;;
 esac
 

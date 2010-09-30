@@ -112,7 +112,7 @@ elif [[ $1 == "stop" ]]; then
   # condor_off is a nice way to shut things down, but sometimes, frequently enough, it doesn't
   for (( count = 0; $count < 5; count = $count + 1 )); do
     if [[ ! "$(pgrep condor_)" ]]; then
-      return 0
+      exit 0
     fi
     sleep 1
   done
