@@ -21,7 +21,7 @@ condor_control()
 {
   condor_break=true
 # Are we connected, is gridcndor running?  let's come back soon...
-  if [[ "$($DIR/tests/CheckConnection.py)" != "True" || "$($DIR/scripts/utils.sh get_pid condor.sh)" ]]; then
+  if [[ "$($DIR/tests/CheckConnection.py)" != "True" ]]; then
     return
   elif [[ ! "$($DIR/scripts/utils.sh get_pid condor_master)" ]]; then
     logger -t maintenance "Condor is off, starting Condor..."
@@ -30,7 +30,8 @@ condor_control()
   fi
 
   manager_ip=$(cat $DIR/var/condor_manager)
-  if [[ ! "$manager_ip" ]]; then
+# Is the manager_ip set, does it match what condor is using?
+  if [[ "$manager_ip" != "$(condor_config_val CONDOR_HOST)" ]]; then
     logger -t maintenance "Condor is missing the manager_ip... reconfiguring condor"
     $DIR/scripts/condor.sh reconfig | logger -t maintenance
     return
