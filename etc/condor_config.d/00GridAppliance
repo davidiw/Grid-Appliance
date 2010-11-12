@@ -39,3 +39,5 @@ PREEMPTION_REQUIREMENTS	= $(UWCS_PREEMPTION_REQUIREMENTS)
 PREEMPTION_RANK		= $(UWCS_PREEMPTION_RANK)
 # If not set, machines without swaps won't be able to run jobs
 RESERVED_SWAP = 0
+# Run the jobs as the newly created accounts mapped to individual slots
+DEDICATED_EXECUTE_ACCOUNT_REGEXP = cndrusr[0-9]+

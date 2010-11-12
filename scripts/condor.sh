@@ -3,6 +3,28 @@ source /etc/ipop.vpn.config
 source /etc/grid_appliance.config
 source /etc/group_appliance.config
 config=$DIR"/etc/condor_config.d/00root"
+whole_machine=$DIR"/etc/condor_config.d/01whole_machine"
+userbase=cndrusr
+
+cadduser()
+{
+  user=$userbase$1
+  echo "SLOT"$1"_USER = "$user >> $config
+  id $user &> /dev/null
+  if [[ $? -eq 0 ]]; then
+    return
+  fi
+  useradd $user
+}
+
+# Prepare the accounts for usage by condor as well as a partitionable single slot
+prepare_slots()
+{
+  slots=$(cat /proc/cpuinfo | grep processor | wc -l)
+  for (( i = 1 ; $i < $slots + 1; i = $i + 1 )); do
+    cadduser $i
+  done
+}
 
 configure_condor()
 {
@@ -75,6 +97,8 @@ configure_condor()
   startd_attrs=$startd_attrs", APPLIANCE_VERSION"
   echo "SUBMIT_EXPRS = \$(SUBMIT_EXPRS)"$submit_exprs >> $config
   echo "STARTD_ATTRS = \$(STARTD_ATTRS)"$startd_attrs >> $config
+
+  prepare_slots
 }
 
 update_flock()
