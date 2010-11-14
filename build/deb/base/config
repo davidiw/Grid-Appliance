@@ -1,5 +1,5 @@
 [build]
-version = 2.04.19
+version = 2.04.20
 base_path = ../../..
 package = grid_appliance
 [debian]
@@ -21,6 +21,7 @@ scripts/startup.sh = /opt/grid_appliance/scripts/startup.sh
 scripts/utils.sh = /opt/grid_appliance/scripts/utils.sh
 scripts/condor.sh = /opt/grid_appliance/scripts/condor.sh
 etc/apt = /opt/grid_appliance/etc/apt
+etc/condor_whole_machine = /opt/grid_appliance/etc/condor_whole_machine
 etc/condor_config.d/00GridAppliance = /opt/grid_appliance/etc/condor_config.d/00GridAppliance
 etc/grid_appliance.config = /opt/grid_appliance/etc/grid_appliance.config
 etc/issue = /opt/grid_appliance/etc/issue
