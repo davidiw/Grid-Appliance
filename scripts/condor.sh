@@ -17,13 +17,34 @@ cadduser()
   useradd $user
 }
 
-# Prepare the accounts for usage by condor as well as a partitionable single slot
+# Prepare the accounts for usage by condor as well as a single whole slot
 prepare_slots()
 {
   slots=$(cat /proc/cpuinfo | grep processor | wc -l)
-  for (( i = 1 ; $i < $slots + 1; i = $i + 1 )); do
-    cadduser $i
-  done
+  if [[ $slots -gt 1 ]]; then
+    cp $DIR"/etc/condor_whole_machine" $whole_machine
+    slotpp=$(expr $slots + 1)
+    for (( i = 1 ; $i < $slots; i = $i + 1 )); do
+      cadduser $i
+      echo "  (Slot"$i"_State =?= \"Claimed\") + \\" >> $whole_machine
+    done
+
+    cadduser $slotpp
+    echo "  (Slot"$slots"_State =?= \"Claimed\")" >> $whole_machine
+    # Detect if the whole slot is being used
+    echo "WHOLE_MACHINE_SLOT_CLAIMED = (Slot"$slotpp"_State =?= \"Claimed\")" >> $whole_machine
+    # 7.4 has DETECTED_*, 7.2 doesn't
+    echo "GA_DETECTED_CORES = $slots" >> $whole_machine
+    memory=$(cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}')
+    echo "GA_DETECTED_MEMORY = $memory" >> $whole_machine
+    # we will double-allocate resources to overlapping slots
+    # 7.4 supports operators on apparently all configuration variables
+    echo "NUM_CPUS = $(expr $slots \* 2)" >> $whole_machine
+    echo "MEMORY = $(expr $memory \* 2)" >> $whole_machine
+    # Slot number for whole machine
+    echo "WHOLE_MACHINE_SLOT = $slotpp" >> $whole_machine
+  fi
+  cadduser $slots
 }
 
 configure_condor()

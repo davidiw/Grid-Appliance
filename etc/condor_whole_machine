@@ -1,0 +1,33 @@
+# single-core slots get 1 core each
+SLOT_TYPE_1 = cpus=1
+NUM_SLOTS_TYPE_1 = $(GA_DETECTED_CORES)
+
+# whole-machine slot gets as many cores and RAM as the machine has
+SLOT_TYPE_2 = cpus=$(GA_DETECTED_CORES), mem=$(GA_DETECTED_MEMORY)
+NUM_SLOTS_TYPE_2 = 1
+
+# ClassAd attribute that is True/False depending on whether this slot is
+# the whole-machine slot
+CAN_RUN_WHOLE_MACHINE = SlotID == WHOLE_MACHINE_SLOT
+STARTD_EXPRS = $(STARTD_EXPRS), CAN_RUN_WHOLE_MACHINE, \
+  SINGLE_CORE_SLOTS_CLAIMED, WHOLE_MACHINE_SLOT_CLAIMED, WHOLE_MACHINE_SLOT
+
+# advertise state of each slot as SlotX_State in ClassAds of all other slots
+STARTD_SLOT_EXPRS = $(STARTD_SLOT_EXPRS), State
+
+# Single-core jobs must run on single-core slots
+START_SINGLE_CORE_JOB = \
+  TARGET.RequiresWholeMachine =!= True && MY.CAN_RUN_WHOLE_MACHINE == False && \
+  MY.WHOLE_MACHINE_SLOT_CLAIMED == FALSE
+
+# Whole-machine jobs must run on the whole-machine slot
+START_WHOLE_MACHINE_JOB = \
+  TARGET.RequiresWholeMachine =?= True && MY.CAN_RUN_WHOLE_MACHINE && \
+  MY.SINGLE_CORE_SLOTS_CLAIMED == FALSE
+
+START = ($(START)) && ( \
+  ($(START_SINGLE_CORE_JOB)) || \
+  ($(START_WHOLE_MACHINE_JOB)) )
+
+# Determines if a whole slot can be obtained
+SINGLE_CORE_SLOTS_CLAIMED = \
