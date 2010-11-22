@@ -30,8 +30,8 @@ class TemplateFile():
     def _full_outname(self):
         return self.outpath + self.outfname
 
-    def chmod_outfile(self, perm):
-        os.chmod( self._full_outname(), perm)
-
     def __str__(self):
         return self._full_outname()
+
+    def out_fname(self):
+        return self.outfname

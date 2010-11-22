@@ -9,9 +9,9 @@ from optparse import OptionParser
 from threading import Thread
 
 DEBUG = 1
-PORT = 32603                            # server listening port
-SUBM_FNAME = 'submit_mpi_vanilla'       # submission template file name
-CLNT_FNAME = 'condor_mpi_client'        # client-side script template
+PORT = 32603                                   # server listening port
+SUBM_FNAME = 'submit_mpi_vanilla'              # submission template file name
+CLNT_FNAME = 'condor_mpi_client.tmp.py'        # client-side script template
 AUTH_FNAME = 'authorized_keys'
 
 class MPISubmission():
@@ -46,20 +46,14 @@ class MPISubmission():
             sys.exit('Error creating temp directory : ' + e )
         return 'tmp' + self.rand + '/'
 
-    def _start_server(self):
-
-        if self.servthread != None:
-            print 'Listening server is already active'
-            return
-
-        self.servthread = Thread( target=CallbackServ(self.np, self.hostfname, PORT).serv )
-        self.servthread.setDaemon(True)
-        self.servthread.start()
-
     def start(self):
         self._gen_ssh_keys()                  # generate ssh key pairs
         self._prepare_submission_files()      # prepare client script and condor submit file
-        self._start_server()                  # start a listening server
+
+        # start a listening server
+        self.servthread = Thread( target=CallbackServ(self.np, self.hostfname, PORT).serv )
+        self.servthread.setDaemon(True)
+        self.servthread.start()
     
         if self.debug:
             print "submit condor with file " + str(self.submitFile)
@@ -91,7 +85,8 @@ class MPISubmission():
         # Prepare condor submission file
         self.submitFile.prepare_file( [ ['<q.np>', str(self.np)],
                         ['<ssh.pub.key>', self.tmpPath + AUTH_FNAME ],
-                        ['<client.script>', str(self.clientFile) ] ] )
+                        ['<fullpath.client.script>', str(self.clientFile) ],
+                        ['<client.script>', self.clientFile.out_fname() ] ] )
 
         # Prepare client side python script
         if self.debug:
@@ -100,7 +95,6 @@ class MPISubmission():
                         [ [ '<serv.ip>', get_ipop_ip() ],
                         [ '<serv.port>', str(PORT) ],
                         [ '<rand>', self.rand ] ] )
-        self.clientFile.chmod_outfile( 0755 )
 
     def _read_hosts_info(self):
         with open( self.hostfname, 'r') as hostf:

@@ -22,7 +22,7 @@ class CallbackServ():
     def write_file(self, data ):
 
         # construct an entry string from dict 'data'
-        entry = data['ip'] + ":" + data['cpus'] + ":" +  data['usrname'] + ":" + \
+        entry = data['hostname'] + ":" + data['cpus'] + ":" +  data['usrname'] + ":" + \
                 data['sshport'] + ":" + data['xmlport'] + ":" + data['path']
 
         with open( self.outfname, 'a') as outf:
