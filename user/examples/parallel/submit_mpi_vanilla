@@ -1,0 +1,9 @@
+Universe = vanilla
+Executable = <client.script>
+Log = result/condor-mpi.$(Cluster).$(Process).log
+Output = result/condor-mpi.$(Cluster).$(Process).out
+Error = result/condor-mpi.$(Cluster).$(Process).err
+should_transfer_files = Yes
+transfer_input_files = <ssh.pub.key>, condor_mpi_util.py, mpi_sshd_setup.sh
+when_to_transfer_output = ON_EXIT
+Queue <q.np>
