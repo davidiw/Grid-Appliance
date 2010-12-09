@@ -212,23 +212,41 @@ def mpdboot():
         except:
             print 'unable to open (or read) hostsfile %s' % (hostsFilename)
             exit(-1)
+#    hostsAndInfo = [ {'host' : myHost, 'ncpus' : myNcpus, 'ifhn' : myIfhn} ]
     hostsAndInfo = [ {'host' : myHost, 'ncpus' : myNcpus, 'ifhn' : myIfhn} ]
+    hostsKeywords = [ 'host', 'ncpus', 'usrname', 'sshport', 'xmlport', 'path' ]
     for line in lines:
         line = line.strip()
         if not line  or  line[0] == '#':
             continue
         splitLine = re.split(r'\s+',line)
-        host = splitLine[0]
+        info = splitLine[0]
+"""
         ncpus = 1  # default
         if ':' in host:
             (host,ncpus) = host.split(':',1)
             ncpus = int(ncpus)
+"""
+        hostsInfo = []
+        for i in range(len(hostsKeywords)) :
+            (val, info) = info.split(':',1)
+            hostsInfo.append( val )
+            if info == None:
+                break
+
         ifhn = ''  # default
         for kv in splitLine[1:]:
             (k,v) = kv.split('=',1)
             if k == 'ifhn':
                 ifhn = v
-        hostsAndInfo.append( {'host' : host, 'ncpus' : ncpus, 'ifhn' : ifhn} )
+#        hostsAndInfo.append( {'host' : host, 'ncpus' : ncpus, 'ifhn' : ifhn} )
+        tmpdict = { 'ifhn' : ifhn }
+        for i in  range(len(hostsKeywords)) :
+            tmpdict[hostsKeywords[i]] = hostsInfo[i] if i < len(hostsInfo) else None
+        if tmpdict['ncpus'] == None:      # make sure 'ncpus' is not None
+            tmpdict['ncpus'] = 1
+        hostsAndInfo.append( tmpdict )
+
     cachedIPs = {}
     if oneMPDPerHost  and  totalnumToStart > 1:
         oldHostsAndInfo = hostsAndInfo[:]
