@@ -9,6 +9,7 @@ from threading import Thread
 
 SERV_IP =  '<serv.ip>' 
 SERV_PORT = '<serv.port>'
+MPD_PORT = '<mpd.port>'
 RAND = '<rand>'
 SEED_SSHPORT = 55555
 SEED_XMLPORT = 45555
@@ -35,13 +36,6 @@ def start_server( port ):
     srvthrd.start()
     return srvthrd
 
-def create_mpiconf():
-    #tmp_dir = os.environ['_CONDOR_STRATCH_DIR']
-
-    with open( ".mpd.conf", 'w' ) as outf:
-        outf.write( 'MPD_SECRETWORD=' + RAND )
-    outf.close()
-
 if __name__ == "__main__":
 
     condor_slot =  int(os.environ['_CONDOR_SLOT'])
@@ -61,7 +55,8 @@ if __name__ == "__main__":
     serv.write_file( data )
 
     subprocess.call( ['mpi_sshd_setup.sh'] )
-    create_mpiconf()
+    createMpdConf( RAND )
+    subprocess.Popen(['mpd', '-h', SERV_IP, '-p', MPD_PORT], env={'MPD_CONF_FILE': local_path +'/.mpd.conf'})
 
     # start the server, waiting for terminating signal    
     servthread = start_server( int(local_xmlport) )

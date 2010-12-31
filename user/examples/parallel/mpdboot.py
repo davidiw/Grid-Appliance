@@ -221,12 +221,6 @@ def mpdboot():
             continue
         splitLine = re.split(r'\s+',line)
         info = splitLine[0]
-"""
-        ncpus = 1  # default
-        if ':' in host:
-            (host,ncpus) = host.split(':',1)
-            ncpus = int(ncpus)
-"""
         hostsInfo = []
         for i in range(len(hostsKeywords)) :
             (val, info) = info.split(':',1)
