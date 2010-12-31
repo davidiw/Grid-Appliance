@@ -18,11 +18,11 @@ FNULL = open('/dev/null', 'w')
 
 class MPISubmission():
 
-    def __init__(self, np, srcfname ):
+    def __init__(self, np, execfname ):
         self.debug = DEBUG
         self.np = np
         self.mpdPort = ''
-        self.srcfname = srcfname
+        self.execfname = execfname
         self.servthread = None
         self.rand = genRandom()
         self.tmpPath = self._create_tmpdir()
@@ -86,22 +86,33 @@ class MPISubmission():
             sys.exit('Error: condor_submit return ' + str(p))
 
         # if the submission is successful, wait for the server 
-        print 'Waiting for ' + str(self.np) + ' workers to response .... '
+        print 'Waiting for ' + str(self.np) + ' workers to response ....',
         sys.stdout.flush()
         self.servthread.join()
         print 'finished'
         self._read_hosts_info()        # read info from the collected hosts
 
+        time.sleep(3.0)                # wait for a stable connection
+
         # testing mpd connection
-        time.sleep(3.0)                # for connection stability
+        process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE)
+        trace = process.communicate()[0]
+
         if self.debug:
-            print '\nMPD trace'
-            subprocess.call( ['mpdtrace', '-l'])
-            print ''
+            print '\nMPD trace:\n' + trace
+
+        # Check whether mpdtrace return enough mpd nodes
+        if len(trace.split()) <= (self.np + 1):
+            subprocess.call(['condor_rm', '-all'])
+            sys.exit('Error: not enough mpd nodes in the ring')
+
+        # Only run mpi job on worker nodes
+        for host in self.hostlist:
+            subprocess.call(['mpiexec', '-host', host[0], '-path', host[5], self.execfname])
 
         # mpi job is finished
         subprocess.call( 'mpdallexit', stdout=FNULL, stderr=FNULL) # tear down mpd ring
-        for host in self.hostlist:                                  # notify all workers
+        for host in self.hostlist:                                 # notify all workers
             hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
             hostserv.terminate()
 
@@ -113,6 +124,7 @@ class MPISubmission():
         self.submitFile.prepare_file( [ ['<q.np>', str(self.np)],
                         ['<ssh.pub.key>', self.tmpPath + AUTH_FNAME ],
                         ['<fullpath.client.script>', str(self.clientFile) ],
+                        ['<mpi.exec.file>', self.execfname ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
 
         # Prepare client side python script

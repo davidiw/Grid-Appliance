@@ -4,12 +4,13 @@ import SimpleXMLRPCServer
 
 class CallbackServ():
 
-    def __init__(self, count, fname, port):
+    def __init__(self, count, fname, port, debug=0):
         self.count = count              # target number of IPs
         self.curr_count = 0             # ip collected so far
         self.outfname = fname
         self.running = True             # running flag
         self.port = port
+        self.debug = debug
 #        self.timer = threading.Timer( WAITTIME, self._terminate )
 #        self.timer.start()
 
@@ -30,14 +31,15 @@ class CallbackServ():
         outf.closed
 
         self.curr_count += 1
-        print 'Received ' + str(self.curr_count) + ' out of ' + \
-            str(self.count) + ' responses.'
+        if self.debug:
+            print 'Received ' + str(self.curr_count) + ' out of ' + \
+                str(self.count) + ' responses.'
         if self.curr_count == self.count:    # we reach the target count
             self._terminate()                # no need to wait for timeout
         return 0
 
     def serv(self):
-        server = SimpleXMLRPCServer.SimpleXMLRPCServer(("0.0.0.0", self.port))
+        server = SimpleXMLRPCServer.SimpleXMLRPCServer(("0.0.0.0", self.port), logRequests = False)
         server.register_function(self.write_file)
         while self.running:
             server.handle_request()

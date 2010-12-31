@@ -25,7 +25,7 @@ class WaitingServ():
         return 0
 
     def serv(self):
-        server = SimpleXMLRPCServer(("0.0.0.0", self.port))
+        server = SimpleXMLRPCServer(("0.0.0.0", self.port), logRequests = False)
         server.register_function(self.terminate)
         while self.running:
             server.handle_request()
