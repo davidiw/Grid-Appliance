@@ -60,12 +60,13 @@ class MPISubmission():
         mpdconf_path = os.getcwd()+'/'+self.tmpPath[:-1]
         createMpdConf( self.rand, mpdconf_path )
         subprocess.Popen(['mpd'], env={ 'MPD_CONF_FILE': mpdconf_path+'/.mpd.conf' })
-        time.sleep(1.0)         # sleep to allow mpd to fully start before calling mpdtrace
+        time.sleep(1.0)         # wait for mpd to fully start
 
         # determine mpd listening port from mpdtrace output
         process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE)
+        process.wait()
         traceout = process.communicate()[0]
-        port = traceout.split()[0].split('_')[-1]
+        port = extractPort(traceout)
 
         if not port.isdigit(): 
             sys.exit('Error starting mpd : ' + traceout )
@@ -100,17 +101,28 @@ class MPISubmission():
         print 'finished'
         self._read_hosts_info()        # read info from the collected hosts
 
-        time.sleep(3.0)                # wait for a stable connection
+        # Waiting for mpd ring to be ready
+        limit = 10
+        retry = 0
+        while retry < limit :
+            time.sleep(1.0)                # wait
 
-        # testing mpd connection
-        process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE)
-        trace = process.communicate()[0]
+            # testing mpd connection
+            process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE )
+            process.wait()
+            trace = process.communicate()[0]
+            retry += 1
 
-        if self.debug:
-            print '\nMPD trace:\n' + trace
+            port = extractPort(trace)
+            num = len( trace.split('\n') )
+
+            if port.isdigit() and (num == self.np + 1):
+                if self.debug:
+                    print '\nMPD trace:\n' + trace
+                break
 
         # Check whether mpdtrace return enough mpd nodes
-        if len(trace.split()) < self.np :
+        if len(trace.split('\n')) < self.np + 1 :
             subprocess.call(['condor_rm', '-all'])
             sys.exit('Error: not enough mpd nodes in the ring')
 
@@ -134,7 +146,6 @@ class MPISubmission():
         self.submitFile.prepare_file( [ ['<q.np>', str(self.np-1)],
                         ['<ssh.pub.key>', self.tmpPath + AUTH_FNAME ],
                         ['<fullpath.client.script>', str(self.clientFile) ],
-#                        ['<mpi.exec.file>', self.execfname ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
 
         # Prepare client side python script

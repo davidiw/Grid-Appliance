@@ -28,3 +28,7 @@ def gethostname( short = False ):
         return name
 
     return name.split('.')[0]  # short hostname, return the first part
+
+# Extract port number from mpdtrace output
+def extractPort( trace ):
+    return trace.split()[0].split('_')[-1]
