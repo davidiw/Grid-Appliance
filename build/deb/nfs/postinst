@@ -1,5 +1,6 @@
 #!/bin/bash
 if [[ `grep "/mnt/local" /etc/exports` == "" ]]; then
+  echo "/mnt/local  127.0.0.1(rw,insecure,no_root_squash,no_subtree_check)" >> /etc/exports
   echo "/mnt/local  *(ro,insecure,all_squash,no_subtree_check)" >> /etc/exports
 fi
 mkdir /mnt/local >- 2>-

@@ -1,5 +1,5 @@
 [build]
-version = 0.01
+version = 0.02
 base_path = ../../..
 package = grid_appliance_nfs
 [debian]
