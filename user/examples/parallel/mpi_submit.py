@@ -13,6 +13,7 @@ PORT = 32603                                   # server listening port
 SUBM_FNAME = 'submit_mpi_vanilla'              # submission template file name
 CLNT_FNAME = 'condor_mpi_client.tmp.py'        # client-side script template
 AUTH_FNAME = 'authorized_keys'
+LOCAL_NFS_DIR = '/mnt/local'
 
 FNULL = open('/dev/null', 'w')
 
@@ -35,23 +36,25 @@ class MPISubmission():
         self.hostlist = []             # store a list of [username, ip, port]
 
     # remove tmp dir and all its content
-    def _rm_tmpdir(self):
+    def _rm_tmpdir(self, dst='.'):
+        tpath = dst + '/tmp' + self.rand
         try:
-            if os.access(self.tmpPath[:-1], os.F_OK) == True:
-                shutil.rmtree( self.tmpPath[:-1] )
+            if os.access( tpath, os.F_OK) == True:
+                shutil.rmtree( tpath )
         except os.error as e:
-            sys.exit('Error removing temp directory : ' + e )
+            sys.exit('Error: cannot remove temp directory - ' + e )
 
-    def _create_tmpdir(self):
+    def _create_tmpdir(self, dst='.'):
         try:
-            os.mkdir( 'tmp' + self.rand )
+            os.makedirs( dst + '/tmp' + self.rand )
         except os.error as e:
-            sys.exit('Error creating temp directory : ' + e )
+            sys.exit('Error: cannot create temp directory - ' + e )
         return 'tmp' + self.rand + '/'
 
     def _start_mpd(self):
         # make sure no other mpds are running
         subprocess.call( 'mpdallexit', stdout=FNULL, stderr=FNULL)
+        time.sleep(1.0)        # wait for old mpd ring to be torn down
 
         # starting server's mpd
         mpdconf_path = os.getcwd()+'/'+self.tmpPath[:-1]
@@ -69,12 +72,17 @@ class MPISubmission():
         self.mpdPort = port
 
     def start(self):
+
+        # Copy exe file into local ganfs directory
+        self._create_tmpdir( LOCAL_NFS_DIR )
+        shutil.copy2( self.execfname, LOCAL_NFS_DIR + '/' + self.tmpPath )
+        
         self._start_mpd()                     # start local mpd
         self._prepare_submission_files()      # prepare client script and condor submit file
         self._gen_ssh_keys()                  # generate ssh key pairs
 
         # start a listening server
-        self.servthread = Thread( target=CallbackServ(self.np, self.hostfname, PORT).serv )
+        self.servthread = Thread( target=CallbackServ(self.np - 1, self.hostfname, PORT).serv )
         self.servthread.setDaemon(True)
         self.servthread.start()
 
@@ -86,7 +94,7 @@ class MPISubmission():
             sys.exit('Error: condor_submit return ' + str(p))
 
         # if the submission is successful, wait for the server 
-        print 'Waiting for ' + str(self.np) + ' workers to response ....',
+        print 'Waiting for ' + str(self.np-1) + ' workers to response ....',
         sys.stdout.flush()
         self.servthread.join()
         print 'finished'
@@ -102,13 +110,14 @@ class MPISubmission():
             print '\nMPD trace:\n' + trace
 
         # Check whether mpdtrace return enough mpd nodes
-        if len(trace.split()) <= (self.np + 1):
+        if len(trace.split()) < self.np :
             subprocess.call(['condor_rm', '-all'])
             sys.exit('Error: not enough mpd nodes in the ring')
 
-        # Only run mpi job on worker nodes
-        for host in self.hostlist:
-            subprocess.call(['mpiexec', '-host', host[0], '-path', host[5], self.execfname])
+        # Run mpi job
+        execdir = '/mnt/ganfs/' + gethostname(True) + '/tmp' + self.rand + '/'
+        subprocess.call(['mpiexec', '-n', str(self.np), 
+                         execdir + self.execfname.split('/')[-1]])
 
         # mpi job is finished
         subprocess.call( 'mpdallexit', stdout=FNULL, stderr=FNULL) # tear down mpd ring
@@ -116,15 +125,16 @@ class MPISubmission():
             hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
             hostserv.terminate()
 
-        self._rm_tmpdir()             # remove temp directory
+        self._rm_tmpdir( LOCAL_NFS_DIR )    # remove exec file from ganfs dir
+        self._rm_tmpdir()                   # remove temp directory
 
     def _prepare_submission_files(self):
 
         # Prepare condor submission file
-        self.submitFile.prepare_file( [ ['<q.np>', str(self.np)],
+        self.submitFile.prepare_file( [ ['<q.np>', str(self.np-1)],
                         ['<ssh.pub.key>', self.tmpPath + AUTH_FNAME ],
                         ['<fullpath.client.script>', str(self.clientFile) ],
-                        ['<mpi.exec.file>', self.execfname ],
+#                        ['<mpi.exec.file>', self.execfname ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
 
         # Prepare client side python script
@@ -143,7 +153,7 @@ class MPISubmission():
         hostf.close()
 
         if self.debug:
-              print 'host list:'
+              print '\nhost list:'
               for host in self.hostlist:
                   print host
 
@@ -181,6 +191,10 @@ if __name__ == "__main__":
 
     if len(args) != 1:
         parser.error("Incorrect number of arguments")
+
+    # test the existance of exe file
+    if not os.path.isfile( args[0] ):
+        sys.exit('File ' + args[0] + '  not found')
 
     mpisubm = MPISubmission( options.np, args[0] )
     mpisubm.start()

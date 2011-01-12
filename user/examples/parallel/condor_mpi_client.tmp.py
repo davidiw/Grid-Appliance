@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, socket, xmlrpclib, time, subprocess, multiprocessing
+import os, xmlrpclib, time, subprocess, multiprocessing
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from condor_mpi_util import *
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     serv = xmlrpclib.Server( "http://" + SERV_IP + ":" + SERV_PORT )
 
     local_user = getuser()
-    local_hostname = socket.gethostname()
+    local_hostname = gethostname()
     local_sshport = str( SEED_SSHPORT + condor_slot )
     local_xmlport = str( SEED_XMLPORT + condor_slot )
     local_cpus = str(multiprocessing.cpu_count())

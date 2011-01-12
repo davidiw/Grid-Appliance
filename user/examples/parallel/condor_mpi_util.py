@@ -21,3 +21,10 @@ def createMpdConf( secret, dest=os.getcwd() ):
     outf.close()
     os.chmod( dest+'/.mpd.conf', 0600 )
 
+# Get host name
+def gethostname( short = False ):
+    name = socket.gethostname()
+    if not short:
+        return name
+
+    return name.split('.')[0]  # short hostname, return the first part
