@@ -10,6 +10,7 @@ from threading import Thread
 SERV_IP =  '<serv.ip>' 
 SERV_PORT = '<serv.port>'
 MPD_PORT = '<mpd.port>'
+MPD_PATH = '<mpd.path>'
 RAND = '<rand>'
 SEED_SSHPORT = 55555
 SEED_XMLPORT = 45555
@@ -56,7 +57,9 @@ if __name__ == "__main__":
 
     subprocess.call( ['mpi_sshd_setup.sh'] )
     createMpdConf( RAND )
-    subprocess.Popen(['mpd', '-h', SERV_IP, '-p', MPD_PORT], env={'MPD_CONF_FILE': local_path +'/.mpd.conf'})
+    local_env = os.environ
+    local_env['MPD_CONF_FILE'] = local_path + '/.mpd.conf'
+    subprocess.Popen([MPD_PATH + '/mpd', '-h', SERV_IP, '-p', MPD_PORT], env=local_env)
 
     # start the server, waiting for terminating signal    
     servthread = start_server( int(local_xmlport) )

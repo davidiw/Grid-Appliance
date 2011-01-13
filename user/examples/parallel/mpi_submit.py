@@ -13,7 +13,9 @@ PORT = 32603                                   # server listening port
 SUBM_FNAME = 'submit_mpi_vanilla'              # submission template file name
 CLNT_FNAME = 'condor_mpi_client.tmp.py'        # client-side script template
 AUTH_FNAME = 'authorized_keys'
-LOCAL_NFS_DIR = '/mnt/local'
+NFS_PREFIX = '/mnt/ganfs/'
+MPDBIN_PATH = 'mpich2/bin'
+OUTPUT_DIR = 'result'
 
 FNULL = open('/dev/null', 'w')
 
@@ -23,6 +25,7 @@ class MPISubmission():
         self.debug = DEBUG
         self.np = np
         self.mpdPort = ''
+        self.nfsTmp = NFS_PREFIX + gethostname(True) 
         self.execfname = execfname
         self.servthread = None
         self.rand = genRandom()
@@ -34,6 +37,8 @@ class MPISubmission():
         self.hostfname = self.tmpPath + 'hosts_' + self.rand
         self.keyfname = self.tmpPath + self.rand + '.key'
         self.hostlist = []             # store a list of [username, ip, port]
+        self.env = os.environ 
+        self.env['PATH'] = self.nfsTmp + '/' + MPDBIN_PATH + ':' + self.env['PATH']
 
     # remove tmp dir and all its content
     def _rm_tmpdir(self, dst='.'):
@@ -52,18 +57,20 @@ class MPISubmission():
         return 'tmp' + self.rand + '/'
 
     def _start_mpd(self):
+
         # make sure no other mpds are running
-        subprocess.call( 'mpdallexit', stdout=FNULL, stderr=FNULL)
+        subprocess.call( 'mpdallexit', env=self.env, stdout=FNULL, stderr=FNULL)
         time.sleep(1.0)        # wait for old mpd ring to be torn down
 
         # starting server's mpd
         mpdconf_path = os.getcwd()+'/'+self.tmpPath[:-1]
         createMpdConf( self.rand, mpdconf_path )
-        subprocess.Popen(['mpd'], env={ 'MPD_CONF_FILE': mpdconf_path+'/.mpd.conf' })
+        self.env['MPD_CONF_FILE'] = mpdconf_path + '/.mpd.conf'
+        subprocess.Popen(['mpd'], env=self.env)
         time.sleep(1.0)         # wait for mpd to fully start
-
+ 
         # determine mpd listening port from mpdtrace output
-        process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE)
+        process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE, env=self.env)
         process.wait()
         traceout = process.communicate()[0]
         port = extractPort(traceout)
@@ -75,15 +82,15 @@ class MPISubmission():
     def start(self):
 
         # Copy exe file into local ganfs directory
-        self._create_tmpdir( LOCAL_NFS_DIR )
-        shutil.copy2( self.execfname, LOCAL_NFS_DIR + '/' + self.tmpPath )
+        self._create_tmpdir( self.nfsTmp )
+        shutil.copy2( self.execfname, self.nfsTmp + '/' + self.tmpPath )
         
         self._start_mpd()                     # start local mpd
         self._prepare_submission_files()      # prepare client script and condor submit file
         self._gen_ssh_keys()                  # generate ssh key pairs
 
         # start a listening server
-        self.servthread = Thread( target=CallbackServ(self.np - 1, self.hostfname, PORT).serv )
+        self.servthread = Thread(target=CallbackServ(self.np - 1, self.hostfname, PORT).serv)
         self.servthread.setDaemon(True)
         self.servthread.start()
 
@@ -108,14 +115,14 @@ class MPISubmission():
             time.sleep(1.0)                # wait
 
             # testing mpd connection
-            process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE )
+            process = subprocess.Popen(['mpdtrace', '-l'], env=self.env, 
+                                  stdout=subprocess.PIPE )
             process.wait()
             trace = process.communicate()[0]
             retry += 1
 
             port = extractPort(trace)
             num = len( trace.split('\n') )
-
             if port.isdigit() and (num == self.np + 1):
                 if self.debug:
                     print '\nMPD trace:\n' + trace
@@ -127,17 +134,18 @@ class MPISubmission():
             sys.exit('Error: not enough mpd nodes in the ring')
 
         # Run mpi job
-        execdir = '/mnt/ganfs/' + gethostname(True) + '/tmp' + self.rand + '/'
+        execdir = self.nfsTmp + '/' + self.tmpPath
         subprocess.call(['mpiexec', '-n', str(self.np), 
-                         execdir + self.execfname.split('/')[-1]])
+                         execdir + self.execfname.split('/')[-1]], env=self.env)
 
         # mpi job is finished
-        subprocess.call( 'mpdallexit', stdout=FNULL, stderr=FNULL) # tear down mpd ring
+        subprocess.call( 'mpdallexit', env=self.env, 
+                          stdout=FNULL, stderr=FNULL) # tear down mpd ring
         for host in self.hostlist:                                 # notify all workers
             hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
             hostserv.terminate()
 
-        self._rm_tmpdir( LOCAL_NFS_DIR )    # remove exec file from ganfs dir
+        self._rm_tmpdir( self.nfsTmp )    # remove exec file from ganfs dir
         self._rm_tmpdir()                   # remove temp directory
 
     def _prepare_submission_files(self):
@@ -146,6 +154,7 @@ class MPISubmission():
         self.submitFile.prepare_file( [ ['<q.np>', str(self.np-1)],
                         ['<ssh.pub.key>', self.tmpPath + AUTH_FNAME ],
                         ['<fullpath.client.script>', str(self.clientFile) ],
+                        ['<output.dir>', OUTPUT_DIR + '/' ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
 
         # Prepare client side python script
@@ -155,6 +164,7 @@ class MPISubmission():
                         [ [ '<serv.ip>', get_ipop_ip() ],
                         [ '<serv.port>', str(PORT) ],
                         [ '<mpd.port>', self.mpdPort ],
+                        [ '<mpd.path>', self.nfsTmp +'/'+ MPDBIN_PATH],
                         [ '<rand>', self.rand ] ] )
 
     def _read_hosts_info(self):
@@ -207,6 +217,17 @@ if __name__ == "__main__":
     if not os.path.isfile( args[0] ):
         sys.exit('File ' + args[0] + '  not found')
 
+    # test MPI installation
+    local_nfs = NFS_PREFIX + gethostname(True)
+    if not os.path.isfile( local_nfs + '/mpich2/bin/mpd.py' ):
+        sys.exit('Error: No MPI installation in ' + local_nfs)
+
+    # create condor output dir if not already existed
+    if not os.path.isdir( OUTPUT_DIR ):
+        try:
+            os.makedirs( OUTPUT_DIR )
+        except os.error as e:
+            sys.exit('Error: cannot create directory - ' + e )
+
     mpisubm = MPISubmission( options.np, args[0] )
     mpisubm.start()
-
