@@ -5,6 +5,7 @@ mpi_prefix=mpich2
 
 hostname=`hostname | awk -F "." '{print $1}'`
 path=/mnt/ganfs/$hostname
+OPT="--prefix=$path/$mpi_prefix --disable-f77 --disable-cxx --disable-fc --with-pm=mpd"
 
 function spinner() {
     p=$1
@@ -38,7 +39,7 @@ mkdir $path/$mpi_prefix &> /dev/null
 cd $mpi_prefix-$mpi_ver
 
 echo -ne "Configure MPI ..........."
-./configure --prefix=$path/$mpi_prefix --disable-f77 --disable-fc --with-pm=mpd &> /dev/null &
+./configure $OPT &> /dev/null &
 spinner $!
 echo "done"
 
