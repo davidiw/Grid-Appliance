@@ -48,7 +48,7 @@ for base in ${dirs[@]}; do
 done
 
 for user in `ls /home`; do
-  deluser $user
+  deluser --remove-all-files $user
 done
 
 touch $DIR/etc/not_configured

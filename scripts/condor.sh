@@ -35,7 +35,7 @@ prepare_slots()
     echo "WHOLE_MACHINE_SLOT_CLAIMED = (Slot"$slotpp"_State =?= \"Claimed\")" >> $whole_machine
     # 7.4 has DETECTED_*, 7.2 doesn't
     echo "GA_DETECTED_CORES = $slots" >> $whole_machine
-    memory=$(cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}')
+    memory=$(free -m | grep Mem | awk '{print $2}')
     echo "GA_DETECTED_MEMORY = $memory" >> $whole_machine
     # we will double-allocate resources to overlapping slots
     # 7.4 supports operators on apparently all configuration variables
