@@ -37,6 +37,5 @@ fi
 if [[ $(ls -l /etc/resolv.conf | grep "/var/run/resolvconf/resolv.conf" | wc -l) -eq 0 ]]; then
   ln -sf /var/run/resolvconf/resolv.conf /etc/resolv.conf
   touch /var/run/reboot-required
-else
-  /etc/init.d/grid_appliance.sh start
 fi
+/etc/init.d/grid_appliance.sh start

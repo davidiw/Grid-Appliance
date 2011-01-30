@@ -136,7 +136,7 @@ update_flock()
 
 if test -e $DIR/etc/not_configured; then
   echo "Grid Appliance not configured!"
-  exit -1
+  exit 1
 fi
 
 if [[ $1 == "start" ]]; then
