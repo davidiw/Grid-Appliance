@@ -1,6 +1,6 @@
 Universe = vanilla
-Executable = /usr/bin/python
-Arguments = <client.script>
+Executable = <fullpath.client.script>
+Requirements = SlotID == 1
 Log = <output.dir>/condor-mpi.$(Cluster).$(Process).log
 Output = <output.dir>/condor-mpi.$(Cluster).$(Process).out
 Error = <output.dir>/condor-mpi.$(Cluster).$(Process).err

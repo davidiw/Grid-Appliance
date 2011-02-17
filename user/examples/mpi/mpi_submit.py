@@ -66,7 +66,7 @@ class MPISubmission():
         mpdconf_path = os.getcwd()+'/'+self.tmpPath[:-1]
         createMpdConf( self.rand, mpdconf_path )
         self.env['MPD_CONF_FILE'] = mpdconf_path + '/.mpd.conf'
-        subprocess.Popen(['mpd'], env=self.env)
+        subprocess.Popen(['mpd', '--daemon'], env=self.env)
         time.sleep(1.0)         # wait for mpd to fully start
  
         # determine mpd listening port from mpdtrace output
@@ -109,7 +109,8 @@ class MPISubmission():
         self._read_hosts_info()        # read info from the collected hosts
 
         # Waiting for mpd ring to be ready
-        limit = 10
+        print 'Waiting for mpd ring to be ready .......',
+        limit = 120
         retry = 0
         while retry < limit :
             time.sleep(1.0)                # wait
@@ -124,12 +125,15 @@ class MPISubmission():
             port = extractPort(trace)
             num = len( trace.split('\n') )
             if port.isdigit() and (num == self.np + 1):
+                print 'done'
                 if self.debug:
                     print '\nMPD trace:\n' + trace
                 break
 
         # Check whether mpdtrace return enough mpd nodes
         if len(trace.split('\n')) < self.np + 1 :
+            print 'faild'
+            subprocess.call( 'mpdallexit', env=self.env, stdout=FNULL, stderr=FNULL)
             subprocess.call(['condor_rm', '-all'])
             sys.exit('Error: not enough mpd nodes in the ring')
 
@@ -139,11 +143,11 @@ class MPISubmission():
                          execdir + self.execfname.split('/')[-1]], env=self.env)
 
         # mpi job is finished
-        subprocess.call( 'mpdallexit', env=self.env, 
-                          stdout=FNULL, stderr=FNULL) # tear down mpd ring
         for host in self.hostlist:                                 # notify all workers
             hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
             hostserv.terminate()
+        subprocess.call( 'mpdallexit', env=self.env, 
+                          stdout=FNULL, stderr=FNULL) # tear down mpd ring
 
         self._rm_tmpdir( self.nfsTmp )    # remove exec file from ganfs dir
         self._rm_tmpdir()                   # remove temp directory
@@ -165,7 +169,7 @@ class MPISubmission():
                         [ '<serv.port>', str(PORT) ],
                         [ '<mpd.port>', self.mpdPort ],
                         [ '<mpd.path>', self.nfsTmp +'/'+ MPDBIN_PATH],
-                        [ '<rand>', self.rand ] ] )
+                        [ '<rand>', self.rand ] ], True )
 
     def _read_hosts_info(self):
         with open( self.hostfname, 'r') as hostf:
