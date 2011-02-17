@@ -22,8 +22,8 @@ function spinner() {
 }
 
 if [ -e $path/$mpi_prefix/bin/mpd.py ]; then
-    echo "MPI has already been installed."
-    return 1
+    echo "MPI has already been installed in $path/$mpi_prefix."
+    exit 1
 fi
 
 echo "========================================"
@@ -32,7 +32,7 @@ echo "========================================"
 
 tar xfz $mpi_prefix"-"$mpi_ver".tar.gz"
 if [[ $? != 0 ]]; then
-    return 1
+    exit 1
 fi
 
 mkdir $path/$mpi_prefix &> /dev/null

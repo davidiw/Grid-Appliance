@@ -41,6 +41,7 @@ class HadoopCluster():
         self.env = os.environ 
         self.env['PATH'] = self.nfsTmp + '/' + HADP_PATH + '/bin:' + self.env['PATH']
 	self.env['HADOOP_HOME'] = self.nfsTmp + '/' + HADP_PATH 
+	self.env['HADOOP_HEAPSIZE'] = str(128)
 	self.env['JAVA_HOME'] = self.nfsTmp + '/' + JAVA_PATH 
 
     # remove tmp dir and all its content
@@ -153,7 +154,8 @@ class HadoopCluster():
 	'''
         time.sleep(10.0)
 
-        # mpi job is finished
+    def stop(self):
+        # job is finished
         for host in self.hostlist:                                 # notify all workers
             hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
             hostserv.terminate()
@@ -221,13 +223,15 @@ if __name__ == "__main__":
 
     # parsing option/arguments
     parser = OptionParser(description='Start Hadoop pool via condor',
-                usage='Usage: %prog [options]' )
+                usage='Usage: %prog [options] {start|stop}' )
     parser.add_option('-n', dest = 'np', default = 1, type = 'int',
                 help = "Number of node to be started for Hadoop cluster" )
     (options, args) = parser.parse_args()
 
-    if len(args) != 0:
+    if len(args) != 1:
         parser.error("Incorrect number of arguments")
+    if args != 'start' and args != 'stop':
+        parser.error("Unknown command")
 
     # Testing Hadoop & Java installation in GANFS
     local_nfs = NFS_PREFIX + gethostname(True)
@@ -244,4 +248,8 @@ if __name__ == "__main__":
             sys.exit('Error: cannot create directory - ' + e )
 
     hdp = HadoopCluster( options.np )
-    hdp.start()
+
+    if args == 'start':
+        hdp.start()
+    elif args == 'stop':
+        hdp.stop()

@@ -15,6 +15,7 @@ CONF_PATH = '<conf.path>'
 RAND = '<rand>'
 SEED_SSHPORT = 55555
 SEED_XMLPORT = 45555
+HADOOP_LOGDIR = 'hadoop_log'
 
 class WaitingServ():
 
@@ -56,13 +57,16 @@ if __name__ == "__main__":
              'path' : local_path }
     serv.write_file( data )
 
+    # prepare log dir
+    os.makedirs( HADOOP_LOGDIR )
+
     # Setup sshd & running datanode/tasktracker in the background
     subprocess.call( ['hadoop_sshd_setup.sh'] )
     local_env = os.environ
     local_env['HADOOP_CONF_DIR'] = CONF_PATH
-    local_env['HADOOP_LOG_DIR'] = '/dev/null'
     local_env['HADOOP_HOME'] = HADP_PATH
-    local_env['HADOOP_HEAP_SIZE'] = str(100)
+    local_env['HADOOP_LOG_DIR'] = local_path + '/' + HADOOP_LOGDIR
+    local_env['HADOOP_HEAPSIZE'] = str(128)
     local_env['JAVA_HOME'] = JAVA_PATH
     subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 'start', 'datanode'], 
                      env=local_env)
