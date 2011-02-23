@@ -65,7 +65,7 @@ configure_condor()
   else
     server=`$DIR/scripts/DhtHelper.py get server $ipop_ns`
     if [[ ! "$server" ]]; then
-      echo "Unable to find a server.  Try again later."
+      logger -s -t "Condor" "Unable to find a server.  Try again later."
       exit 1
     fi
   fi
@@ -135,14 +135,14 @@ update_flock()
 }
 
 if test -e $DIR/etc/not_configured; then
-  echo "Grid Appliance not configured!"
+  logger -s -t "Condor" "Grid Appliance not configured!"
   exit 1
 fi
 
 if [[ $1 == "start" ]]; then
   configure_condor
   if [[ $? != 0 ]]; then
-    echo "Failed to configure... try again later..."
+    logger -s -t "Condor" "Failed to configure... try again later..."
     exit 1
   fi
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
@@ -165,7 +165,7 @@ elif [[ $1 == "stop" ]]; then
 elif [[ $1 == "reconfig" ]]; then
   configure_condor
   if [[ $? != 0 ]]; then
-    echo "Failed to configure... try again later..."
+    logger -s -t "Condor" "Failed to configure... try again later..."
     exit 1
   fi
   condor_reconfig

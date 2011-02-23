@@ -1,5 +1,5 @@
 [build]
-version = 2.04.22
+version = 2.04.24
 base_path = ../../..
 package = grid_appliance
 [debian]
@@ -13,11 +13,8 @@ scripts/xml-check.py = /opt/grid_appliance/scripts/xml-check.py
 scripts/grid_appliance.sh = /opt/grid_appliance/scripts/grid_appliance.sh
 scripts/clean.sh = /opt/grid_appliance/scripts/clean.sh
 scripts/monitor.sh = /opt/grid_appliance/scripts/monitor.sh
-scripts/hostname.sh = /opt/grid_appliance/scripts/hostname.sh
 scripts/condor_config.sh = /opt/grid_appliance/scripts/condor_config.sh
-scripts/adduser.sh = /opt/grid_appliance/scripts/adduser.sh
 scripts/DhtHelper.py = /opt/grid_appliance/scripts/DhtHelper.py
-scripts/startup.sh = /opt/grid_appliance/scripts/startup.sh
 scripts/utils.sh = /opt/grid_appliance/scripts/utils.sh
 scripts/condor.sh = /opt/grid_appliance/scripts/condor.sh
 etc/apt = /opt/grid_appliance/etc/apt
@@ -37,6 +34,7 @@ tests/DhtTest.sh = /opt/grid_appliance/tests/DhtTest.sh
 tests/IPOP.sh = /opt/grid_appliance/tests/IPOP.sh
 tests/Information.py = /opt/grid_appliance/tests/Information.py
 tests/Main.sh = /opt/grid_appliance/tests/Main.sh
+tests/RemotePeer.py = /opt/grid_appliance/tests/RemotePeer.py
 tools/Brunet.Inject.HostActivity.dll = /opt/grid_appliance/tools/Brunet.Inject.HostActivity.dll
 tools/condor_kbdd = /opt/grid_appliance/tools/condor_kbdd
 user/.icewm/background.jpg = /opt/grid_appliance/user/.icewm/background.jpg

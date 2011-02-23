@@ -14,11 +14,8 @@
 source /etc/grid_appliance.config
 source /etc/group_appliance.config
 
-if [[ $MACHINE_TYPE == "Client" && "`which startx`" ]]; then
-  if [[ ! `$DIR/scripts/utils.sh get_pid X` ]]; then
-    if ! test -d /home/$CONDOR_USER; then
-      $DIR/scripts/adduser.sh $CONDOR_USER
-    fi
+if [[ $MACHINE_TYPE == "Client" && "$(which startx)" ]]; then
+  if [[ ! $($DIR/scripts/utils.sh get_pid X) ]]; then
     sudo -i -b -u $CONDOR_USER 'startx' &> /var/log/startx.log
   fi
 fi

@@ -27,7 +27,7 @@ fi
 
 res=`grep FLOCK_TO $config | awk -F "= " {'print $2'}`
 if [[ "$res" = "`echo $res | grep -E "[:space:]"`" ]]; then
-  $res=""
+  res=""
 fi
 if [[ -z "$res" ]]; then
   fail=1

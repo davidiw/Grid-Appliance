@@ -1,5 +1,5 @@
 [build]
-version = 0.02
+version = 0.03
 base_path = ../../..
 package = grid_appliance_client
 [debian]

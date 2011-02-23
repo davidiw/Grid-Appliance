@@ -76,6 +76,7 @@ function start() {
   # If we didn't mount a floppy, no point in proceeding!
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
   if [[ $? != 0 ]]; then
+    logger -s -t "Grid Appliance" "No local floppy, tring for cloud floppy..."
     # Get the floppy image and prepare the system for its use
     wait_for_net
     if [[ $? != 0 ]]; then
@@ -94,8 +95,8 @@ function start() {
       return
     fi
 
-    echo "No floppy.img, add a floppy.img and then restart grid_appliance."
-    echo "/etc/init.d/grid_appliance.sh start"
+    logger -s -t "Grid Appliance" "No floppy.img, add a floppy.img and then restart grid_appliance."
+    logger -s -t "Grid Appliance" "/etc/init.d/grid_appliance.sh start"
     touch $DIR/etc/not_configured
     exit 0
   fi
@@ -114,7 +115,7 @@ function start() {
     groupvpn_prepare.sh $DIR/var/groupvpn.zip
     if [[ $? != 0 ]]; then
       rm -f $DIR/var/groupvpn.zip
-      "GroupVPN config failed, configuration error, fix and restart grid_appliance.sh"
+      logger -s -t "Grid Appliance" "GroupVPN config failed, configuration error, fix and restart grid_appliance.sh"
       exit 1
     fi
 
@@ -145,6 +146,7 @@ function start() {
 
   ssh
   samba
+  user
 }
 
 function ec2() {
@@ -154,8 +156,21 @@ function ec2() {
     return 1
   fi
 
+  MAX_ATTEMPTS=30
+  count=0
+  while [[ $(ls -l /tmp/floppy.zip | awk '{print $5}') == 0 ]]; do
+    wget --tries=2 http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
+    count=$((count + 1))
+    sleep 1
+  done
+
+  if [[ $(ls -l /tmp/floppy.zip | awk '{print $5}') == 0 ]]; then
+    logger -s -t "Grid Appliance" "On EC2 / Eucalyptus but could not get user data"
+    return 1
+  fi
+
   cloud_floppy
-  return $?
+  return 0
 }
 
 function nimbus() {
@@ -179,6 +194,7 @@ function cloud_floppy() {
     openssl enc -d -base64 -in /tmp/floppy.zip.b64 -out /tmp/floppy.zip
     unzip floppy.zip &> /dev/null
     if [[ $? != 0 ]]; then
+      logger -s -t "Grid Appliance" "Unable to extract cloud floppy..."
       return 1
     fi
   fi
@@ -190,6 +206,7 @@ function cloud_floppy() {
     return 0
   fi
 
+  logger -s -t "Grid Appliance" "Cannot find cloud floppy..."
   return 1
 }
 
@@ -203,6 +220,7 @@ function wait_for_net() {
     sleep 1
   done
 
+  logger -s -t "Grid Appliance" "Networking not available..."
   return 1
 }
 
@@ -240,6 +258,15 @@ function samba() {
   service $smb start
 }
 
+function user() {
+  source /etc/group_appliance.config
+  if [[ $MACHINE_TYPE == "Client" ]]; then
+    if ! test -d /home/$CONDOR_USER; then
+      $DIR/scripts/utils.sh add_user $CONDOR_USER
+    fi
+  fi
+}
+
 function firewall_start() {
   iptables -A OUTPUT -m owner --uid-owner nobody -o lo+ -j ACCEPT &> /dev/null
   iptables -A OUTPUT -m owner --uid-owner nobody -o $DEVICE -j ACCEPT &> /dev/null
@@ -270,7 +297,7 @@ case "$1" in
     ssh
     ;;
   *)
-    echo "usage: start, stop, restart, samba, ssh"
+    logger -s -t "Grid Appliance" "usage: start, stop, restart, samba, ssh"
   ;;
 esac
 
