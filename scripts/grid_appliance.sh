@@ -42,7 +42,7 @@ function start() {
   sed -i -r 's/USE_IPOP_HOSTNAME=\s+/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
 
   # Ensure proper loading of condor
-  if [[ ! `grep condor_config.sh /etc/condor/condor_config` ]]; then
+  if [[ ! $(grep condor_config.sh /etc/condor/condor_config) ]]; then
     echo "LOCAL_CONFIG_FILE  = /etc/condor/condor_config.sh|" >> /etc/condor/condor_config
   fi
 
@@ -76,7 +76,7 @@ function start() {
   # If we didn't mount a floppy, no point in proceeding!
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
   if [[ $? != 0 ]]; then
-    logger -s -t "Grid Appliance" "No local floppy, tring for cloud floppy..."
+    logger -s -t "Grid Appliance" "No local floppy, trying for cloud floppy..."
     # Get the floppy image and prepare the system for its use
     wait_for_net
     if [[ $? != 0 ]]; then
@@ -106,8 +106,8 @@ function start() {
   fi
 
   # Check to see if there is a new floppy / config
-  md5old=`md5sum $DIR/var/groupvpn.zip 2> /dev/null | awk '{print $1}'`
-  md5new=`md5sum $CONFIG_PATH/groupvpn.zip 2> /dev/null | awk '{print $1}'`
+  md5old=$(md5sum $DIR/var/groupvpn.zip 2> /dev/null | awk '{print $1}')
+  md5new=$(md5sum $CONFIG_PATH/groupvpn.zip 2> /dev/null | awk '{print $1}')
   if [[ "$md5old" != "$md5new" ]]; then
     rm -f $DIR/var/groupvpn.zip
     cp $CONFIG_PATH/groupvpn.zip $DIR/var/.
@@ -151,15 +151,15 @@ function start() {
 
 function ec2() {
   # Get the floppy image and prepare the system for its use
-  wget --tries=2 http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
+  wget --quiet --tries=2 http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
   if [[ $? != 0 ]]; then
     return 1
   fi
 
   MAX_ATTEMPTS=30
   count=0
-  while [[ $(ls -l /tmp/floppy.zip | awk '{print $5}') == 0 ]]; do
-    wget --tries=2 http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
+  while [[ $(ls -l /tmp/floppy.zip | awk '{print $5}') == 0  && $count -lt $MAX_ATTEMPTS ]]; do
+    wget --quiet http://169.254.169.254/latest/user-data -O /tmp/floppy.zip
     count=$((count + 1))
     sleep 1
   done
@@ -174,8 +174,8 @@ function ec2() {
 }
 
 function nimbus() {
-  user_uri="`cat /var/nimbus-metadata-server-url`/2007-01-19/user-data"
-  wget --tries=2 $user_uri -O /tmp/floppy.zip
+user_uri="$(cat /var/nimbus-metadata-server-url)/2007-01-19/user-data"
+  wget --quiet --tries=2 $user_uri -O /tmp/floppy.zip
   if [[ $? != 0 ]]; then
     return 1
   fi

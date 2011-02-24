@@ -7,7 +7,12 @@ add_user()
   user=$1
   #Password == password
   password=$(echo password | openssl passwd -1 -stdin)
-  useradd $user --password $password --shell /bin/bash --groups users,admin,plugdev,lpadmin,sambashare --home-dir /home/$user -U
+  useradd $user --password $password --shell /bin/bash --home-dir /home/$user -U
+  for group in users admin plugdev lpadmin sambashare sudo; do
+    if [[ "$(cat /etc/group | grep $group)" ]]; then
+      useradd -G $group $user
+    fi
+  done
   rm -rf /home/$user
   cp -axf $DIR/user /home/$user
   sed -i "s/USERNAME/$user/g" /home/$user/.icewm/preferences
