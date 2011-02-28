@@ -1,5 +1,5 @@
 [build]
-version = 2.04.25
+version = 2.04.26
 base_path = ../../..
 package = grid_appliance
 [debian]
@@ -34,7 +34,6 @@ tests/DhtTest.sh = /opt/grid_appliance/tests/DhtTest.sh
 tests/IPOP.sh = /opt/grid_appliance/tests/IPOP.sh
 tests/Information.py = /opt/grid_appliance/tests/Information.py
 tests/Main.sh = /opt/grid_appliance/tests/Main.sh
-tests/RemotePeer.py = /opt/grid_appliance/tests/RemotePeer.py
 tools/Brunet.Inject.HostActivity.dll = /opt/grid_appliance/tools/Brunet.Inject.HostActivity.dll
 tools/condor_kbdd = /opt/grid_appliance/tools/condor_kbdd
 user/.icewm/background.jpg = /opt/grid_appliance/user/.icewm/background.jpg

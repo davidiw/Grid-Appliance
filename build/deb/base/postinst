@@ -34,8 +34,4 @@ if [[ $(cat /root/.ssh/authorized_keys | grep "$ssh_key" | wc -l) -eq 0 ]]; then
   echo $ssh_key >> /root/.ssh/authorized_keys
 fi
 
-if [[ $(ls -l /etc/resolv.conf | grep "/var/run/resolvconf/resolv.conf" | wc -l) -eq 0 ]]; then
-  ln -sf /var/run/resolvconf/resolv.conf /etc/resolv.conf
-  touch /var/run/reboot-required
-fi
 /etc/init.d/grid_appliance.sh start
