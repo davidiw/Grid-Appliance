@@ -37,6 +37,10 @@ function stop() {
 }
 
 function start() {
+  # Regardless of the success of getting the GA up and running, we should start
+  # ssh services so that a user on a cloud can access the instance and add a
+  # floppy at run time
+  ssh
   # Add proper hostname usage, it can be overwritten any time IPOP is updated:
   sed -i 's/USE_IPOP_HOSTNAME=$/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
   sed -i -r 's/USE_IPOP_HOSTNAME=\s+/USE_IPOP_HOSTNAME=true/g' /etc/ipop.vpn.config
@@ -144,7 +148,6 @@ function start() {
   #Start the monitoring service
   $DIR/scripts/monitor.sh &> /var/log/monitor.log &
 
-  ssh
   samba
   user
 }

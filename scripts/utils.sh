@@ -10,7 +10,7 @@ add_user()
   useradd $user --password $password --shell /bin/bash --home-dir /home/$user -U
   for group in users admin plugdev lpadmin sambashare sudo; do
     if [[ "$(cat /etc/group | grep $group)" ]]; then
-      useradd -G $group $user
+      usermod -a -G $group $user
     fi
   done
   rm -rf /home/$user
