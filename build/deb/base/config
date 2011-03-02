@@ -1,5 +1,5 @@
 [build]
-version = 2.04.26
+version = 2.04.26b
 base_path = ../../..
 package = grid_appliance
 [debian]
@@ -65,6 +65,14 @@ user/examples/montepi/submit_montepi_standard = /opt/grid_appliance/user/example
 user/examples/montepi/montepi.c = /opt/grid_appliance/user/examples/montepi/montepi.c
 user/examples/montepi/submit_montepi_vanilla = /opt/grid_appliance/user/examples/montepi/submit_montepi_vanilla
 user/examples/montepi/README.txt = /opt/grid_appliance/user/examples/montepi/README.txt
+user/examples/mpi/condor_mpi_client.tmp.py = /opt/grid_appliance/user/examples/mpi/condor_mpi_client.tmp.py
+user/examples/mpi/setup.sh = /opt/grid_appliance/user/examples/mpi/setup.sh
+user/examples/mpi/HelloWorld.c = /opt/grid_appliance/user/examples/mpi/HelloWorld.c
+user/examples/mpi/mpi_submit.py = /opt/grid_appliance/user/examples/mpi/mpi_submit.py
+user/examples/mpi/submit_mpi_vanilla = /opt/grid_appliance/user/examples/mpi/submit_mpi_vanilla
+user/examples/mpi/template_file.py = /opt/grid_appliance/user/examples/mpi/template_file.py
+user/examples/mpi/condor_mpi_util.py = /opt/grid_appliance/user/examples/mpi/condor_mpi_util.py
+user/examples/mpi/callback_serv.py = /opt/grid_appliance/user/examples/mpi/callback_serv.py
 [links]
 /opt/grid_appliance/scripts/grid_appliance.sh = /etc/init.d/grid_appliance.sh
 /opt/grid_appliance/etc/grid_appliance.config = /etc/grid_appliance.config

@@ -12,10 +12,9 @@ SERV_PORT = '<serv.port>'
 MPD_PORT = '<mpd.port>'
 MPD_PATH = '<mpd.path>'
 RAND = '<rand>'
-SEED_SSHPORT = 55555
 SEED_XMLPORT = 45555
 
-class WaitingServ():
+class WaitingServ:
 
     def __init__(self, port):
         self.port = port
@@ -42,26 +41,23 @@ if __name__ == "__main__":
     condor_slot =  int(os.environ['_CONDOR_SLOT'])
     serv = xmlrpclib.Server( "http://" + SERV_IP + ":" + SERV_PORT )
 
-    local_user = getuser()
-    local_hostname = gethostname()
-    local_sshport = str( SEED_SSHPORT + condor_slot )
-    local_xmlport = str( SEED_XMLPORT + condor_slot )
-    local_cpus = str(multiprocessing.cpu_count())
-    local_path = os.getcwd()
+    user = getuser()
+    hostname = gethostname()
+    xmlport = str( SEED_XMLPORT + condor_slot )
+    cpus = str(multiprocessing.cpu_count())
+    path = os.getcwd()
 
     # construct a dict for all values and make xmlrpc call
-    data = { 'hostname' : local_hostname, 'cpus' : local_cpus, 'usrname' : local_user,
-             'sshport' : local_sshport, 'xmlport' : local_xmlport,
-             'path' : local_path }
+    data = { 'hostname' : hostname, 'cpus' : cpus, 'usrname' : user,
+             'xmlport' : xmlport, 'path' : path }
     serv.write_file( data )
 
-    subprocess.call( ['mpi_sshd_setup.sh'] )
     createMpdConf( RAND )
-    local_env = os.environ
-    local_env['MPD_CONF_FILE'] = local_path + '/.mpd.conf'
-    subprocess.Popen([MPD_PATH + '/mpd', '-h', SERV_IP, '-p', MPD_PORT], env=local_env)
+    env = os.environ
+    env['MPD_CONF_FILE'] = path + '/.mpd.conf'
+    subprocess.Popen([MPD_PATH + '/mpd', '-h', SERV_IP, '-p', MPD_PORT], env=env)
 
     # start the server, waiting for terminating signal    
-    servthread = start_server( int(local_xmlport) )
+    servthread = start_server( int(xmlport) )
     servthread.join()
 
