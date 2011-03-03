@@ -14,29 +14,28 @@ SUBM_FNAME = 'submit_hadoop_vanilla'            # submission template file name
 CONFTMP_FNAME = 'core-site.tmp.xml'            	# configure template file name
 CONF_FNAME = 'core-site.xml'              	# configure file name
 CLNT_FNAME = 'condor_hadoop_client.tmp.py'     	# client-side script template
-AUTH_FNAME = 'authorized_keys'
 NFS_PREFIX = '/mnt/ganfs/'
-HADP_PATH = 'hadoop-0.21.0'                     # path of hadoop installation
-JAVA_PATH = 'jdk1.6.0_23'                # path of jdk installation
+HADP_PATH = 'hadoop'                     # path of hadoop installation
+JAVA_PATH = 'jdk'                        # path of jdk installation
 OUTPUT_DIR = 'result'
 
 FNULL = open('/dev/null', 'w')
 
-class HadoopCluster():
+class HadoopCluster:
 
     def __init__(self, np ):
         self.debug = DEBUG
         self.np = np
         self.nfsTmp = NFS_PREFIX + gethostname(True) 
         self.servthread = None
-        self.rand = genRandom()
+        #self.rand = genRandom()
+        self.rand = 'hadoopAAA'
         self.tmpPath = self._create_tmpdir()
         self.submitFile = TemplateFile( '' , SUBM_FNAME, self.tmpPath, 
                                         SUBM_FNAME + '_' + self.rand )
         self.clientFile = TemplateFile( '' , CLNT_FNAME, self.tmpPath, 
                                         CLNT_FNAME + '_' + self.rand )
         self.hostfname = self.tmpPath + 'hosts_' + self.rand
-        self.keyfname = self.tmpPath + self.rand + '.key'
         self.hostlist = []             # store a list of [username, ip, port]
         self.env = os.environ 
         self.env['PATH'] = self.nfsTmp + '/' + HADP_PATH + '/bin:' + self.env['PATH']
@@ -47,17 +46,20 @@ class HadoopCluster():
     # remove tmp dir and all its content
     def _rm_tmpdir(self, dst='.'):
         tpath = dst + '/tmp' + self.rand
-        try:
-            if os.access( tpath, os.F_OK) == True:
-                shutil.rmtree( tpath )
-        except os.error as e:
-            sys.exit('Error: cannot remove temp directory - ' + e )
+        if os.path.isdir( tpath ):
+            try:
+                if os.access( tpath, os.F_OK) == True:
+                    shutil.rmtree( tpath )
+            except os.error as e:
+                sys.exit('Error: cannot remove temp directory - ' + e )
 
     def _create_tmpdir(self, dst='.'):
-        try:
-            os.makedirs( dst + '/tmp' + self.rand )
-        except os.error as e:
-            sys.exit('Error: cannot create temp directory - ' + e )
+        tmpdir = dst + '/tmp' + self.rand
+        if not os.path.isdir( tmpdir ):
+            try:
+                os.makedirs( tmpdir )
+            except os.error as e:
+                sys.exit('Error: cannot create temp directory - ' + e )
         return 'tmp' + self.rand + '/'
 
     def _stop_hadoop(self):
@@ -69,7 +71,7 @@ class HadoopCluster():
     def _start_hadoop(self):
 
         # make sure no other namenode/jobtracker are running
-        self._stop_hadoop()
+        #self._stop_hadoop()
 
         # starting server's namenode
         self.env['HADOOP_CONF_DIR'] = self.nfsTmp + '/' + self.tmpPath 
@@ -78,29 +80,14 @@ class HadoopCluster():
         subprocess.call( ['hadoop-daemon.sh','start','namenode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
 
-	''' 
-        # determine mpd listening port from mpdtrace output
-        process = subprocess.Popen(['mpdtrace', '-l'], stdout=subprocess.PIPE, env=self.env)
-        process.wait()
-        traceout = process.communicate()[0]
-        port = extractPort(traceout)
-
-        if not port.isdigit(): 
-            sys.exit('Error starting mpd : ' + traceout )
-        self.mpdPort = port
-	'''
-
     def start(self):
 
         # Create conf file into local ganfs directory
-        self._create_tmpdir( self.nfsTmp )
-        confFile = TemplateFile( '' , CONFTMP_FNAME, self.nfsTmp + '/' + self.tmpPath, 
-                                        CONF_FNAME )
+        confFile = TemplateFile( '' , CONFTMP_FNAME, self.tmpPath, CONF_FNAME )
         confFile.prepare_file([ ['<namenode.hostname>', gethostname()] ]);
         
-        self._start_hadoop()                  # start local hadoop namenode & jobtracker
-        self._prepare_submission_files()      # prepare client script and condor submit file
-        self._gen_ssh_keys()                  # generate ssh key pairs
+        self._start_hadoop()                # start local hadoop namenode & jobtracker
+        self._prepare_submission_files()    # prepare client script and condor submit file
 
         # start a listening server
         self.servthread = Thread(target=CallbackServ(self.np, self.hostfname, PORT).serv)
@@ -121,56 +108,25 @@ class HadoopCluster():
         print 'finished'
         self._read_hosts_info()        # read info from the collected hosts
 
-	'''
-        # Waiting for mpd ring to be ready
-        limit = 10
-        retry = 0
-        while retry < limit :
-            time.sleep(1.0)                # wait
-
-            # testing mpd connection
-            process = subprocess.Popen(['mpdtrace', '-l'], env=self.env, 
-                                  stdout=subprocess.PIPE )
-            process.wait()
-            trace = process.communicate()[0]
-            retry += 1
-
-            port = extractPort(trace)
-            num = len( trace.split('\n') )
-            if port.isdigit() and (num == self.np + 1):
-                if self.debug:
-                    print '\nMPD trace:\n' + trace
-                break
-
-        # Check whether mpdtrace return enough mpd nodes
-        if len(trace.split('\n')) < self.np + 1 :
-            subprocess.call(['condor_rm', '-all'])
-            sys.exit('Error: not enough mpd nodes in the ring')
-
-        # Run mpi job
-        execdir = self.nfsTmp + '/' + self.tmpPath
-        subprocess.call(['mpiexec', '-n', str(self.np), 
-                         execdir + self.execfname.split('/')[-1]], env=self.env)
-	'''
-        time.sleep(10.0)
-
     def stop(self):
-        # job is finished
+        self._read_hosts_info()              # read info from tmp dir
+        if len(self.hostlist) == 0 :
+            sys.exit('Error: no existing hadoop cluster info' )
+
         for host in self.hostlist:                                 # notify all workers
             hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
             hostserv.terminate()
 
         self._stop_hadoop()                 # stop hadoop
-        self._rm_tmpdir( self.nfsTmp )      # remove temp dir from ganfs dir
         self._rm_tmpdir()                   # remove temp directory
 
     def _prepare_submission_files(self):
 
         # Prepare condor submission file
         self.submitFile.prepare_file( [ ['<q.np>', str(self.np)],
-                        ['<ssh.pub.key>', self.tmpPath + AUTH_FNAME ],
                         ['<fullpath.client.script>', str(self.clientFile) ],
                         ['<output.dir>', OUTPUT_DIR + '/' ],
+                        ['<core.config.file>', self.tmpPath + CONF_FNAME ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
 
         # Prepare client side python script
@@ -181,7 +137,6 @@ class HadoopCluster():
                         [ '<serv.port>', str(PORT) ],
                         [ '<hadp.path>', self.nfsTmp + '/' + HADP_PATH ],
                         [ '<java.path>', self.nfsTmp + '/' + JAVA_PATH ],
-                        [ '<conf.path>', self.nfsTmp + '/' + self.tmpPath ],
                         [ '<rand>', self.rand ] ] )
 
     def _read_hosts_info(self):
@@ -194,30 +149,35 @@ class HadoopCluster():
               print '\nhost list:'
               for host in self.hostlist:
                   print host
-    '''
-    def _create_mpd_hosts(self):
-        with open( self.tmpPath + 'mpd.hosts', 'w') as mpdhostf:
-            for host in self.hostlist:
-                # write hostname and number of cpus only
-                mpdhostf.write( host[0] + ':' + host[1] + '\n' )
-        mpdhostf.close()
-    '''
 
-    # Generate ssh key pairs for MPI ring
-    def _gen_ssh_keys(self):
-
-        argstr = str.split( "ssh-keygen -q -t rsa" )
-        argstr.extend( ["-N", ''] )
-        argstr.extend( ["-f", self.keyfname] )
-        argstr.extend( ["-C", self.rand] )
+def check_hadoop_conf( nfs ):
+    # Check & adjust hadoop-env.sh configuration
+    confname = nfs + '/' + HADP_PATH + '/conf/hadoop-env.sh'
+    java_key = 'export JAVA_HOME=' 
+    java_val =  java_key + nfs + '/' + JAVA_PATH
+    hadp_key = 'export HADOOP_HOME=' 
+    hadp_val = hadp_key + nfs + '/' + HADP_PATH
+    lines = None
+    update = False           # update flag
     
-        p = subprocess.call( argstr )
-        if p != 0:
-            sys.exit('Error: ssh-keygen return ' + str(p))
+    with open( confname , 'r') as conff :
+        lines = conff.readlines()
+    conff.close()
 
-        # copy the public key file into 'authorized_keys' file for client's sshd
-        shutil.copyfile( self.keyfname + '.pub', self.tmpPath + AUTH_FNAME )
+    # search and change if needed
+    for line in lines:
+        if line.find( java_key ) == 0 and line != java_val :
+            line = java_val
+            update = True
+        if line.find( hadp_key ) == 0 and line != hadp_val :
+            line = hadp_val
+            update = True
 
+    # write back if update occur
+    if update:
+        with open( confname, 'w') as conff :
+            conff.writelines( lines )
+        conff.close()
 
 if __name__ == "__main__":
 
@@ -230,7 +190,8 @@ if __name__ == "__main__":
 
     if len(args) != 1:
         parser.error("Incorrect number of arguments")
-    if args != 'start' and args != 'stop':
+
+    if ((args[0] != 'start') and (args[0] != 'stop')) :
         parser.error("Unknown command")
 
     # Testing Hadoop & Java installation in GANFS
@@ -239,6 +200,9 @@ if __name__ == "__main__":
         sys.exit('Error: No Hadoop installation in ' + local_nfs)
     if not os.path.isfile( local_nfs + '/' + JAVA_PATH + '/bin/java' ):
         sys.exit('Error: No Hadoop installation in ' + local_nfs)
+
+    # Check & adjust hadoop-env.sh configuration
+    check_hadoop_conf( local_nfs )
 
     # Create condor output dir if not already existed
     if not os.path.isdir( OUTPUT_DIR ):
@@ -249,7 +213,7 @@ if __name__ == "__main__":
 
     hdp = HadoopCluster( options.np )
 
-    if args == 'start':
+    if args[0] == 'start':
         hdp.start()
-    elif args == 'stop':
+    elif args[0] == 'stop':
         hdp.stop()

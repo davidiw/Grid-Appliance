@@ -11,7 +11,6 @@ SERV_IP =  '<serv.ip>'
 SERV_PORT = '<serv.port>'
 HADP_PATH = '<hadp.path>'
 JAVA_PATH = '<java.path>'
-CONF_PATH = '<conf.path>'
 RAND = '<rand>'
 SEED_SSHPORT = 55555
 SEED_XMLPORT = 45555
@@ -61,9 +60,8 @@ if __name__ == "__main__":
     os.makedirs( HADOOP_LOGDIR )
 
     # Setup sshd & running datanode/tasktracker in the background
-    subprocess.call( ['hadoop_sshd_setup.sh'] )
     local_env = os.environ
-    local_env['HADOOP_CONF_DIR'] = CONF_PATH
+    local_env['HADOOP_CONF_DIR'] = '.'
     local_env['HADOOP_HOME'] = HADP_PATH
     local_env['HADOOP_LOG_DIR'] = local_path + '/' + HADOOP_LOGDIR
     local_env['HADOOP_HEAPSIZE'] = str(128)

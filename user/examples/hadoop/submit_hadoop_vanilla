@@ -5,6 +5,6 @@ Log = <output.dir>/condor-hadoop.$(Cluster).$(Process).log
 Output = <output.dir>/condor-hadoop.$(Cluster).$(Process).out
 Error = <output.dir>/condor-hadoop.$(Cluster).$(Process).err
 should_transfer_files = Yes
-transfer_input_files = <fullpath.client.script>, <ssh.pub.key>, condor_hadoop_util.py, hadoop_sshd_setup.sh
+transfer_input_files = <fullpath.client.script>, <core.config.file>, condor_hadoop_util.py
 when_to_transfer_output = ON_EXIT
 Queue <q.np>
