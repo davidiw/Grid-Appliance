@@ -142,7 +142,7 @@ class MPISubmission:
 
         # mpi job is finished
         for host in self.hostlist:                                 # notify all workers
-            hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
+            hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[3] )
             hostserv.terminate()
         subprocess.call( 'mpdallexit', env=self.env, 
                           stdout=FNULL, stderr=FNULL) # tear down mpd ring
