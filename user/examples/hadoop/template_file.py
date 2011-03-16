@@ -11,7 +11,7 @@ class TemplateFile():
         self.outpath = outpath
 
     # prepare the output file from keywords in 'kw_list'
-    def prepare_file(self, kw_list ):
+    def prepare_file(self, kw_list, set_exec = False ):
         fullname = self._full_name()
         fulloutname = self._full_outname()
 
@@ -23,6 +23,9 @@ class TemplateFile():
                     outf.write( line )
         tmpf.close()
         outf.close()
+
+        if set_exec:
+            os.chmod( fulloutname, 0755 )
 
     def _full_name(self):
         return self.path + self.fname

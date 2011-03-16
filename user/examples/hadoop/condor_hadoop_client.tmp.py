@@ -61,13 +61,14 @@ if __name__ == "__main__":
 
     # Setup sshd & running datanode/tasktracker in the background
     local_env = os.environ
-    local_env['HADOOP_CONF_DIR'] = '.'
+    local_env['HADOOP_CONF_DIR'] = local_path
     local_env['HADOOP_HOME'] = HADP_PATH
     local_env['HADOOP_LOG_DIR'] = local_path + '/' + HADOOP_LOGDIR
+    local_env['HADOOP_PID_DIR'] = local_path + '/' + HADOOP_LOGDIR
     local_env['HADOOP_HEAPSIZE'] = str(128)
     local_env['JAVA_HOME'] = JAVA_PATH
-    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 'start', 'datanode'], 
-                     env=local_env)
+    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', '--script', 'hdfs', 
+                     'start', 'datanode'], env=local_env)
 
     # start the server, waiting for terminating signal    
     servthread = start_server( int(local_xmlport) )

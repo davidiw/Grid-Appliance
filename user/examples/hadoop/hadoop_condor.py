@@ -11,8 +11,10 @@ from threading import Thread
 DEBUG = 1
 PORT = 32603                                   	# server listening port
 SUBM_FNAME = 'submit_hadoop_vanilla'            # submission template file name
-CONFTMP_FNAME = 'core-site.tmp.xml'            	# configure template file name
+CONF_TMP_FNAME = 'core-site.tmp.xml'            # configure template file name
+HENV_TMP_FNAME = 'hadoop-env.tmp.sh'            # hadoop-env.sh template file name
 CONF_FNAME = 'core-site.xml'              	# configure file name
+HENV_FNAME = 'hadoop-env.sh'                    # hadoop env setup script file name
 CLNT_FNAME = 'condor_hadoop_client.tmp.py'     	# client-side script template
 NFS_PREFIX = '/mnt/ganfs/'
 HADP_PATH = 'hadoop'                     # path of hadoop installation
@@ -28,7 +30,6 @@ class HadoopCluster:
         self.np = np
         self.nfsTmp = NFS_PREFIX + gethostname(True) 
         self.servthread = None
-        #self.rand = genRandom()
         self.rand = 'hadoopAAA'
         self.tmpPath = self._create_tmpdir()
         self.submitFile = TemplateFile( '' , SUBM_FNAME, self.tmpPath, 
@@ -39,9 +40,8 @@ class HadoopCluster:
         self.hostlist = []             # store a list of [username, ip, port]
         self.env = os.environ 
         self.env['PATH'] = self.nfsTmp + '/' + HADP_PATH + '/bin:' + self.env['PATH']
-	self.env['HADOOP_HOME'] = self.nfsTmp + '/' + HADP_PATH 
 	self.env['HADOOP_HEAPSIZE'] = str(128)
-	self.env['JAVA_HOME'] = self.nfsTmp + '/' + JAVA_PATH 
+        self.env['HADOOP_CONF_DIR'] = os.getcwd() + '/' + self.tmpPath
 
     # remove tmp dir and all its content
     def _rm_tmpdir(self, dst='.'):
@@ -70,22 +70,27 @@ class HadoopCluster:
 
     def _start_hadoop(self):
 
-        # make sure no other namenode/jobtracker are running
-        #self._stop_hadoop()
-
         # starting server's namenode
-        self.env['HADOOP_CONF_DIR'] = self.nfsTmp + '/' + self.tmpPath 
-        subprocess.call( ['echo', '"Y"', '>', 'hadoop', 'namenode', '-format'], 
-                         env=self.env, stdout=FNULL, stderr=FNULL)
-        subprocess.call( ['hadoop-daemon.sh','start','namenode'], 
+        p1 = subprocess.Popen( ['echo', 'Y'], stdout=subprocess.PIPE, stderr=FNULL)
+        subprocess.call( ['hdfs', 'namenode', '-format'], env=self.env, 
+                         stdin=p1.stdout, stdout=FNULL, stderr=FNULL )
+        p1.stdout.close()
+        subprocess.call( ['hadoop-daemon.sh', '--script', 'hdfs', 'start','namenode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
 
     def start(self):
 
-        # Create conf file into local ganfs directory
-        confFile = TemplateFile( '' , CONFTMP_FNAME, self.tmpPath, CONF_FNAME )
-        confFile.prepare_file([ ['<namenode.hostname>', gethostname()] ]);
-        
+        # Create conf file into local temp directory
+        confFile = TemplateFile( '' , CONF_TMP_FNAME, self.tmpPath, CONF_FNAME )
+        confFile.prepare_file([ ['<namenode.hostname>', gethostname()] ])
+
+        # Prepare and copy hadoop-env.sh into local temp directory
+        envFile = TemplateFile('', HENV_TMP_FNAME, self.tmpPath, HENV_FNAME )
+        envFile.prepare_file([ ['<java.home>', self.nfsTmp + '/' + JAVA_PATH],
+                               ['<hadoop.home>', self.nfsTmp + '/' + HADP_PATH],
+                               ['<path>', self.nfsTmp + '/' + HADP_PATH + '/bin:$PATH']]
+                               , True )
+
         self._start_hadoop()                # start local hadoop namenode & jobtracker
         self._prepare_submission_files()    # prepare client script and condor submit file
 
@@ -127,6 +132,7 @@ class HadoopCluster:
                         ['<fullpath.client.script>', str(self.clientFile) ],
                         ['<output.dir>', OUTPUT_DIR + '/' ],
                         ['<core.config.file>', self.tmpPath + CONF_FNAME ],
+                        ['<env.config.file>', self.tmpPath + HENV_FNAME ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
 
         # Prepare client side python script
@@ -150,35 +156,6 @@ class HadoopCluster:
               for host in self.hostlist:
                   print host
 
-def check_hadoop_conf( nfs ):
-    # Check & adjust hadoop-env.sh configuration
-    confname = nfs + '/' + HADP_PATH + '/conf/hadoop-env.sh'
-    java_key = 'export JAVA_HOME=' 
-    java_val =  java_key + nfs + '/' + JAVA_PATH
-    hadp_key = 'export HADOOP_HOME=' 
-    hadp_val = hadp_key + nfs + '/' + HADP_PATH
-    lines = None
-    update = False           # update flag
-    
-    with open( confname , 'r') as conff :
-        lines = conff.readlines()
-    conff.close()
-
-    # search and change if needed
-    for line in lines:
-        if line.find( java_key ) == 0 and line != java_val :
-            line = java_val
-            update = True
-        if line.find( hadp_key ) == 0 and line != hadp_val :
-            line = hadp_val
-            update = True
-
-    # write back if update occur
-    if update:
-        with open( confname, 'w') as conff :
-            conff.writelines( lines )
-        conff.close()
-
 if __name__ == "__main__":
 
     # parsing option/arguments
@@ -200,9 +177,6 @@ if __name__ == "__main__":
         sys.exit('Error: No Hadoop installation in ' + local_nfs)
     if not os.path.isfile( local_nfs + '/' + JAVA_PATH + '/bin/java' ):
         sys.exit('Error: No Hadoop installation in ' + local_nfs)
-
-    # Check & adjust hadoop-env.sh configuration
-    check_hadoop_conf( local_nfs )
 
     # Create condor output dir if not already existed
     if not os.path.isdir( OUTPUT_DIR ):

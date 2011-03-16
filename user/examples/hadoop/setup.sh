@@ -57,8 +57,8 @@ function install_hadoop() {
     mv -f hadoop-?.* $hadoop_dir
 
     # add required JAVA_HOME and HADOOP_HOME  to hadoop conf
-    echo "export JAVA_HOME=$path/$jdk_dir" >> $hadoop_dir/conf/hadoop-env.sh
-    echo "export HADOOP_HOME=$path/$hadoop_dir" >> $hadoop_dir/conf/hadoop-env.sh
+    #echo "export JAVA_HOME=$path/$jdk_dir" >> $hadoop_dir/conf/hadoop-env.sh
+    #echo "export HADOOP_HOME=$path/$hadoop_dir" >> $hadoop_dir/conf/hadoop-env.sh
 
     cd $curr_path
 }

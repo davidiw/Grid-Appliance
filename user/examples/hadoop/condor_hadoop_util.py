@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
-import socket, string, random, os, subprocess
+import socket, string, random, os, subprocess, fcntl, struct
 
 def get_ipop_ip():
-    iplist = socket.gethostbyname_ex( socket.gethostname())[2]
-    return iplist[-1]
+   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+   ifname = struct.pack('256s', 'tapipop')
+   return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, ifname)[20:24])
 
 # Generate a random alphanumeric word
 def genRandom( minlength=8, maxlength=8 ):
