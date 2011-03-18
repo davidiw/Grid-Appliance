@@ -1,5 +1,5 @@
 #!/bin/bash
 source /etc/grid_appliance.config
-$DIR/scripts/xmonitor.sh start
+$DIR/scripts/xmonitor.py &
 cd ~
-/usr/bin/xterm -geometry +0+171 &
+/usr/bin/xterm -geometry +0+159 &

@@ -4,5 +4,5 @@ Section: net
 Installed-Size: 1
 Maintainer: David Wolinsky <davidiw@ufl.edu>
 Architecture: all
-Depends: xorg,icewm
+Depends: xorg,icewm,python-gtk2
 Description: Grid Appliance Client Package

@@ -11,7 +11,7 @@ $DIR/tests/Condor.sh >> $DIR/tests/out
 echo "Dht test results..." >> $DIR/tests/out
 $DIR/tests/DhtTest.sh >> $DIR/tests/out
 echo "Information..." >> $DIR/tests/out
-$DIR/tests/Information.py >> $DIR/tests/out
+$DIR/scripts/utils.py information >> $DIR/tests/out
 echo "CONDOR_HOST..." >> $DIR/tests/out
 config=$DIR"/etc/condor_config.d/00root"
 res=`grep CONDOR_HOST $config | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`

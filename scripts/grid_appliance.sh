@@ -21,13 +21,17 @@ fi
 function stop() {
   #We could stop samba and ssh, but that makes things more difficult to debug
   #so from now on, we leave them running, once they've been turned on
+  #Stop Condor if running
+  if [[ $($DIR/scripts/utils.py check_condor_running) == "True" ]]; then
+    $DIR/scripts/condor.sh stop
+  fi
   #Stop IPOP
   /etc/init.d/groupvpn.sh stop
   #Remove DOS prevention rule
   firewall_stop
 
   # Kill the monitor program
-  pkill -KILL monitor.sh
+  pkill -KILL monitor.py
 
   # Umount the floppy
   cat /proc/mounts | grep $CONFIG_PATH > /dev/null
@@ -146,9 +150,8 @@ function start() {
   firewall_start
 
   #Start the monitoring service
-  $DIR/scripts/monitor.sh &> /var/log/monitor.log &
+  $DIR/scripts/monitor.py
 
-  samba
   user
 }
 

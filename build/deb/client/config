@@ -1,5 +1,5 @@
 [build]
-version = 0.03
+version = 0.04
 base_path = ../../..
 package = grid_appliance_client
 [debian]
@@ -8,4 +8,4 @@ prerm = true
 postinst = true
 [files]
 scripts/startx.sh = /etc/init.d/startx.sh
-scripts/xmonitor.sh = /opt/grid_appliance/scripts/xmonitor.sh
+scripts/xmonitor.py = /opt/grid_appliance/scripts/xmonitor.py

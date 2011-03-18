@@ -16,6 +16,9 @@ source /etc/group_appliance.config
 
 if [[ $MACHINE_TYPE == "Client" && "$(which startx)" ]]; then
   if [[ ! $($DIR/scripts/utils.sh get_pid X) ]]; then
+    # Manual upgrade for existing users...
+    sudo -i -b -u $CONDOR_USER "sed 's/xmonitor.sh start/xmonitor.py \&/g' -i /home/$CONDOR_USER/.icewm/startup"
+    sudo -i -b -u $CONDOR_USER "sed 's/171/159/g' -i /home/$CONDOR_USER/.icewm/startup"
     sudo -i -b -u $CONDOR_USER 'startx' &> /var/log/startx.log
   fi
 fi
