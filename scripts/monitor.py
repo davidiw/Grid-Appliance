@@ -23,6 +23,7 @@ class monitor:
 
   def __init__(self):
     self.queue = Queue.Queue()
+    self.print_timeout = False
 
     self.ipmon = ip_monitor.ip_monitor(self.ip_callback)
     self.ipmon.start_thread()
