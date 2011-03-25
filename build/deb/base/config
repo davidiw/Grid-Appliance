@@ -1,5 +1,5 @@
 [build]
-version = 2.04.27
+version = 2.04.28
 base_path = ../../..
 package = grid_appliance
 [debian]
