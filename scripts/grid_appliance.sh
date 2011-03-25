@@ -27,8 +27,6 @@ function stop() {
   fi
   #Stop IPOP
   /etc/init.d/groupvpn.sh stop
-  #Remove DOS prevention rule
-  firewall_stop
 
   # Kill the monitor program
   pkill -KILL monitor.py
@@ -143,11 +141,6 @@ function start() {
 
   #Start IPOP
   /etc/init.d/groupvpn.sh start
-
-  # Don't have duplicate rules
-  firewall_stop
-  #Configure IPTables to prevent DOS attacks and LAN attacks from condor jobs
-  firewall_start
 
   #Start the monitoring service
   $DIR/scripts/monitor.py
@@ -271,18 +264,6 @@ function user() {
       $DIR/scripts/utils.sh add_user $CONDOR_USER
     fi
   fi
-}
-
-function firewall_start() {
-  iptables -A OUTPUT -m owner --uid-owner nobody -o lo+ -j ACCEPT &> /dev/null
-  iptables -A OUTPUT -m owner --uid-owner nobody -o $DEVICE -j ACCEPT &> /dev/null
-  iptables -A OUTPUT -m owner --uid-owner nobody -j DROP &> /dev/null
-}
-
-function firewall_stop() {
-  iptables -D OUTPUT -m owner --uid-owner nobody -j DROP &> /dev/null
-  iptables -D OUTPUT -m owner --uid-owner nobody -o $DEVICE -j ACCEPT &> /dev/null
-  iptables -D OUTPUT -m owner --uid-owner nobody -o lo+ -j ACCEPT &> /dev/null
 }
 
 case "$1" in

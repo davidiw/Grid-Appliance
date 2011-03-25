@@ -19,6 +19,20 @@ add_user()
   chown -R $user:$user /home/$user
 }
 
+firewall_start() {
+  user=$1
+  iptables -A OUTPUT -m owner --uid-owner $user -o lo+ -j ACCEPT &> /dev/null
+  iptables -A OUTPUT -m owner --uid-owner $user -o $DEVICE -j ACCEPT &> /dev/null
+  iptables -A OUTPUT -m owner --uid-owner $user -j DROP &> /dev/null
+}
+
+firewall_stop() {
+  user=$1
+  iptables -D OUTPUT -m owner --uid-owner $user -j DROP &> /dev/null
+  iptables -D OUTPUT -m owner --uid-owner $user -o $DEVICE -j ACCEPT &> /dev/null
+  iptables -D OUTPUT -m owner --uid-owner $user -o lo+ -j ACCEPT &> /dev/null
+}
+
 get_baddr()
 {
   source /etc/ipop.vpn.config

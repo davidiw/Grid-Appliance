@@ -134,12 +134,8 @@ update_flock()
   fi
 }
 
-if test -e $DIR/etc/not_configured; then
-  logger -s -t "Condor" "Grid Appliance not configured!"
-  exit 1
-fi
-
-if [[ $1 == "start" ]]; then
+start_condor()
+{
   configure_condor
   if [[ $? != 0 ]]; then
     logger -s -t "Condor" "Failed to configure... try again later..."
@@ -148,11 +144,25 @@ if [[ $1 == "start" ]]; then
   # This is run to limit the amount of memory condor jobs can use - up to the  contents
   # of physical memory, that means a swap disk is necessary!
   ulimit -v `cat /proc/meminfo | grep MemTotal | awk -F" " '{print $2}'`
+
+  # Turn on the firewall
+  slots=$(cat /proc/cpuinfo | grep processor | wc -l)
+  for (( i = 1 ; $i <= $slots; i = $i + 1 )); do
+    $DIR/scripts/utils.sh firewall_stop $userbase$i
+    $DIR/scripts/utils.sh firewall_start $userbase$i
+  done
+
   condor_master
-elif [[ $1 == "restart" ]]; then
-  $DIR/scripts/condor.sh stop
-  $DIR/scripts/condor.sh start
-elif [[ $1 == "stop" ]]; then
+}
+
+stop_condor()
+{
+  # Shutdown the firewall
+  slots=$(cat /proc/cpuinfo | grep processor | wc -l)
+  for (( i = 1 ; $i <= $slots; i = $i + 1 )); do
+    $DIR/scripts/utils.sh firewall_stop $userbase$i
+  done
+
   msg=$(condor_off -subsystem master 2>&1)
   # condor_off is a nice way to shut things down, but sometimes, frequently enough, it doesn't
   for (( count = 0; $count < 5; count = $count + 1 )); do
@@ -162,6 +172,20 @@ elif [[ $1 == "stop" ]]; then
     sleep 1
   done
   pkill -KILL condor_
+}
+
+if test -e $DIR/etc/not_configured; then
+  logger -s -t "Condor" "Grid Appliance not configured!"
+  exit 1
+fi
+
+if [[ $1 == "start" ]]; then
+  start_condor
+elif [[ $1 == "restart" ]]; then
+  $DIR/scripts/condor.sh stop
+  $DIR/scripts/condor.sh start
+elif [[ $1 == "stop" ]]; then
+  stop_condor
 elif [[ $1 == "reconfig" ]]; then
   configure_condor
   if [[ $? != 0 ]]; then
