@@ -130,6 +130,6 @@ if __name__ == "__main__":
   except:
     res = False
 
-  if not res:
-    sys.exit("False")
   print res
+  if not res:
+    sys.exit(-1)
