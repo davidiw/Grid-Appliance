@@ -13,8 +13,10 @@ PORT = 32603                                   	# server listening port
 SUBM_FNAME = 'submit_hadoop_vanilla'            # submission template file name
 CONF_TMP_FNAME = 'core-site.tmp.xml'            # configure template file name
 HENV_TMP_FNAME = 'hadoop-env.tmp.sh'            # hadoop-env.sh template file name
+HDFS_TMP_FNAME = 'hdfs-site.tmp.xml'
 CONF_FNAME = 'core-site.xml'              	# configure file name
 HENV_FNAME = 'hadoop-env.sh'                    # hadoop env setup script file name
+HDFS_FNAME = 'hdfs-site.xml'
 CLNT_FNAME = 'condor_hadoop_client.tmp.py'     	# client-side script template
 NFS_PREFIX = '/mnt/ganfs/'
 HADP_PATH = 'hadoop'                     # path of hadoop installation
@@ -63,10 +65,10 @@ class HadoopCluster:
         return 'tmp' + self.rand + '/'
 
     def _stop_hadoop(self):
-        subprocess.call( ['hadoop-daemon.sh', 'stop', 'namenode'], 
+        subprocess.call( ['stop-all.sh'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
-        subprocess.call( ['hadoop-daemon.sh', 'stop', 'jobtracker'], 
-                         env=self.env, stdout=FNULL, stderr=FNULL)
+        #subprocess.call( ['hadoop-daemon.sh', 'stop', 'jobtracker'], 
+        #                 env=self.env, stdout=FNULL, stderr=FNULL)
 
     def _start_hadoop(self):
 
@@ -75,14 +77,31 @@ class HadoopCluster:
         subprocess.call( ['hdfs', 'namenode', '-format'], env=self.env, 
                          stdin=p1.stdout, stdout=FNULL, stderr=FNULL )
         p1.stdout.close()
-        subprocess.call( ['hadoop-daemon.sh', '--script', 'hdfs', 'start','namenode'], 
+        print 'Starting a namenode ... ',
+        sys.stdout.flush()
+        #subprocess.call( ['hadoop-daemon.sh', 'start','namenode'], 
+        subprocess.Popen( ['hdfs','namenode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
 
+        # use -report to wait for namenode to finish starting up
+        subprocess.call(['hdfs', 'dfsadmin' ,'-report'], 
+                          env=self.env, stdout=FNULL, stderr=FNULL )
+        print 'done'
+
+        # Start local datanode
+        print 'Starting a local datanode\n'
+        #subprocess.call( ['hadoop-daemon.sh', 'start','datanode'], 
+        subprocess.Popen( ['hdfs','datanode'], 
+                         env=self.env, stdout=FNULL, stderr=FNULL)
     def start(self):
 
         # Create conf file into local temp directory
         confFile = TemplateFile( '' , CONF_TMP_FNAME, self.tmpPath, CONF_FNAME )
         confFile.prepare_file([ ['<namenode.hostname>', gethostname()] ])
+
+        hdfsFile = TemplateFile( '', HDFS_TMP_FNAME, self.tmpPath, HDFS_FNAME )
+        hdfsFile.prepare_file([ ['<name.dir>', self.tmpPath + 'name' ],
+                                ['<data.dir>', self.tmpPath + 'data' ] ] )
 
         # Prepare and copy hadoop-env.sh into local temp directory
         envFile = TemplateFile('', HENV_TMP_FNAME, self.tmpPath, HENV_FNAME )
@@ -95,7 +114,7 @@ class HadoopCluster:
         self._prepare_submission_files()    # prepare client script and condor submit file
 
         # start a listening server
-        self.servthread = Thread(target=CallbackServ(self.np, self.hostfname, PORT).serv)
+        self.servthread = Thread(target=CallbackServ(self.np-1, self.hostfname, PORT).serv)
         self.servthread.setDaemon(True)
         self.servthread.start()
 
@@ -107,11 +126,41 @@ class HadoopCluster:
             sys.exit('Error: condor_submit return ' + str(p))
 
         # if the submission is successful, wait for the server 
-        print 'Waiting for ' + str(self.np) + ' workers to response ....',
+        print 'Waiting for ' + str(self.np-1) + ' workers to response ....',
         sys.stdout.flush()
         self.servthread.join()
         print 'finished'
         self._read_hosts_info()        # read info from the collected hosts
+
+        # Waiting for hadoop cluster to be ready
+        print '\nWaiting for ' + str(self.np) + ' datanodes to be ready .... ',
+        sys.stdout.flush()
+        limit = 180
+        retry = 0
+        while retry < limit :
+            time.sleep(1.0)
+
+            # testing hadoop cluster
+            process = subprocess.Popen(['hdfs', 'dfsadmin' ,'-report'], 
+                                  env=self.env, stdout=subprocess.PIPE, stderr=FNULL )
+            process.wait()
+            trace = process.communicate()[0]
+            retry += 1
+
+            # extract datanodes count
+            start = trace.find("Datanodes available:")
+            end = trace.find("(", start )
+            count = trace[start:end].split()[-1]
+
+            if count.isdigit() and (int(count) == self.np ):
+                print 'success'
+                break
+
+        # Check whether mpdtrace return enough mpd nodes
+        if retry >=  limit :
+            print 'fail'
+            self.stop()
+            sys.exit('Timeout: not enough datanodes in the cluster')
 
     def stop(self):
         self._read_hosts_info()              # read info from tmp dir
@@ -119,19 +168,19 @@ class HadoopCluster:
             sys.exit('Error: no existing hadoop cluster info' )
 
         for host in self.hostlist:                                 # notify all workers
-            hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
+            hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[3] )
             hostserv.terminate()
 
         self._stop_hadoop()                 # stop hadoop
         self._rm_tmpdir()                   # remove temp directory
 
     def _prepare_submission_files(self):
-
         # Prepare condor submission file
-        self.submitFile.prepare_file( [ ['<q.np>', str(self.np)],
+        self.submitFile.prepare_file( [ ['<q.np>', str(self.np-1)],
                         ['<fullpath.client.script>', str(self.clientFile) ],
                         ['<output.dir>', OUTPUT_DIR + '/' ],
                         ['<core.config.file>', self.tmpPath + CONF_FNAME ],
+                        ['<hdfs.config.tmp.file>', HDFS_TMP_FNAME ],
                         ['<env.config.file>', self.tmpPath + HENV_FNAME ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
 
@@ -143,9 +192,12 @@ class HadoopCluster:
                         [ '<serv.port>', str(PORT) ],
                         [ '<hadp.path>', self.nfsTmp + '/' + HADP_PATH ],
                         [ '<java.path>', self.nfsTmp + '/' + JAVA_PATH ],
+                        [ '<hdfs.config.file>', HDFS_FNAME ],
+                        [ '<hdfs.config.tmp.file>', HDFS_TMP_FNAME ],
                         [ '<rand>', self.rand ] ] )
 
     def _read_hosts_info(self):
+        self.hostlist = []
         with open( self.hostfname, 'r') as hostf:
             for line in hostf:
                 self.hostlist.append( line.rstrip().split(":") ) 

@@ -132,7 +132,7 @@ class MPISubmission():
 
         # Check whether mpdtrace return enough mpd nodes
         if len(trace.split('\n')) < self.np + 1 :
-            print 'faild'
+            print 'failed'
             subprocess.call( 'mpdallexit', env=self.env, stdout=FNULL, stderr=FNULL)
             subprocess.call(['condor_rm', '-all'])
             sys.exit('Error: not enough mpd nodes in the ring')

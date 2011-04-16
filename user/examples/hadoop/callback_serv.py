@@ -24,7 +24,7 @@ class CallbackServ():
 
         # construct an entry string from dict 'data'
         entry = data['hostname'] + ":" + data['cpus'] + ":" +  data['usrname'] + ":" + \
-                data['sshport'] + ":" + data['xmlport'] + ":" + data['path']
+                data['xmlport'] + ":" + data['path']
 
         with open( self.outfname, 'a') as outf:
             outf.write( entry + '\n' )

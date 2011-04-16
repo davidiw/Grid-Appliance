@@ -6,13 +6,15 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 from condor_hadoop_util import *
 from getpass import getuser
 from threading import Thread
+from template_file import TemplateFile
 
 SERV_IP =  '<serv.ip>' 
 SERV_PORT = '<serv.port>'
 HADP_PATH = '<hadp.path>'
 JAVA_PATH = '<java.path>'
 RAND = '<rand>'
-SEED_SSHPORT = 55555
+HDFS_FNAME = '<hdfs.config.file>'
+HDFS_TMP_FNAME = '<hdfs.config.tmp.file>'
 SEED_XMLPORT = 45555
 HADOOP_LOGDIR = 'hadoop_log'
 
@@ -45,21 +47,27 @@ if __name__ == "__main__":
 
     local_user = getuser()
     local_hostname = gethostname()
-    local_sshport = str( SEED_SSHPORT + condor_slot )
     local_xmlport = str( SEED_XMLPORT + condor_slot )
     local_cpus = str(multiprocessing.cpu_count())
     local_path = os.getcwd()
 
     # construct a dict for all values and make xmlrpc call
     data = { 'hostname' : local_hostname, 'cpus' : local_cpus, 'usrname' : local_user,
-             'sshport' : local_sshport, 'xmlport' : local_xmlport,
-             'path' : local_path }
+             'xmlport' : local_xmlport, 'path' : local_path }
     serv.write_file( data )
 
-    # prepare log dir
+    # prepare log and conf dir
+    name_dir = 'tmp' + RAND + '/name'
+    data_dir = 'tmp' + RAND + '/data'
     os.makedirs( HADOOP_LOGDIR )
+    os.makedirs( name_dir )
+    os.makedirs( data_dir )
 
-    # Setup sshd & running datanode/tasktracker in the background
+    hdfsFile = TemplateFile( '', HDFS_TMP_FNAME, '', HDFS_FNAME )
+    hdfsFile.prepare_file([ ['<name.dir>', local_path + '/' + name_dir ],
+                            ['<data.dir>', local_path + '/' + data_dir ] ] )
+
+    # Setup datanode/tasktracker in the background
     local_env = os.environ
     local_env['HADOOP_CONF_DIR'] = local_path
     local_env['HADOOP_HOME'] = HADP_PATH
@@ -67,7 +75,7 @@ if __name__ == "__main__":
     local_env['HADOOP_PID_DIR'] = local_path + '/' + HADOOP_LOGDIR
     local_env['HADOOP_HEAPSIZE'] = str(128)
     local_env['JAVA_HOME'] = JAVA_PATH
-    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', '--script', 'hdfs', 
+    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 
                      'start', 'datanode'], env=local_env)
 
     # start the server, waiting for terminating signal    
