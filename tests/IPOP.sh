@@ -34,6 +34,6 @@ if [[ $($DIR/scripts/utils.py check_connections) == "False" ]]; then
   echo "IPOP not connected."
 fi
 
-if [[ $($DIR/src/utils.py check_ip) == "False" ]]; then
+if [[ $($DIR/scripts/utils.py check_ip) == "False" ]]; then
   echo "IPOP IP missing from DHT."
 fi
