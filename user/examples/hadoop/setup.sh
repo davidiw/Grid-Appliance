@@ -1,39 +1,25 @@
 #!/bin/bash
 
-jdk_dir=jdk
-hadoop_dir=hadoop
-
-hostname=`hostname | awk -F "." '{print $1}'`
-path=/mnt/ganfs/$hostname
-curr_path=`pwd`
-
-function spinner() {
-    p=$1
-    int=0.2
-    echo -en "  "
-    while [ -d /proc/$p ]; do
-        echo -en '\b\b/ '; sleep $int
-        echo -en '\b\b- '; sleep $int
-        echo -en '\b\b\\ '; sleep $int
-        echo -en '\b\b| '; sleep $int
-    done
-    echo -en '\b\b'
-    return 0
-}
-
 function install_jdk() {
 
     echo "========================================"
     echo "Installing JDK in "$path
     echo "========================================"
 
-    cp $jdk_file $path
+    # download jdk if not already exist
+    if [[ ! -e $jdk_file ]]; then
+        echo "Downloading JDK ......... "
+        wget http://download.oracle.com/otn-pub/java/jdk/6u25-b06/$jdk_file
+    fi
+    [[ -e $jdk_file ]] || exit 1
+
+    mv $jdk_file $path
     jdk_fname=`basename $jdk_file`
-    echo -ne "Installing JDK ........... "
+    echo "Installing JDK ........... "
     cd $path
-    echo "Y" | ./$jdk_fname &> /dev/null &
-    spinner $!
-    echo "done"
+    chmod a+x $jdk_fname
+    echo "Y" | ./$jdk_fname
+    [[ "$?" -eq 0 ]] || exit 1
 
     rm -f $jdk_file            # remove installation file
     mv -f jdk?.?.* $jdk_dir        # rename jdk dir
@@ -46,69 +32,67 @@ function install_hadoop() {
     echo "Installing Hadoop in "$path
     echo "========================================"
 
-    cp $hadoop_file $path
+    # download hadoop if not already exist
+    if [[ ! -e $hadoop_file ]]; then
+        echo "Downloading Hadoop ......... "
+        wget http://mirror.nyi.net/apache//hadoop/core/hadoop-$hadoop_ver/$hadoop_file
+    fi
+    [[ -e $hadoop_file ]] || exit 1
+
+    mv $hadoop_file $path
     cd $path
-    echo -ne "Installing Hadoop ........ "
-    tar xfz $hadoop_file &> /dev/null &
-    spinner $!
-    echo "done"
+    echo "Installing Hadoop ........ "
+    tar xvfz $hadoop_file 
+    [[ "$?" -eq 0 ]] || exit 1
 
     rm -f $hadoop_file
-    mv -f hadoop-?.* $hadoop_dir
-
-    # add required JAVA_HOME and HADOOP_HOME  to hadoop conf
-    #echo "export JAVA_HOME=$path/$jdk_dir" >> $hadoop_dir/conf/hadoop-env.sh
-    #echo "export HADOOP_HOME=$path/$hadoop_dir" >> $hadoop_dir/conf/hadoop-env.sh
+    mv -f hadoop-$hadoop_ver $hadoop_dir
 
     cd $curr_path
 }
 
-function print_usage() {
 
-    echo "Usage: $0 {-j <java installation file>} {-h <hadoop installation file>}"
-}
+for opt in "$@"; do
+    case $opt in
+        "-f")
+            reinstall=true
+            ;;
+        *)
+            echo "Invalid option $opt"
+            echo "Usage: [-f]"
+            exit 1
+    esac
+done
 
+jdk_dir=jdk
+hadoop_dir=hadoop
 
-# Check arguements
-if [ $# != 4 ]; then
-    print_usage
-    exit 1
-fi
+hostname=$(hostname -s)
+path=/mnt/ganfs/$hostname
+curr_path=`pwd`
 
-# Parsing options
-if [ $1 = "-j" -a $3 = "-h" ]; then
-   jdk_file=$2
-   hadoop_file=$4
-elif [ $1 = "-h" -a $3 = "-j" ]; then
-   jdk_file=$4
-   hadoop_file=$2
-else
-    print_usage
-    exit 1
-fi
+jdk_file=jdk-6u25-linux-i586.bin
+hadoop_ver=0.21.0
+hadoop_file=hadoop-$hadoop_ver.tar.gz
 
-# Check file existance
-if [ ! -f $jdk_file ]; then
-    echo "Error: cannot find $jdk_file"
-    print_usage
-    exit 1
-fi
-
-if [ ! -f $hadoop_file ]; then
-    echo "Error: cannot find $hadoop_file"
-    print_usage
+# Check path
+if [[ ! -d $path ]]; then
+    echo "Error: path $path doesn't exist."
+    echo "Do you have grid-appliance-autofs and grid-appliance-nfs installed?"
     exit 1
 fi
 
 # Install
-if [ -f $path/$jdk_dir/bin/java ]; then
-    echo "JDK is already existed in $path/$jdk_dir .... skipping" 
+if [[ ! "$reinstall" && -e $path/$jdk_dir/bin/java ]]; then
+    echo "JDK has already been installed in $path/$jdk_dir" 
 else
+    rm -rf $path/$jdk_dir >& /dev/null
     install_jdk
 fi
 
-if [ -f $path/$hadoop_dir/bin/hadoop ]; then
-    echo "Hadoop is already existed in $path/$hadoop_dir .... skipping" 
+if [[ ! "$reinstall" && -e $path/$hadoop_dir/bin/hadoop ]]; then
+    echo "Hadoop has already been installed in $path/$hadoop_dir" 
 else
+    rm -rf $path/$hadoop_dir >& /dev/null
     install_hadoop
 fi
