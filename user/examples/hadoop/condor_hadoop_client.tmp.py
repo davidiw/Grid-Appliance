@@ -75,10 +75,9 @@ if __name__ == "__main__":
     local_env['HADOOP_PID_DIR'] = local_path + '/' + HADOOP_LOGDIR
     local_env['HADOOP_HEAPSIZE'] = str(128)
     local_env['JAVA_HOME'] = JAVA_PATH
-    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 
-                     'start', 'datanode'], env=local_env)
+    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 'start', 'datanode'], env=local_env)
 
     # start the server, waiting for terminating signal    
     servthread = start_server( int(local_xmlport) )
     servthread.join()
-
+    os.remove( HDFS_FNAME )   # remove file to prevent condor from creating it

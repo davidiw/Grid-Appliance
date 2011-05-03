@@ -41,9 +41,18 @@ class HadoopCluster:
         self.hostfname = self.tmpPath + 'hosts_' + self.rand
         self.hostlist = []             # store a list of [username, ip, port]
         self.env = os.environ 
-        self.env['PATH'] = self.nfsTmp + '/' + HADP_PATH + '/bin:' + self.env['PATH']
 	self.env['HADOOP_HEAPSIZE'] = str(128)
-        self.env['HADOOP_CONF_DIR'] = os.getcwd() + '/' + self.tmpPath
+        self.fullTmpPath = (os.getcwd() + '/' + self.tmpPath)[:-1]
+        self.env['HADOOP_CONF_DIR'] = self.fullTmpPath
+        self.env['HADOOP_PID_DIR'] = self.fullTmpPath 
+        self.env['HADOOP_LOG_DIR'] = self.fullTmpPath
+        self.env['HADOOP_HOME'] = self.nfsTmp + '/' + HADP_PATH
+        self.env['JAVA_HOME'] = self.nfsTmp + '/' + JAVA_PATH
+
+        # testing and add hadoop/bin into PATH
+        binPath = self.nfsTmp + '/' + HADP_PATH + '/bin'
+        if string.find( self.env['PATH'], binPath ) == -1:
+            self.env['PATH'] = binPath + ':' + self.env['PATH']
 
     # remove tmp dir and all its content
     def _rm_tmpdir(self, dst='.'):
@@ -65,7 +74,9 @@ class HadoopCluster:
         return 'tmp' + self.rand + '/'
 
     def _stop_hadoop(self):
-        subprocess.call( ['stop-all.sh'], 
+        subprocess.call( ['hadoop-daemon.sh', 'stop', 'datanode'], 
+                         env=self.env, stdout=FNULL, stderr=FNULL)
+        subprocess.call( ['hadoop-daemon.sh', 'stop', 'namenode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
         #subprocess.call( ['hadoop-daemon.sh', 'stop', 'jobtracker'], 
         #                 env=self.env, stdout=FNULL, stderr=FNULL)
@@ -77,11 +88,10 @@ class HadoopCluster:
         subprocess.call( ['hdfs', 'namenode', '-format'], env=self.env, 
                          stdin=p1.stdout, stdout=FNULL, stderr=FNULL )
         p1.stdout.close()
-        print 'Starting a namenode ... ',
+        print 'Starting a namenode (this may take a while) .... ',
         sys.stdout.flush()
-        #subprocess.call( ['hadoop-daemon.sh', 'start','namenode'], 
-        subprocess.Popen( ['hdfs','namenode'], 
-                         env=self.env, stdout=FNULL, stderr=FNULL)
+        subprocess.Popen( ['hadoop-daemon.sh', 'start', 'namenode'], 
+                          env=self.env, stdout=FNULL, stderr=FNULL)
 
         # use -report to wait for namenode to finish starting up
         subprocess.call(['hdfs', 'dfsadmin' ,'-report'], 
@@ -90,8 +100,7 @@ class HadoopCluster:
 
         # Start local datanode
         print 'Starting a local datanode\n'
-        #subprocess.call( ['hadoop-daemon.sh', 'start','datanode'], 
-        subprocess.Popen( ['hdfs','datanode'], 
+        subprocess.Popen( ['hadoop-daemon.sh', 'start', 'datanode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
     def start(self):
 
@@ -100,15 +109,17 @@ class HadoopCluster:
         confFile.prepare_file([ ['<namenode.hostname>', gethostname()] ])
 
         hdfsFile = TemplateFile( '', HDFS_TMP_FNAME, self.tmpPath, HDFS_FNAME )
-        hdfsFile.prepare_file([ ['<name.dir>', self.tmpPath + 'name' ],
-                                ['<data.dir>', self.tmpPath + 'data' ] ] )
+        hdfsFile.prepare_file([ ['<name.dir>', self.fullTmpPath + '/name' ],
+                                ['<data.dir>', self.fullTmpPath + '/data' ] ] )
 
         # Prepare and copy hadoop-env.sh into local temp directory
         envFile = TemplateFile('', HENV_TMP_FNAME, self.tmpPath, HENV_FNAME )
-        envFile.prepare_file([ ['<java.home>', self.nfsTmp + '/' + JAVA_PATH],
-                               ['<hadoop.home>', self.nfsTmp + '/' + HADP_PATH],
-                               ['<path>', self.nfsTmp + '/' + HADP_PATH + '/bin:$PATH']]
-                               , True )
+        envFile.prepare_file([ ['<java.home>', self.env['JAVA_HOME']],
+                               ['<hadoop.home>', self.env['HADOOP_HOME']],
+                               ['<conf.dir>', self.env['HADOOP_CONF_DIR']],
+                               ['<pid.dir>', self.env['HADOOP_PID_DIR']],
+                               ['<log.dir>', self.env['HADOOP_LOG_DIR']],
+                               ['<path>', self.env['PATH']] ], True )
 
         self._start_hadoop()                # start local hadoop namenode & jobtracker
         self._prepare_submission_files()    # prepare client script and condor submit file
@@ -133,7 +144,8 @@ class HadoopCluster:
         self._read_hosts_info()        # read info from the collected hosts
 
         # Waiting for hadoop cluster to be ready
-        print '\nWaiting for ' + str(self.np) + ' datanodes to be ready .... ',
+        print '\nWaiting for ' + str(self.np) + ' datanodes to be ready ',
+        print '(This may take a while) .... ',
         sys.stdout.flush()
         limit = 180
         retry = 0
@@ -150,10 +162,13 @@ class HadoopCluster:
             # extract datanodes count
             start = trace.find("Datanodes available:")
             end = trace.find("(", start )
-            count = trace[start:end].split()[-1]
+            count = '0'
+            if start > 0 and  end > 0:
+                count = trace[start:end].split()[-1]
 
             if count.isdigit() and (int(count) == self.np ):
-                print 'success'
+                print 'success\n\nAttention: Please source',
+                print  self.tmpPath + HENV_FNAME +' before using hadoop.\n'
                 break
 
         # Check whether mpdtrace return enough mpd nodes
