@@ -76,6 +76,7 @@ if __name__ == "__main__":
     local_env['HADOOP_HEAPSIZE'] = str(128)
     local_env['JAVA_HOME'] = JAVA_PATH
     subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 'start', 'datanode'], env=local_env)
+    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 'start', 'tasktracker'], env=local_env)
 
     # start the server, waiting for terminating signal    
     servthread = start_server( int(local_xmlport) )

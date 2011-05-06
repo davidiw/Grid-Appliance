@@ -10,13 +10,16 @@ from threading import Thread
 
 DEBUG = 1
 PORT = 32603                                   	# server listening port
+MPRD_PORT = 9001
 SUBM_FNAME = 'submit_hadoop_vanilla'            # submission template file name
 CONF_TMP_FNAME = 'core-site.tmp.xml'            # configure template file name
 HENV_TMP_FNAME = 'hadoop-env.tmp.sh'            # hadoop-env.sh template file name
 HDFS_TMP_FNAME = 'hdfs-site.tmp.xml'
+MPRD_TMP_FNAME = 'mapred-site.tmp.xml'
 CONF_FNAME = 'core-site.xml'              	# configure file name
 HENV_FNAME = 'hadoop-env.sh'                    # hadoop env setup script file name
 HDFS_FNAME = 'hdfs-site.xml'
+MPRD_FNAME = 'mapred-site.xml'
 CLNT_FNAME = 'condor_hadoop_client.tmp.py'     	# client-side script template
 NFS_PREFIX = '/mnt/ganfs/'
 HADP_PATH = 'hadoop'                     # path of hadoop installation
@@ -78,8 +81,10 @@ class HadoopCluster:
                          env=self.env, stdout=FNULL, stderr=FNULL)
         subprocess.call( ['hadoop-daemon.sh', 'stop', 'namenode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
-        #subprocess.call( ['hadoop-daemon.sh', 'stop', 'jobtracker'], 
-        #                 env=self.env, stdout=FNULL, stderr=FNULL)
+        subprocess.call( ['hadoop-daemon.sh', 'stop', 'tasktracker'], 
+                         env=self.env, stdout=FNULL, stderr=FNULL)
+        subprocess.call( ['hadoop-daemon.sh', 'stop', 'jobtracker'], 
+                         env=self.env, stdout=FNULL, stderr=FNULL)
 
     def _start_hadoop(self):
 
@@ -99,9 +104,19 @@ class HadoopCluster:
         print 'done'
 
         # Start local datanode
-        print 'Starting a local datanode\n'
+        print 'Starting a local datanode'
         subprocess.Popen( ['hadoop-daemon.sh', 'start', 'datanode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
+
+        # Start local jobtracker
+        print 'Starting a local jobtracker'
+        subprocess.Popen( ['hadoop-daemon.sh', 'start', 'jobtracker'], 
+                         env=self.env, stdout=FNULL, stderr=FNULL)
+        # Start local tasktracker
+        print 'Starting a local tasktracker\n'
+        subprocess.Popen( ['hadoop-daemon.sh', 'start', 'tasktracker'], 
+                         env=self.env, stdout=FNULL, stderr=FNULL)
+
     def start(self):
 
         # Create conf file into local temp directory
@@ -111,6 +126,10 @@ class HadoopCluster:
         hdfsFile = TemplateFile( '', HDFS_TMP_FNAME, self.tmpPath, HDFS_FNAME )
         hdfsFile.prepare_file([ ['<name.dir>', self.fullTmpPath + '/name' ],
                                 ['<data.dir>', self.fullTmpPath + '/data' ] ] )
+
+        mprdFile = TemplateFile( '', MPRD_TMP_FNAME, self.tmpPath, MPRD_FNAME )
+        mprdFile.prepare_file([ ['<jobtracker.hostname>', gethostname()],
+                                ['<jobtracker.port>', str(MPRD_PORT) ] ])
 
         # Prepare and copy hadoop-env.sh into local temp directory
         envFile = TemplateFile('', HENV_TMP_FNAME, self.tmpPath, HENV_FNAME )
@@ -195,6 +214,7 @@ class HadoopCluster:
                         ['<fullpath.client.script>', str(self.clientFile) ],
                         ['<output.dir>', OUTPUT_DIR + '/' ],
                         ['<core.config.file>', self.tmpPath + CONF_FNAME ],
+                        ['<mprd.config.file>', self.tmpPath + MPRD_FNAME ],
                         ['<hdfs.config.tmp.file>', HDFS_TMP_FNAME ],
                         ['<env.config.file>', self.tmpPath + HENV_FNAME ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
