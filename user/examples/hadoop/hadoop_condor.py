@@ -86,7 +86,7 @@ class HadoopCluster:
         subprocess.call( ['hadoop-daemon.sh', 'stop', 'jobtracker'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
 
-    def _start_hadoop(self):
+    def _start_hadoop_dfs(self):
 
         # starting server's namenode
         p1 = subprocess.Popen( ['echo', 'Y'], stdout=subprocess.PIPE, stderr=FNULL)
@@ -108,6 +108,7 @@ class HadoopCluster:
         subprocess.Popen( ['hadoop-daemon.sh', 'start', 'datanode'], 
                          env=self.env, stdout=FNULL, stderr=FNULL)
 
+    def _start_hadoop_mapred(self):
         # Start local jobtracker
         print 'Starting a local jobtracker'
         subprocess.Popen( ['hadoop-daemon.sh', 'start', 'jobtracker'], 
@@ -140,7 +141,7 @@ class HadoopCluster:
                                ['<log.dir>', self.env['HADOOP_LOG_DIR']],
                                ['<path>', self.env['PATH']] ], True )
 
-        self._start_hadoop()                # start local hadoop namenode & jobtracker
+        self._start_hadoop_dfs()            # start local hadoop namenode & datanode
         self._prepare_submission_files()    # prepare client script and condor submit file
 
         # start a listening server
@@ -186,15 +187,17 @@ class HadoopCluster:
                 count = trace[start:end].split()[-1]
 
             if count.isdigit() and (int(count) == self.np ):
-                print 'success\n\nAttention: Please source',
-                print  self.tmpPath + HENV_FNAME +' before using hadoop.\n'
+                print 'success'
                 break
 
-        # Check whether mpdtrace return enough mpd nodes
+        # Check whether a report return enough datanodes
         if retry >=  limit :
             print 'fail'
             self.stop()
             sys.exit('Timeout: not enough datanodes in the cluster')
+
+        self._start_hadoop_mapred()
+        print 'Attention: Please source ' + self.tmpPath + HENV_FNAME +' before using hadoop.\n'
 
     def stop(self):
         self._read_hosts_info()              # read info from tmp dir
@@ -203,7 +206,10 @@ class HadoopCluster:
 
         for host in self.hostlist:                                 # notify all workers
             hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[3] )
-            hostserv.terminate()
+            try:
+                hostserv.terminate()
+            except socket.error:
+                print 'host ' + host[0] + ':' + host[3] + ' is not respending.'
 
         self._stop_hadoop()                 # stop hadoop
         self._rm_tmpdir()                   # remove temp directory

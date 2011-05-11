@@ -8,4 +8,8 @@
   <name>mapreduce.jobtracker.address</name>
   <value><jobtracker.hostname>:<jobtracker.port></value>
 </property>
+<property>
+  <name>mapreduce.jobtracker.system.dir</name>
+  <value>hdfs:///user/mapred/system</value>
+</property>
 </configuration>
