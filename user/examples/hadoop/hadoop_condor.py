@@ -235,7 +235,7 @@ class HadoopCluster:
                         [ '<java.path>', self.nfsTmp + '/' + JAVA_PATH ],
                         [ '<hdfs.config.file>', HDFS_FNAME ],
                         [ '<hdfs.config.tmp.file>', HDFS_TMP_FNAME ],
-                        [ '<rand>', self.rand ] ] )
+                        [ '<rand>', self.rand ] ], True )
 
     def _read_hosts_info(self):
         self.hostlist = []
