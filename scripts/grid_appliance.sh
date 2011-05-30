@@ -169,7 +169,7 @@ function ec2() {
   fi
 
   cloud_floppy
-  return 0
+  return $?
 }
 
 function nimbus() {
