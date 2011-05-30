@@ -60,6 +60,12 @@ def check_self():
   except:
     return False
 
+def get_state(peerid):
+  try:
+    return _rpc_init().localproxy("Ipop.GetState", peerid)
+  except:
+    return False
+
 def information():
   try:
     return _rpc_init().localproxy("Information.Info")
