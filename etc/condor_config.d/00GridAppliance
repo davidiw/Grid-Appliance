@@ -14,7 +14,6 @@ SCHEDD_ARGS = -p 9501
 NEGOTIATOR_INTERVAL = 90
 # Helps with bad connectivity
 JobLeaseDuration = 14400
-UPDATE_INTERVAL = 600
 SUBMIT_EXPRS = $(SUBMIT_EXPRS), JobLeaseDuration
 # Allow x86 jobs to run on x64 machines
 APPEND_REQUIREMENTS = (ARCH == "INTEL") || (ARCH == "X86_64")
