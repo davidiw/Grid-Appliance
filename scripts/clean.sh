@@ -32,7 +32,7 @@ touch /var/log/dmesg
 touch /var/log/wtmp
 
 for user in $(ls /home); do
-  deluser --remove-all-files $user
+  userdel -f -r $user
 done
 
 touch $DIR/etc/not_configured
