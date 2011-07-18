@@ -56,7 +56,7 @@ class xmonitor:
     self.local_nic_state = ""
     self.add_label(vbox, self.local_nic)
     self.ipop_info = gtk.Label()
-    self.monitor_state = False
+    self.monitor_state = -1
     self.add_label(vbox, self.ipop_info)
     self.condor_info = gtk.Label()
     self.add_label(vbox, self.condor_info)
