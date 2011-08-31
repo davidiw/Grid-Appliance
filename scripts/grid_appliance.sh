@@ -111,10 +111,15 @@ function start() {
     rm $DIR/etc/not_configured
   fi
 
-  # Check to see if there is a new floppy / config
-  md5old=$(md5sum $DIR/var/groupvpn.zip 2> /dev/null | awk '{print $1}')
-  md5new=$(md5sum $CONFIG_PATH/groupvpn.zip 2> /dev/null | awk '{print $1}')
-  if [[ "$md5old" != "$md5new" ]]; then
+  for file in groupvpn.zip group_appliance.config authorized_keys; do
+    diff $DIR/var/$file $CONFIG_PATH/$file &> /dev/null
+    if [[ $? -ne 0 ]]; then
+      change=true
+      break
+    fi
+  done
+
+  if [[ "$change" ]]; then
     rm -f $DIR/var/groupvpn.zip
     cp $CONFIG_PATH/groupvpn.zip $DIR/var/.
     cp $CONFIG_PATH/group_appliance.config $DIR/var/.
