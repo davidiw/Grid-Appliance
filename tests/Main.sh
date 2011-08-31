@@ -16,7 +16,7 @@ echo "CONDOR_HOST..." >> $DIR/tests/out
 config=$DIR"/etc/condor_config.d/00root"
 res=`grep CONDOR_HOST $config | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`
 if [[ "$res" ]]; then
-  $IDIR/bin/RemotePeer.py >> $DIR/tests/out
+  $IDIR/bin/RemotePeer.py $res >> $DIR/tests/out
 fi
 echo "ps uax" >> $DIR/tests/out
 ps uax >> $DIR/tests/out
