@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cluster>
+ <workspace>
+   <name>GridAppliance</name>
+   <image>grid-appliance.gz</image>
+   <quantity>50</quantity>
+   <nic wantlogin="true">public</nic>
+ </workspace>
+</cluster>
