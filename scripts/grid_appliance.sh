@@ -264,10 +264,8 @@ function samba() {
 
 function user() {
   source /etc/group_appliance.config
-  if [[ $MACHINE_TYPE == "Client" ]]; then
-    if ! test -d /home/$CONDOR_USER; then
-      $DIR/scripts/utils.sh add_user $CONDOR_USER
-    fi
+  if ! test -d /home/$CONDOR_USER; then
+    $DIR/scripts/utils.sh add_user $CONDOR_USER $GA_PASSWORD
   fi
 }
 
