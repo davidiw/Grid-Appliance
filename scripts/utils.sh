@@ -5,8 +5,14 @@ source /etc/grid_appliance.config
 add_user()
 {
   user=$1
-  #Password == password
-  password=$(echo password | openssl passwd -1 -stdin)
+
+  if [ -n "$2" ]
+  then
+    password=$2
+  else
+    password=$(echo password | openssl passwd -1 -stdin)
+  fi
+
   useradd $user --password $password --shell /bin/bash --home-dir /home/$user -U
   for group in users admin plugdev lpadmin sambashare sudo; do
     if [[ "$(cat /etc/group | grep $group)" ]]; then
