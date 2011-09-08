@@ -1,5 +1,5 @@
 [build]
-version = 2.04.30
+version = 2.05.00
 base_path = ../../..
 package = grid_appliance
 [debian]
@@ -70,6 +70,12 @@ user/examples/mpi/submit_mpi_vanilla = /opt/grid_appliance/user/examples/mpi/sub
 user/examples/mpi/template_file.py = /opt/grid_appliance/user/examples/mpi/template_file.py
 user/examples/mpi/condor_mpi_util.py = /opt/grid_appliance/user/examples/mpi/condor_mpi_util.py
 user/examples/mpi/callback_serv.py = /opt/grid_appliance/user/examples/mpi/callback_serv.py
+user/examples/evaluation/line_plot.py = /opt/grid_appliance/user/examples/evaluation/line_plot.py
+user/examples/evaluation/parse_collector_logs.py = /opt/grid_appliance/user/examples/evaluation/parse_collector_logs.py
+user/examples/evaluation/parse_job_logs.py = /opt/grid_appliance/user/examples/evaluation/parse_job_logs.py
+user/examples/evaluation/sleep.sh = /opt/grid_appliance/user/examples/evaluation/sleep.sh
+user/examples/evaluation/submit.base = /opt/grid_appliance/user/examples/evaluation/submit.base
+user/examples/evaluation/run.sh = /opt/grid_appliance/user/examples/evaluation/run.sh
 [links]
 /opt/grid_appliance/scripts/grid_appliance.sh = /etc/init.d/grid_appliance.sh
 /opt/grid_appliance/etc/grid_appliance.config = /etc/grid_appliance.config
