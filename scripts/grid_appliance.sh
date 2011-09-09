@@ -112,6 +112,10 @@ function start() {
   fi
 
   for file in groupvpn.zip group_appliance.config authorized_keys; do
+    if ! test -e $CONFIG_PATH/$file; then
+      continue
+    fi
+
     diff $DIR/var/$file $CONFIG_PATH/$file &> /dev/null
     if [[ $? -ne 0 ]]; then
       change=true
@@ -120,24 +124,29 @@ function start() {
   done
 
   if [[ "$change" ]]; then
-    rm -f $DIR/var/groupvpn.zip
-    cp $CONFIG_PATH/groupvpn.zip $DIR/var/.
-    cp $CONFIG_PATH/group_appliance.config $DIR/var/.
+    for file in groupvpn.zip group_appliance.config authorized_keys; do
+      if ! test -e $CONFIG_PATH/$file; then
+        continue
+      fi
+      cp $CONFIG_PATH/$file $DIR/var/.
+    done
+
     groupvpn_prepare.sh $DIR/var/groupvpn.zip
+
     if [[ $? != 0 ]]; then
       rm -f $DIR/var/groupvpn.zip
       logger -s -t "Grid Appliance" "GroupVPN config failed, configuration error, fix and restart grid_appliance.sh"
       exit 1
     fi
 
-    if test -e $CONFIG_PATH/authorized_keys; then
+    if test -e $DIR/var/authorized_keys; then
       mkdir -p /root/.ssh &> /dev/null
       if ! test -e /root/.ssh/authorized_keys.bak; then
         cp /root/.ssh/authorized_keys /root/.ssh/authorized_keys.bak
       else
         touch /root/.ssh/authorized_keys.bak
       fi
-      cat $CONFIG_PATH/authorized_keys >> /root/.ssh/authorized_keys
+      cat $DIR/var/authorized_keys >> /root/.ssh/authorized_keys
       chown -R root:root /root
       chmod 700 /root/.ssh
       chmod 600 /root/.ssh/*
