@@ -143,6 +143,11 @@ update_flock()
 
 start_condor()
 {
+  if ! test -e /var/run/condor; then
+    mkdir /var/run/condor
+    chown condor:condor /var/run/condor
+  fi
+
   configure_condor
   if [[ $? != 0 ]]; then
     logger -s -t "Condor" "Failed to configure... try again later..."
