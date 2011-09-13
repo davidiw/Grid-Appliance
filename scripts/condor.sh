@@ -62,11 +62,13 @@ configure_condor()
   rm -f $config
   echo "NETWORK_INTERFACE = "$ip > $config
 
+# Clean up any potentially stale Server entries
+  registered=`$DIR/scripts/DhtHelper.py dump $ipop_ns:condor:server`
+  for reg in $registered; do
+    $DIR/scripts/DhtHelper.py unregister $ipop_ns:condor:server $reg
+  done
+
   if [[ $MACHINE_TYPE = "Server" ]]; then
-    registered=`$DIR/scripts/DhtHelper.py dump $ipop_ns:condor:server`
-    for reg in $registered; do
-      $DIR/scripts/DhtHelper.py unregister $ipop_ns:condor:server $reg
-    done
     $DIR/scripts/DhtHelper.py register $ipop_ns:condor:server $ip 600
     server=$ip
   else
