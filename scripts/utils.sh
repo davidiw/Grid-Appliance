@@ -133,7 +133,7 @@ set_hostname()
     fi
   hostname=$hostname$temp
   done
-  hostname $hostname
+  hostname $hostname.ipop
 }
 
 ping_test()

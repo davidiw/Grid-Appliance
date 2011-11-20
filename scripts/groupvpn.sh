@@ -67,11 +67,11 @@ function start()
     fi
   fi
 
+  exit_hook=/etc/dhcp3/dhclient-exit-hooks.d
   if [[ "$USE_IPOP_HOSTNAME" ]]; then
     #service will throw exceptions if we don't have a FQDN
     hostname localhost
     if [[ ! "$STATIC" ]]; then
-      exit_hook=/etc/dhcp3/dhclient-exit-hooks.d
       if test -e $exit_hook; then
         if ! test -e $exit_hook/ipop_hostname; then
           ln -s $DIR/bin/hostname.sh $exit_hook/ipop_hostname
@@ -125,6 +125,13 @@ function start()
       $DIR/bin/hostname.sh
     fi
   else
+    if [[ ! "$USE_IPOP_HOSTNAME" ]]; then
+      if test -e $exit_hook; then
+        if test -e $exit_hook/ipop_hostname; then
+          rm -f $exit_hook/ipop_hostname
+        fi
+      fi
+    fi
     if [[ ! "$DHCP" ]]; then
       if [[ "$(which dhclient3 2> /dev/null)" ]]; then
         DHCP="dhclient3 -pf /var/run/dhclient.$DEVICE.pid -lf /var/lib/dhcp3/dhclient.$DEVICE.leases $DEVICE"
