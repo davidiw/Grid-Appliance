@@ -55,8 +55,7 @@ class monitor:
     self.ips[label] = addr
 
     if label == ipop["DEVICE"]:
-      if ipop.has_key("USE_IPOP_HOSTNAME") == True :
-        utils.utils_sh("set_hostname")
+      utils.utils_sh("set_hostname")
       # Now that IPOP is running, let's get Condor running
       # If Condor is running, we should reconfig, since we have a new IP
       if not self.check_condor():
