@@ -5,11 +5,11 @@ source /etc/grid_appliance.config
 add_user()
 {
   user=$1
-  if [[ "$2" ]]; then
-    password=$2
-  else
+  password=$2
+  if [[ -n "$password" ]]; then
     password=$(echo password | openssl passwd -1 -stdin)
   fi
+
   useradd $user --password $password --shell /bin/bash --home-dir /home/$user -U
   for group in users admin plugdev lpadmin sambashare sudo; do
     if [[ "$(cat /etc/group | grep $group)" ]]; then
@@ -130,7 +130,7 @@ set_hostname()
     fi
   hostname=$hostname$temp
   done
-  hostname $hostname
+  hostname $hostname.ipop
 }
 
 ping_test()
