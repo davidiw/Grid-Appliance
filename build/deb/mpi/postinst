@@ -1,0 +1,22 @@
+#!/bin/bash
+source /etc/grid_appliance.config
+
+# Create 'mpi' user if it does not exist
+mpi_user=`grep "^mpi:" /etc/passwd | awk -F":" {'print $1'}`
+
+if [ "$mpi_user" = "mpi" ]; then
+	# mpi user exists
+	echo "deleting existing user 'mpi'"
+	userdel mpi
+fi
+
+echo "adding new user 'mpi'"
+$DIR/scripts/adduser.sh mpi
+
+# Create .mpd.conf file, used by mpd (MPI deamon process). .mpd.conf needs to be the same on 
+# all MPI nodes to belong to a single mpd ring.
+rm -f /home/mpi/.mpd.conf
+echo "MPD_SECRETWORD=DefaultSecretWord" > /home/mpi/.mpd.conf
+chmod 600 /home/mpi/.mpd.conf
+chown mpi:mpi /home/mpi/.mpd.conf
+exit 0

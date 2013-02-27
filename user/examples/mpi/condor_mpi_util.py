@@ -23,8 +23,12 @@ def createMpdConf( secret, dest=os.getcwd() ):
     os.chmod( dest+'/.mpd.conf', 0600 )
 
 # Get host name
-def gethostname():
-    return socket.gethostname().split('.')[0]
+def gethostname( short = False ):
+    name = socket.gethostname()
+    if not short:
+        return name
+
+    return name.split('.')[0]  # short hostname, return the first part
 
 # Extract port number from mpdtrace output
 def extractPort( trace ):

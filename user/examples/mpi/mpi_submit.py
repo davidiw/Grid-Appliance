@@ -25,7 +25,7 @@ class MPISubmission:
         self.debug = DEBUG
         self.np = np
         self.mpdPort = ''
-        self.nfsTmp = NFS_PREFIX + gethostname()
+        self.nfsTmp = NFS_PREFIX + gethostname(True) 
         self.execfname = execfname
         self.servthread = None
         self.rand = genRandom()
@@ -35,6 +35,7 @@ class MPISubmission:
         self.clientFile = TemplateFile( '' , CLNT_FNAME, self.tmpPath, 
                                         CLNT_FNAME + '_' + self.rand )
         self.hostfname = self.tmpPath + 'hosts_' + self.rand
+        self.keyfname = self.tmpPath + self.rand + '.key'
         self.hostlist = []             # store a list of [username, ip, port]
         self.env = os.environ 
         self.env['PATH'] = self.nfsTmp + '/' + MPDBIN_PATH + ':' + self.env['PATH']
@@ -86,6 +87,7 @@ class MPISubmission:
         
         self._start_mpd()                     # start local mpd
         self._prepare_submission_files()      # prepare client script and condor submit file
+        self._gen_ssh_keys()                  # generate ssh key pairs
 
         # start a listening server
         self.servthread = Thread(target=CallbackServ(self.np - 1, self.hostfname, PORT).serv)
@@ -130,7 +132,7 @@ class MPISubmission:
 
         # Check whether mpdtrace return enough mpd nodes
         if len(trace.split('\n')) < self.np + 1 :
-            print 'faild'
+            print 'failed'
             subprocess.call( 'mpdallexit', env=self.env, stdout=FNULL, stderr=FNULL)
             subprocess.call(['condor_rm', '-all'])
             sys.exit('Error: not enough mpd nodes in the ring')
@@ -142,7 +144,7 @@ class MPISubmission:
 
         # mpi job is finished
         for host in self.hostlist:                                 # notify all workers
-            hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[3] )
+            hostserv = xmlrpclib.Server( "http://" + host[0] + ":" + host[4] )
             hostserv.terminate()
         subprocess.call( 'mpdallexit', env=self.env, 
                           stdout=FNULL, stderr=FNULL) # tear down mpd ring
@@ -154,6 +156,7 @@ class MPISubmission:
 
         # Prepare condor submission file
         self.submitFile.prepare_file( [ ['<q.np>', str(self.np-1)],
+                        ['<ssh.pub.key>', self.tmpPath + AUTH_FNAME ],
                         ['<fullpath.client.script>', str(self.clientFile) ],
                         ['<output.dir>', OUTPUT_DIR + '/' ],
                         ['<client.script>', self.clientFile.out_fname() ] ] )
@@ -186,6 +189,22 @@ class MPISubmission:
                 mpdhostf.write( host[0] + ':' + host[1] + '\n' )
         mpdhostf.close()
 
+    # Generate ssh key pairs for MPI ring
+    def _gen_ssh_keys(self):
+
+        argstr = str.split( "ssh-keygen -q -t rsa" )
+        argstr.extend( ["-N", ''] )
+        argstr.extend( ["-f", self.keyfname] )
+        argstr.extend( ["-C", self.rand] )
+    
+        p = subprocess.call( argstr )
+        if p != 0:
+            sys.exit('Error: ssh-keygen return ' + str(p))
+
+        # copy the public key file into 'authorized_keys' file for client's sshd
+        shutil.copyfile( self.keyfname + '.pub', self.tmpPath + AUTH_FNAME )
+
+
 if __name__ == "__main__":
     # parsing option/arguments
     parser = OptionParser(description='Submit MPI jobs via condor',
@@ -202,7 +221,7 @@ if __name__ == "__main__":
         sys.exit('File ' + args[0] + '  not found')
 
     # test MPI installation
-    local_nfs = NFS_PREFIX + gethostname()
+    local_nfs = NFS_PREFIX + gethostname(True)
     if not os.path.isfile( local_nfs + '/mpich2/bin/mpd.py' ):
         sys.exit('Error: No MPI installation in ' + local_nfs)
 

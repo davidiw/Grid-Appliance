@@ -1,0 +1,9 @@
+Package: grid-appliance-mpi
+Priority: optional
+Section: net 
+Installed-Size: 1
+Maintainer: Arjun Prakash <arjun.prakash@ufl.edu> 
+Architecture: all 
+Depends: grid-appliance-base,openssh-server, mpich2 (>= 1.2), avahi-daemon (>= 0.6.25), avahi-utils (>= 0.6.25)
+Description: Grid Appliance MPI appliance 
+Version: 0.01

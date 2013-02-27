@@ -187,7 +187,7 @@ function ec2() {
 }
 
 function nimbus() {
-user_uri="$(cat /var/nimbus-metadata-server-url)/2007-01-19/user-data"
+  user_uri="`cat /var/nimbus-metadata-server-url`/2007-01-19/user-data"
   wget --quiet --tries=2 $user_uri -O /tmp/floppy.zip
   if [[ $? != 0 ]]; then
     return 1

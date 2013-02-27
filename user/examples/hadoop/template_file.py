@@ -2,7 +2,8 @@
 
 import string, os
 
-class TemplateFile:
+class TemplateFile():
+
     def __init__(self, path, fname, outpath, outfname ):
         self.fname = fname
         self.outfname = outfname

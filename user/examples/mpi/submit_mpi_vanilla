@@ -5,6 +5,6 @@ Log = <output.dir>/condor-mpi.$(Cluster).$(Process).log
 Output = <output.dir>/condor-mpi.$(Cluster).$(Process).out
 Error = <output.dir>/condor-mpi.$(Cluster).$(Process).err
 should_transfer_files = Yes
-transfer_input_files = <fullpath.client.script>, condor_mpi_util.py
+transfer_input_files = <fullpath.client.script>, <ssh.pub.key>, condor_mpi_util.py, mpi_sshd_setup.sh
 when_to_transfer_output = ON_EXIT
 Queue <q.np>

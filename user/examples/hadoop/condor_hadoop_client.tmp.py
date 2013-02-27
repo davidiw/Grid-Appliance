@@ -3,20 +3,22 @@
 import os, xmlrpclib, time, subprocess, multiprocessing
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-from condor_mpi_util import *
+from condor_hadoop_util import *
 from getpass import getuser
 from threading import Thread
+from template_file import TemplateFile
 
 SERV_IP =  '<serv.ip>' 
 SERV_PORT = '<serv.port>'
-MPD_PORT = '<mpd.port>'
-MPD_PATH = '<mpd.path>'
+HADP_PATH = '<hadp.path>'
+JAVA_PATH = '<java.path>'
 RAND = '<rand>'
-
-SEED_SSHPORT = 55555
+HDFS_FNAME = '<hdfs.config.file>'
+HDFS_TMP_FNAME = '<hdfs.config.tmp.file>'
 SEED_XMLPORT = 45555
+HADOOP_LOGDIR = 'hadoop_log'
 
-class WaitingServ:
+class WaitingServ():
 
     def __init__(self, port):
         self.port = port
@@ -45,24 +47,38 @@ if __name__ == "__main__":
 
     local_user = getuser()
     local_hostname = gethostname()
-    local_sshport = str( SEED_SSHPORT + condor_slot )
     local_xmlport = str( SEED_XMLPORT + condor_slot )
     local_cpus = str(multiprocessing.cpu_count())
     local_path = os.getcwd()
 
     # construct a dict for all values and make xmlrpc call
     data = { 'hostname' : local_hostname, 'cpus' : local_cpus, 'usrname' : local_user,
-             'sshport' : local_sshport, 'xmlport' : local_xmlport,
-             'path' : local_path }
+             'xmlport' : local_xmlport, 'path' : local_path }
     serv.write_file( data )
 
-    subprocess.call( ['mpi_sshd_setup.sh'] )
-    createMpdConf( RAND )
+    # prepare log and conf dir
+    name_dir = 'tmp' + RAND + '/name'
+    data_dir = 'tmp' + RAND + '/data'
+    os.makedirs( HADOOP_LOGDIR )
+    os.makedirs( name_dir )
+    os.makedirs( data_dir )
+
+    hdfsFile = TemplateFile( '', HDFS_TMP_FNAME, '', HDFS_FNAME )
+    hdfsFile.prepare_file([ ['<name.dir>', local_path + '/' + name_dir ],
+                            ['<data.dir>', local_path + '/' + data_dir ] ] )
+
+    # Setup datanode/tasktracker in the background
     local_env = os.environ
-    local_env['MPD_CONF_FILE'] = local_path + '/.mpd.conf'
-    subprocess.Popen([MPD_PATH + '/mpd', '-h', SERV_IP, '-p', MPD_PORT], env=local_env)
+    local_env['HADOOP_CONF_DIR'] = local_path
+    local_env['HADOOP_HOME'] = HADP_PATH
+    local_env['HADOOP_LOG_DIR'] = local_path + '/' + HADOOP_LOGDIR
+    local_env['HADOOP_PID_DIR'] = local_path + '/' + HADOOP_LOGDIR
+    local_env['HADOOP_HEAPSIZE'] = str(128)
+    local_env['JAVA_HOME'] = JAVA_PATH
+    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 'start', 'datanode'], env=local_env)
+    subprocess.call( [HADP_PATH + '/bin/hadoop-daemon.sh', 'start', 'tasktracker'], env=local_env)
 
     # start the server, waiting for terminating signal    
     servthread = start_server( int(local_xmlport) )
     servthread.join()
-
+    os.remove( HDFS_FNAME )   # remove file to prevent condor from creating it
